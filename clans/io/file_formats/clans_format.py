@@ -9,11 +9,10 @@ class ClansFormat:
 
     def __init__(self):
         self.sequences_list = []
-        self.similarity_values_mtx = []  # a 2D matrix of similarity values of pairs (initialized by ones)
-        self.attraction_values_mtx = []
         self.file_is_valid = 1
         self.error = ""
         self.type_of_values = ""
+        self.is_groups = 0
 
     def read_file(self, file_path):
 
@@ -41,8 +40,10 @@ class ClansFormat:
                 return
 
             # Create a 2D Numpy array for the similarity values and initialize it with 1
-            self.similarity_values_mtx = np.ones([cfg.run_params['total_sequences_num'], cfg.run_params['total_sequences_num']])
-            self.attraction_values_mtx = np.zeros([cfg.run_params['total_sequences_num'], cfg.run_params['total_sequences_num']])
+            cfg.similarity_values_mtx = np.full([cfg.run_params['total_sequences_num'],
+                                                  cfg.run_params['total_sequences_num']], 100, dtype=float)
+            cfg.attraction_values_mtx = np.zeros([cfg.run_params['total_sequences_num'],
+                                                   cfg.run_params['total_sequences_num']])
 
             # A loop over the rest of the lines
             for line in infile:
@@ -61,6 +62,7 @@ class ClansFormat:
                             self.sequences_list.append(t)
                 elif line.strip() == "<seqgroups>":
                     in_seqgroups_block = 1
+                    self.is_groups = 1
                 elif in_seqgroups_block:
                     if line.strip() == "</seqgroups>":
                         in_seqgroups_block = 0
@@ -71,13 +73,13 @@ class ClansFormat:
                             v = m.group(2)
                             if k == 'name':
                                 # Initialize the current group's dict
-                                d = {}
-                                d[k] = v
+                                d = {k: v}
                             elif k == 'numbers':
                                 d[k] = v
                                 d['seqIDs'] = {}
                                 for num in (v.split(';')):
-                                    d['seqIDs'][num] = 1
+                                    if num != '':
+                                       d['seqIDs'][num] = 1
                                 # Add the dictionary with the current group's info to the main groups list
                                 cfg.groups_list.append(d.copy())
                             else:
@@ -95,8 +97,9 @@ class ClansFormat:
                             x_coor = m.group(2)
                             y_coor = m.group(3)
                             z_coor = m.group(4)
-                            coor = (x_coor, y_coor, z_coor)
-                            self.sequences_list[index] += coor
+                            # Create a tuple with the coordinates information + initialization for the 'in_group field'
+                            coor_tuple = (x_coor, y_coor, z_coor, -1)
+                            self.sequences_list[index] += coor_tuple
                         else:
                             self.file_is_valid = 0
                             self.error = "The coordinates (<pos> block) cannot be read. The correct format is:\n" \
@@ -116,11 +119,11 @@ class ClansFormat:
                             evalue = m.group(3)
                             # Assign the Evalue to the pair + reciprocal pair
                             if float(evalue) == 0.0:
-                                self.similarity_values_mtx[index1][index2] = 10 ** -180
-                                self.similarity_values_mtx[index2][index1] = 10 ** -180
+                                cfg.similarity_values_mtx[index1][index2] = 10 ** -180
+                                cfg.similarity_values_mtx[index2][index1] = 10 ** -180
                             else:
-                                self.similarity_values_mtx[index1][index2] = evalue
-                                self.similarity_values_mtx[index2][index1] = evalue
+                                cfg.similarity_values_mtx[index1][index2] = evalue
+                                cfg.similarity_values_mtx[index2][index1] = evalue
                             cfg.similarity_values_list.append(line)
                         else:
                             self.file_is_valid = 0
@@ -141,8 +144,8 @@ class ClansFormat:
                             att = m.group(3)
                             # Assign the attraction value to the pair + reciprocal pair
                             if 0.0 <= float(att) <= 1.0:
-                                self.attraction_values_mtx[index1][index2] = att
-                                self.attraction_values_mtx[index2][index1] = att
+                                cfg.attraction_values_mtx[index1][index2] = att
+                                cfg.attraction_values_mtx[index2][index1] = att
                             else:
                                 self.file_is_valid = 0
                                 self.error = "Attraction values must be numbers between 0 and 1"
@@ -153,9 +156,6 @@ class ClansFormat:
                             self.error = "The attraction values cannot be read. The correct format is:\n" \
                                          "<sequence1 index> <sequence2 index>: <attraction value>"
                             break
-
-        #print("ClansFormat.read_file: first sequence: " + str(self.sequences_list[0]))
-        #print("ClansFormat.read_file: 0-1 Evalue: " + str(self.similarity_values_mtx[0][1]))
 
         # Check whether there is either <hsp> block or <att>
         if self.file_is_valid:
@@ -184,15 +184,26 @@ class ClansFormat:
     def fill_values(self):
         # Create the structured NumPy array of sequences
         seq.create_sequences_array(self.sequences_list)
+
+        # If there sre groups - add the information to the sequences_list
+        if self.is_groups:
+            in_groups_array = np.full(cfg.run_params['total_sequences_num'], -1)
+            for group_index in range(len(cfg.groups_list)):
+                if cfg.groups_list[group_index]['color'] != "0;0;0;255":
+                    for seq_num in cfg.groups_list[group_index]['seqIDs']:
+                        seq_index = int(seq_num)
+                        in_groups_array[seq_index] = group_index
+            seq.add_in_group_column(in_groups_array)
+
         if self.type_of_values == "hsp":
             cfg.type_of_values = "hsp"
-            # Create the 2D NumPy array of similarity values between the pairs of sequences
-            sp.create_similarity_array(self.similarity_values_mtx)
             sp.calculate_attraction_values()
             sp.define_connected_sequences('hsp')
         elif self.type_of_values == 'att':
             cfg.type_of_values = "att"
-            sp.create_attraction_values_array(self.attraction_values_mtx)
+            # If the user forgot to set the P-value between 0-1 (to match attraction values), set it to 0.1
+            if cfg.run_params['similarity_cutoff'] < 0.1:
+                cfg.run_params['similarity_cutoff'] = 0.1
             sp.define_connected_sequences('att')
 
     def write_file(self, file_path):

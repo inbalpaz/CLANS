@@ -11,8 +11,13 @@ def init_variables():
     global coordinates
     global total_seq_last_movement
 
-    coordinates = np.column_stack((cfg.sequences_array['x_coor'], cfg.sequences_array['y_coor'], cfg.sequences_array['z_coor']))
-    total_seq_last_movement = np.zeros((cfg.run_params['total_sequences_num'], 3))
+    if cfg.run_params['dimensions_num_for_clustering'] == 2:
+        coordinates = np.column_stack((cfg.sequences_array['x_coor'], cfg.sequences_array['y_coor']))
+    else:
+        coordinates = np.column_stack(
+            (cfg.sequences_array['x_coor'], cfg.sequences_array['y_coor'], cfg.sequences_array['z_coor']))
+
+    total_seq_last_movement = np.zeros((cfg.run_params['total_sequences_num'], cfg.run_params['dimensions_num_for_clustering']))
 
 
 #@profile
@@ -21,12 +26,12 @@ def calculate_new_positions():
     global total_seq_last_movement
     global current_temp
     attraction_values = cfg.attraction_values_mtx
-    connected_sequences = cfg.connected_sequences
-    movement = np.zeros((cfg.run_params['total_sequences_num'], 3))
+    connected_sequences = cfg.connected_sequences_mtx
+    movement = np.zeros((cfg.run_params['total_sequences_num'], cfg.run_params['dimensions_num_for_clustering']))
 
     # Calculate the movement created by the attractive and repulsive forces between the pairs
     calculate_pair_forces(coordinates, attraction_values, connected_sequences, movement,
-                          cfg.run_params['num_of_dimensions'], cfg.run_params['att_val'], cfg.run_params['att_exp'],
+                          cfg.run_params['dimensions_num_for_clustering'], cfg.run_params['att_val'], cfg.run_params['att_exp'],
                           cfg.run_params['rep_val'], cfg.run_params['rep_exp'])
     #print("movement:" + str(movement))
 
@@ -36,7 +41,7 @@ def calculate_new_positions():
     # Calculate the normalized movement vector for each sequence in each dimension
     # including the consideration of the last movement (according to the dampening parameter)
     # and the current temperature of the system.
-    calculate_total_sequence_movement(total_seq_last_movement, cfg.run_params['num_of_dimensions'],
+    calculate_total_sequence_movement(total_seq_last_movement, cfg.run_params['dimensions_num_for_clustering'],
                                       cfg.run_params['dampening'], cfg.run_params['maxmove'], movement)
     #print("total_seq_movement:" + str(movement))
 
@@ -45,7 +50,7 @@ def calculate_new_positions():
     #print("FR.calculate_new_positions: New coordinates including dampening and cooling:" + str(coordinates))
 
     # Save the current movement for the next iteration
-    total_seq_last_movement = movement
+    total_seq_last_movement = movement.copy()
 
     # Update the current temperature of the system (if cooling<1, the system gradually cools down until temp=0)
     current_temp *= cfg.run_params['cooling']

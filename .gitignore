@@ -135,3 +135,8 @@ dmypy.json
 # IDE files
 .idea/
 
+# I/O files
+blast_output/
+input/
+output/
+

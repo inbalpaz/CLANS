@@ -1,4 +1,3 @@
-import re
 from Bio import SeqIO
 import random
 import clans.config as cfg
@@ -32,10 +31,11 @@ class FastaFormat:
     def write_file(self, file_path):
         pass
 
-    # Returns a random coordinate between 0 and 1
+    # Returns a random coordinate between -1 and 1
     @staticmethod
     def generate_rand_pos():
-        return '{:.5f}'.format(random.random())
+        rand = random.random() * 2 - 1
+        return '{:.3f}'.format(rand)
 
 
 
