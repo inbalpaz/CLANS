@@ -2,6 +2,7 @@ from PyQt5.QtCore import QThreadPool, Qt
 from PyQt5.QtWidgets import *
 from vispy import app, scene
 import vispy.io
+import numpy as np
 import clans.config as cfg
 import clans.io.io_gui as io
 import clans.layouts.layout_gui as lg
@@ -219,7 +220,7 @@ class MainWindow(QMainWindow):
             # If the clustering is done in 3D -> Move to 3D view and reset the turntable camera
             if cfg.run_params['dimensions_num_for_clustering'] == 3:
                 self.dimensions_view_combo.setCurrentIndex(0)
-                self.network_plot.reset_turntable_camera(self.view)
+                self.network_plot.reset_rotation(self.view)
             # If the clustering is in 2D -> move to 2D view
             else:
                 self.dimensions_view_combo.setCurrentIndex(1)
@@ -232,6 +233,7 @@ class MainWindow(QMainWindow):
             self.mode_combo.setEnabled(False)
             self.dimensions_clustering_combo.setEnabled(False)
             self.pval_widget.setEnabled(False)
+            self.clear_selection_button.setEnabled(False)
 
             # Execute
             self.threadpool.start(self.run_calc_worker)
@@ -266,6 +268,7 @@ class MainWindow(QMainWindow):
             self.dimensions_view_combo.setEnabled(True)
         self.pval_widget.setEnabled(True)
         self.mode_combo.setEnabled(True)
+        self.clear_selection_button.setEnabled(True)
 
         # Update the coordinates saved in the sequences_array
         seq.update_positions(fr.coordinates.T)
@@ -289,6 +292,9 @@ class MainWindow(QMainWindow):
             fr.init_variables()
 
             print("Coordinates are initiated.")
+
+            # Move back to interactive mode
+            self.mode_combo.setCurrentIndex(0)
 
             # If the clustering is done in 3D -> Move to 3D view and reset the turntable camera
             if cfg.run_params['dimensions_num_for_clustering'] == 3:
@@ -324,7 +330,7 @@ class MainWindow(QMainWindow):
 
         # 2D view with 3D clustering -> need to present the rotated-coordinates
         else:
-            self.network_plot.update_view()
+            self.network_plot.update_view(2)
 
     def save_file(self):
         file_dialog = QFileDialog()
@@ -373,36 +379,51 @@ class MainWindow(QMainWindow):
         # Interactive mode
         if self.mode_combo.currentIndex() == 0:
             self.mode = "interactive"
+            print("Interactive mode")
 
-            # If the view was 3D before switching to selection mode - move back to 3D
-            if self.last_view_in_dimensions_num == 3:
-                self.dimensions_view_combo.setCurrentIndex(0)
+            if self.view_in_dimensions_num == 3:
+                self.network_plot.set_3d_view(self.view)
+                self.view.camera.center = self.network_plot.center
+
             self.dimensions_view_combo.setEnabled(True)
 
-            # Disconnect the selection-special special mouse-events and connect back the default behavour of the
-            # PanZoom camera when the mouse moves
+            # Disconnect the selection-special special mouse-events and connect back the default behaviour of the
+            # viewbox when the mouse moves
             self.canvas.events.mouse_release.disconnect(self.on_canvas_mouse_release)
             self.canvas.events.mouse_move.disconnect(self.on_canvas_mouse_move)
             self.view.camera._viewbox.events.mouse_move.connect(self.view.camera.viewbox_mouse_event)
+            self.view.camera._viewbox.events.mouse_press.connect(self.view.camera.viewbox_mouse_event)
 
         # Selection mode
         else:
             self.mode = "selection"
+            print("Selection mode")
 
-            # Move to 2D view and remember that it was 3D view before
+            # Rotate the data coordinates and bring the camera back to its initial position
             if self.view_in_dimensions_num == 3:
-                self.dimensions_view_combo.setCurrentIndex(1)
-                self.dimensions_view_combo.setEnabled(False)
-                self.last_view_in_dimensions_num = 3
 
-            # Disconnect the default behaviour of the PanZoom camera when the mouse moves
+                self.network_plot.calculate_rotation(self.view)
+                self.network_plot.reset_rotation(self.view)
+                self.network_plot.update_view(2)
+
+                self.network_plot.set_rotated_center(self.view)
+
+            self.dimensions_view_combo.setEnabled(False)
+
+            # Disconnect the default behaviour of the viewbox when the mouse moves
             # and connect selection-special callbacks for mouse_move and mouse_release
             self.view.camera._viewbox.events.mouse_move.disconnect(self.view.camera.viewbox_mouse_event)
+            self.view.camera._viewbox.events.mouse_press.disconnect(self.view.camera.viewbox_mouse_event)
             self.canvas.events.mouse_release.connect(self.on_canvas_mouse_release)
             self.canvas.events.mouse_move.connect(self.on_canvas_mouse_move)
 
+
     def clear_selection(self):
-        self.network_plot.reset_selection(self.view_in_dimensions_num)
+        if self.view_in_dimensions_num == 2 or self.mode == "selection":
+            dim_num = 2
+        else:
+            dim_num = 3
+        self.network_plot.reset_selection(dim_num)
 
     ## Events
 

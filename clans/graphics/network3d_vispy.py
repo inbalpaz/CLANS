@@ -54,6 +54,8 @@ class Network3D:
         self.initial_elevation = 90
         self.last_azimuth = 0
         self.last_elevation = 90
+        self.center = (0, 0, 0)
+        self.rotated_center = (0, 0, 0)
         if cfg.run_params['dimensions_num_for_clustering'] == 2:
             view.camera = 'panzoom'
             view.camera.aspect = 1
@@ -62,12 +64,10 @@ class Network3D:
             view.camera.elevation = self.initial_elevation
             view.camera.azimuth = self.initial_azimuth
             view.camera.fov = 0
+            view.camera.center = self.center
 
-        print("3D Camera initial parameters:")
-        print("FOV: "+str(view.camera.fov))
-        print("Elevation: " + str(view.camera.elevation))
-        print("Azimuth: " + str(view.camera.azimuth))
-        print(view.camera.get_state())
+            print("3D Camera initial parameters:")
+            print(view.camera.get_state())
 
         # Create the scatter plot object (without data)
         self.scatter_plot = scene.visuals.Markers(parent=view.scene)
@@ -152,6 +152,7 @@ class Network3D:
 
         # Update the coordinates array
         self.pos_array = fr.coordinates.copy()
+        self.rotated_pos_array = self.pos_array.copy()
         if self.pos_array.shape[1] == 2:
             self.pos_array = np.column_stack((self.pos_array, cfg.sequences_array['z_coor']))
 
@@ -212,25 +213,33 @@ class Network3D:
         view.camera.azimuth = self.last_azimuth
         view.camera.fov = 0
 
+        #self.reset_rotation(view)
+
         print("Camera parameters:")
         print(view.camera.get_state())
 
-        self.set_range_turntable_camera(view, 'view')
+        #self.update_data(view, 3)
 
-        self.update_data(view, 3)
+        self.update_view(3)
+        #print(self.rotated_pos_array)
+
+    def set_2d_view_turntable(self, view):
+
+        print("Moved to 2D view")
+
+        self.calculate_rotation(view)
+
+        # Zero the Z axis to have 2D presentation
+        self.rotated_pos_array[:, 2] = 0
+
+        view.camera.elevation = self.initial_elevation
+        view.camera.azimuth = self.initial_azimuth
+
+        self.update_view(2)
 
     def set_2d_view(self, view):
 
         print("Moved to 2D view")
-
-        #print("3D camera state:")
-        #zoom = view.camera.scale_factor
-        #print("3D zoom: " + str(zoom))
-        #center = view.camera.center
-        #print("3D center: " + str(center))
-
-        #zoom_corrected = self.calculate_scale_factor(zoom)
-        #print("Corrected zoom: " + str(zoom_corrected))
 
         self.calculate_rotation(view)
 
@@ -241,18 +250,15 @@ class Network3D:
         view.camera = 'panzoom'
         view.camera.aspect = 1
         self.set_range_panzoom_camera(view, 'view')
-        #view.camera.zoom(zoom_corrected)
-        #print("Center: " + str(view.camera.center))
-        #print("Rect: " + str(view.camera.rect))
 
         self.update_view(2)
 
     def update_view(self, dim_num_view):
 
         if dim_num_view == 3:
-            pos_array = self.pos_array.copy()
+            pos_array = self.pos_array
         else:
-            pos_array = self.rotated_pos_array.copy()
+            pos_array = self.rotated_pos_array
 
         # Update the nodes with the updated rotation
         self.scatter_plot.set_data(pos=pos_array, face_color=self.nodes_colors_array,
@@ -298,7 +304,7 @@ class Network3D:
             print("The new azimuth is: " + str(self.last_azimuth))
             print("The new elevation is: " + str(self.last_elevation))
 
-            # Correct the coordinates (for display) according to the change in azimuth and/or elevation
+            # Correct the data coordinates (for display) according to the change in azimuth and/or elevation
             self.set_rotated_coordinates(azimuth_change_in_radians, elevation_change_in_radians)
 
         else:
@@ -332,55 +338,47 @@ class Network3D:
             #print("New coordinates after applying elevation change:")
             #print(self.rotated_pos_array)
 
-    def set_range_panzoom_camera(self, view, mode):
-        if mode == "data":
-            xmin = np.amin(self.pos_array[:, 0])
-            xmax = np.amax(self.pos_array[:, 0])
-            ymin = np.amin(self.pos_array[:, 1])
-            ymax = np.amax(self.pos_array[:, 1])
-        elif mode == "view":
-            xmin = np.amin(self.rotated_pos_array[:, 0])
-            xmax = np.amax(self.rotated_pos_array[:, 0])
-            ymin = np.amin(self.rotated_pos_array[:, 1])
-            ymax = np.amax(self.rotated_pos_array[:, 1])
-        view.camera.set_range(x=(xmin, xmax), y=(ymin, ymax), z=None, margin=0.1)
+    # Transform data-coordinates into rotated coordinates (according to the new azimuth and elevation)
+    def calculate_rotation_for_points(self, coor_array):
 
-        #print("Camera coordinates range:")
-        #print(xmin, xmax, ymin, ymax)
+        rotated_coor_array = coor_array.copy()
 
-    def set_range_turntable_camera(self, view, mode):
-        if mode == "data":
-            xmin = np.amin(self.pos_array[:, 0])
-            xmax = np.amax(self.pos_array[:, 0])
-            ymin = np.amin(self.pos_array[:, 1])
-            ymax = np.amax(self.pos_array[:, 1])
-            zmin = np.amin(self.pos_array[:, 2])
-            zmax = np.amax(self.pos_array[:, 2])
-        elif mode == "view":
-            xmin = np.amin(self.rotated_pos_array[:, 0])
-            xmax = np.amax(self.rotated_pos_array[:, 0])
-            ymin = np.amin(self.rotated_pos_array[:, 1])
-            ymax = np.amax(self.rotated_pos_array[:, 1])
-            zmin = np.amin(self.rotated_pos_array[:, 2])
-            zmax = np.amax(self.rotated_pos_array[:, 2])
-        view.camera.set_range(x=(xmin, xmax), y=(ymin, ymax), z=(zmin, zmax), margin=0.1)
+        # Calculate the distance of the point from the origin on the XY and YZ planes
+        xy_vector = np.sqrt(coor_array[:, 0] ** 2 + coor_array[:, 1] ** 2)
+        yz_vector = np.sqrt(coor_array[:, 1] ** 2 + coor_array[:, 2] ** 2)
 
-        #print("Camera coordinates range:")
-        #print(xmin, xmax, ymin, ymax, zmin, zmax)
+        # Calculate the initial azimuth angles (on XY plane, relative to X) and elevation angles
+        # (on YZ plane, relative to Y) for all the points
+        azimuth_angles, elevation_angles = ac.calculate_azimuth_elevation(coor_array)
 
-    def reset_turntable_camera(self, view):
-        view.camera = 'turntable'
-        view.camera.elevation = self.initial_elevation
-        view.camera.azimuth = self.initial_azimuth
-        view.camera.fov = 0
+        azimuth_change = self.last_azimuth - self.initial_azimuth
+        azimuth_change_in_radians = np.radians(azimuth_change)
+        elevation_change = self.last_elevation - self.initial_elevation
+        elevation_change_in_radians = np.radians(elevation_change)
 
-        print("Turntable camera was reset. Parameters:")
-        print(view.camera.get_state())
+        if azimuth_change_in_radians != 0:
+            rotated_coor_array = ac.calcuate_positions_after_azimuth_change(rotated_coor_array, xy_vector, azimuth_angles,
+                                                                            azimuth_change_in_radians)
+            #print("New coordinates after applying azimuth change:")
+            #print(rotated_coor_array)
 
-    def calculate_scale_factor(self, zoom):
-        xmax = np.amax(np.abs(self.pos_array[:, 0]))
-        corrected_zoom = zoom / xmax
-        return corrected_zoom
+        # There was a change in elevation
+        if elevation_change_in_radians != 0:
+
+            # If there was already a change in the azimuth, the YZ angles were changed and should be recalculated
+            if azimuth_change_in_radians != 0:
+                elevation_angles = ac.calculate_elevation_angles(rotated_coor_array)
+                #print("New elevation angles:")
+                #print(elevation_angles)
+
+            # Calculate the corrected coordinates after a movement in the YZ plane (Elevation)
+            rotated_coor_array = ac.calcuate_positions_after_elevation_change(rotated_coor_array, yz_vector,
+                                                                              elevation_angles,
+                                                                              elevation_change_in_radians)
+            #print("New coordinates after applying elevation change:")
+            #print(rotated_coor_array)
+
+        return rotated_coor_array
 
     def find_selected_point(self, view, clicked_screen_coor):
 
@@ -410,13 +408,13 @@ class Network3D:
                 # Select the data point
                 else:
                     self.selected_points[i] = 1
-                print("Found matching point: Index = " + str(i))
-                print("Position in screen coor: " + str(data_screen_coor))
-                print("Distance from clicked point: " + str(distance_screen_coor))
+                #print("Found matching point: Index = " + str(i))
+                #print("Position in screen coor: " + str(data_screen_coor))
+                #print("Distance from clicked point: " + str(distance_screen_coor))
 
         if len(points_in_radius) > 0:
-            print("Selected point(s) indices:")
-            print(points_in_radius)
+            #print("Selected point(s) indices:")
+            #print(points_in_radius)
 
             # Points should be cleared from selection
             if deselect == 1:
@@ -505,6 +503,68 @@ class Network3D:
 
     def remove_dragging_rectangle(self):
         self.drag_rectangle.parent = None
+
+    def set_range_panzoom_camera(self, view, mode):
+        if mode == "data":
+            pos_array = self.pos_array.copy()
+        elif mode == "view":
+            pos_array = self.rotated_pos_array.copy()
+
+        xmin = np.amin(pos_array[:, 0])
+        xmax = np.amax(pos_array[:, 0])
+        ymin = np.amin(pos_array[:, 1])
+        ymax = np.amax(pos_array[:, 1])
+        view.camera.set_range(x=(xmin, xmax), y=(ymin, ymax), z=None, margin=0.1)
+
+        #print("Camera coordinates range:")
+        #print(xmin, xmax, ymin, ymax)
+
+    def set_range_turntable_camera(self, view, mode):
+        if mode == "data":
+            pos_array = self.pos_array.copy()
+        elif mode == "view":
+            pos_array = self.rotated_pos_array.copy()
+
+        xmin = np.amin(pos_array[:, 0])
+        xmax = np.amax(pos_array[:, 0])
+        ymin = np.amin(pos_array[:, 1])
+        ymax = np.amax(pos_array[:, 1])
+        zmin = np.amin(pos_array[:, 2])
+        zmax = np.amax(pos_array[:, 2])
+        view.camera.set_range(x=(xmin, xmax), y=(ymin, ymax), z=(zmin, zmax), margin=0)
+
+        #print("Camera coordinates range:")
+        #print(xmin, xmax, ymin, ymax, zmin, zmax)
+
+    def reset_rotation(self, view):
+        view.camera.elevation = self.initial_elevation
+        view.camera.azimuth = self.initial_azimuth
+        view.camera.fov = 0
+
+        print("Turntable camera was reset to original Azimuth and Elevation. Parameters:")
+        print(view.camera.get_state())
+
+    def reset_turntable_camera(self, view):
+        view.camera = 'turntable'
+        view.camera.elevation = self.initial_elevation
+        view.camera.azimuth = self.initial_azimuth
+        view.camera.fov = 0
+        view.camera.center = (0.0, 0.0, 0.0)
+
+        print("Turntable camera was reset to original Azimuth and Elevation. Parameters:")
+        print(view.camera.get_state())
+
+    def set_rotated_center(self, view):
+        center_array = np.zeros((1, 3))
+
+        self.center = view.camera.center
+        center_array[0] = self.center
+
+        rotated_center_array = self.calculate_rotation_for_points(center_array)
+        self.rotated_center = tuple(rotated_center_array[0])
+
+        # Set the new rotated center in the Turntable camera
+        view.camera.center = self.rotated_center
 
 
 
