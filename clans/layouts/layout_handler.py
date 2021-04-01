@@ -1,3 +1,4 @@
+import time
 import clans.config as cfg
 import clans.data.sequences as seq
 import clans.layouts.fruchterman_reingold as fr
@@ -5,7 +6,6 @@ import clans.graphics.scatter_plot_3d_vispy_temp as sp
 
 
 def calculate_layout(layout):
-    stop = False
     if layout == "FR":
         fr.init_variables()
         if cfg.run_params['is_graphics']:
@@ -13,9 +13,17 @@ def calculate_layout(layout):
             sp_object.start_timer()
         # If pre-defined number of rounds, perform this number of iterations
         elif cfg.run_params['num_of_rounds'] > 0:
+            before = time.time()
             for i in range(cfg.run_params['num_of_rounds']):
                 fr.calculate_new_positions()
+
+                if (i+1) % 100 == 0:
+                    after = time.time()
+                    duration = after - before
+                    print("The calculation of " + str(i+1) + " rounds took " + str(duration) + " seconds")
+
             cfg.run_params['rounds_done'] = i+1
+
         # If the cooling parameter < 1, keep iterating as long as the temperature > 1e-5
         elif cfg.run_params['cooling'] < 1.0:
             i = 0

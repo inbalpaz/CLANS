@@ -9,12 +9,18 @@ run_params = {  # a dict to hold all the running parameters (given by the user /
 
 ## Data-related variables
 
-# a NumPy 1D structured array with the following fields: 'seq_title', 'sequence', 'x_coordinate', 'y_coordinate', 'z_coordinate', 'in_group'
+# a NumPy 1D structured array with the following fields:
+# 'seq_title', 'sequence', 'x_coordinate', 'y_coordinate', 'z_coordinate', 'in_group'
+# ('in_group' = group index. In case there is no group assignment, 'in_group' = -1)
 seq_dt = np.dtype([('seq_title', 'U100'), ('sequence', 'U1000'), ('x_coor', 'float32'), ('y_coor', 'float32'),
                    ('z_coor', 'float32'), ('in_group', 'int16')])
 sequences_array = np.empty(run_params['total_sequences_num'], dtype=seq_dt)
 
-groups_list = []  # a list of dictionaries holding the following info for each group: 'name', 'shape_type', 'size', 'hide', 'color', 'seqIDs'
+# a list of dictionaries holding the following info for each group:
+# 'name', 'shape_type', 'size', 'hide', 'color', 'numbers', 'color_array', 'seqIDs'
+# 'seqIDs' is a dictionary holding the indices of the sequences belonging to each group
+groups_list = []
+
 similarity_values_list = []  # a list of the non-redundant significant HSPs ('seq1_index', 'seq2_index', 'Evalue')
 similarity_values_mtx = []  # a 2D matrix filled with Evalues for all pairs (redundant). The diagonal and non-significant pairs = 1
 attraction_values_list = []  # a list of the non-redundant attraction values ('seq1_index', 'seq2_index', 'attraction value')

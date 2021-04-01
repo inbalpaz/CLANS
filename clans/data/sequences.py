@@ -16,7 +16,8 @@ def create_sequences_array(sequences_list):
 
 
 def add_in_group_column(in_group_array):
-    # Fill the 'in_group' field (for each sequence - to which group it belongs)
+    # Fill the 'in_group' field for each sequence - to which group it belongs (group index)
+    # In case there is no group assignment - fill -1
     cfg.sequences_array['in_group'] = in_group_array
     #print("add_in_group_column: Sequences_array=\n" + str(cfg.sequences_array))
 

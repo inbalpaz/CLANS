@@ -53,14 +53,20 @@ def calcuate_positions_after_azimuth_change(coor_array, xy_vectors_array, azimut
             new_coor_array[i, 0] = np.cos(azimuth_angles_array[i] - azimuth_change) * coor_array[i, 0] \
                                    / np.cos(azimuth_angles_array[i])
 
+        if 0 < np.abs(new_coor_array[i, 0]) <= 10 ** -15:
+            new_coor_array[i, 0] = 0
+
         # Calculate new Y after azimuth change
         if coor_array[i, 1] == 0:
             # Calculate new Y
-            new_coor_array[i, 1] = xy_vectors_array[i] * np.cos(azimuth_angles_array[i] - azimuth_change)
+            new_coor_array[i, 1] = xy_vectors_array[i] * np.sin(azimuth_angles_array[i] - azimuth_change)
         else:
             # Calculate new Y
             new_coor_array[i, 1] = np.sin(azimuth_angles_array[i] - azimuth_change) * coor_array[i, 1] \
                                    / np.sin(azimuth_angles_array[i])
+
+        if 0 < np.abs(new_coor_array[i, 1]) <= 10 ** -15:
+            new_coor_array[i, 1] = 0
 
     return new_coor_array
 
@@ -70,13 +76,27 @@ def calcuate_positions_after_elevation_change(coor_array, yz_vectors_array, elev
     n_coor = coor_array.shape[0]
     new_coor_array = coor_array.copy()
 
-    # Calculate the new Y coor
     for i in range(n_coor):
+
+        # Calculate new Y after elevation change
         if coor_array[i, 1] == 0:
             new_coor_array[i, 1] = yz_vectors_array[i] * np.cos(elevation_angles_array[i] + elevation_change)
         else:
             new_coor_array[i, 1] = np.cos(elevation_angles_array[i] + elevation_change) * coor_array[i, 1] \
                                    / np.cos(elevation_angles_array[i])
+
+        if 0 < np.abs(new_coor_array[i, 1]) <= 10 ** -15:
+            new_coor_array[i, 1] = 0
+
+        # Calculate new Z after elevation change
+        if coor_array[i, 2] == 0:
+            new_coor_array[i, 2] = yz_vectors_array[i] * np.sin(elevation_angles_array[i] + elevation_change)
+        else:
+            new_coor_array[i, 2] = np.sin(elevation_angles_array[i] + elevation_change) * coor_array[i, 2] \
+                                       / np.sin(elevation_angles_array[i])
+
+        if 0 < np.abs(new_coor_array[i, 2]) <= 10 ** -15:
+            new_coor_array[i, 2] = 0
 
     return new_coor_array
 

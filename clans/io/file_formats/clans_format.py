@@ -79,9 +79,16 @@ class ClansFormat:
                                 d['seqIDs'] = {}
                                 for num in (v.split(';')):
                                     if num != '':
-                                       d['seqIDs'][num] = 1
+                                        d['seqIDs'][int(num)] = 1
                                 # Add the dictionary with the current group's info to the main groups list
                                 cfg.groups_list.append(d.copy())
+                            elif k == 'color':
+                                d[k] = v
+                                color_arr = v.split(';')
+                                d['color_array'] = []
+                                for i in range(3):
+                                    d['color_array'].append(int(color_arr[i]) / 255)
+                                d['color_array'].append(1.0)
                             else:
                                 d[k] = v
                 elif line.strip() == "<pos>":
