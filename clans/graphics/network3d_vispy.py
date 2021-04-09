@@ -18,6 +18,7 @@ class Network3D:
         self.nodes_size = 7
         self.selected_nodes_size = self.nodes_size + 5
         self.nodes_symbol = 'disc'
+        self.nodes_default_color = [0.0, 0.0, 0.0, 1.0]
         self.nodes_outline_default_color = [0.0, 0.0, 0.0, 1.0]
         self.selected_outline_color = [1.0, 0.0, 1.0, 1.0]
         self.connections_by_bins = []
@@ -507,6 +508,40 @@ class Network3D:
         for group_index in self.groups_text_visual:
             self.groups_text_visual[group_index].parent = None
 
+    def add_to_group(self, points_dict, group_index, dim_num):
+
+        if group_index in self.group_to_show:
+            for seq_index in points_dict:
+                self.nodes_colors_array[seq_index] = cfg.groups_list[group_index]['color_array']
+
+        self.update_view(dim_num)
+
+        #if dim_num == 2:
+            #pos_array = self.rotated_pos_array.copy()
+        #else:
+            #pos_array = self.pos_array.copy()
+
+        # Update the nodes in the correct coordinates system
+        #self.scatter_plot.set_data(pos=pos_array, face_color=self.nodes_colors_array,
+                                  # size=self.nodes_size_array, edge_width=self.nodes_outline_width,
+                                   #edge_color=self.nodes_outline_color_array, symbol=self.nodes_symbol)
+
+    def remove_from_group(self, points_dict, dim_num):
+        for seq_index in points_dict:
+            self.nodes_colors_array[seq_index] = self.nodes_default_color
+
+        self.update_view(dim_num)
+
+        #if dim_num == 2:
+            #pos_array = self.rotated_pos_array.copy()
+        #else:
+            #pos_array = self.pos_array.copy()
+
+        # Update the nodes with in correct coordinates system
+        #self.scatter_plot.set_data(pos=pos_array, face_color=self.nodes_colors_array,
+                                   #size=self.nodes_size_array, edge_width=self.nodes_outline_width,
+                                   #edge_color=self.nodes_outline_color_array, symbol=self.nodes_symbol)
+
     def find_selected_point(self, view, selection_type, clicked_screen_coor):
 
         # An array to hold the indices of the data points that are close enough to the clicked point
@@ -691,8 +726,6 @@ class Network3D:
         drag_start_data_coor = trans.imap(drag_start_screen_coor)
         if view.camera.fov != 0:
             drag_start_data_coor /= drag_start_data_coor[3]
-        print("drag_start_data_coor:")
-        print(drag_start_data_coor)
 
         self.drag_rectangle.center = (drag_start_data_coor[0], drag_start_data_coor[1], 0)
         self.drag_rectangle.color = self.drag_rectangle_color
@@ -730,7 +763,6 @@ class Network3D:
             end_move_data_coor /= end_move_data_coor[3]
         distance_vec_data_coor = end_move_data_coor - start_move_data_coor
 
-        #if dim_num == 3 or cfg.run_params['dimensions_num_for_clustering'] == 2:
         if dim_num == 3:
             for index in self.selected_points:
                 self.pos_array[index, :] += distance_vec_data_coor[:3]
@@ -744,7 +776,6 @@ class Network3D:
 
     def update_moved_positions(self, dim_num):
 
-        #if dim_num == 2 and cfg.run_params['dimensions_num_for_clustering'] == 3:
         if dim_num == 2:
             for index in self.selected_points:
                 rotated_array = np.append(self.rotated_pos_array[index], 1)

@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QThreadPool, Qt
+from PyQt5.QtCore import QThreadPool
 from PyQt5.QtWidgets import *
 from vispy import app, scene
 import vispy.io
@@ -10,13 +10,26 @@ import clans.layouts.fruchterman_reingold as fr
 import clans.graphics.network3d_vispy as net
 import clans.data.sequences as seq
 import clans.data.sequence_pairs as sp
+import clans.data.groups as groups
+import clans.GUI.group_dialogs as gd
 import time
+
+
+class Button(QPushButton):
+
+    def __init__(self, title):
+        super().__init__()
+
+        self.setText(title)
+        self.setStyleSheet("font-size: 11px; height: 15px")
 
 
 class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        self.app = app.use_app('pyqt5')
 
         self.threadpool = QThreadPool()
         # Define a runner that will be executed in a different thread
@@ -42,17 +55,29 @@ class MainWindow(QMainWindow):
         self.main_layout = QVBoxLayout()
         self.round_layout = QHBoxLayout()
         self.calc_layout = QHBoxLayout()
-        self.mode_layout = QHBoxLayout()
-        self.view_layout = QHBoxLayout()
         self.selection_layout = QHBoxLayout()
-        self.save_layout = QHBoxLayout()
+        self.view_layout = QHBoxLayout()
+        self.groups_layout = QHBoxLayout()
 
-        self.main_layout.setSpacing(5)
+        self.main_layout.setSpacing(4)
 
         self.horizontal_spacer_long = QSpacerItem(18, 24, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.horizontal_spacer_short = QSpacerItem(10, 24, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.app = app.use_app('pyqt5')
+        # Define a menu-bar
+        self.main_menu = self.menuBar()
+
+        # Create the File menu
+        self.file_menu = self.main_menu.addMenu("File")
+
+        self.save_file_action = QAction("Save to file", self)
+        self.save_file_action.triggered.connect(self.save_file)
+
+        self.save_image_action = QAction("Save as image", self)
+        self.save_image_action.triggered.connect(self.save_image)
+
+        self.file_menu.addAction(self.save_file_action)
+        self.file_menu.addAction(self.save_image_action)
 
         self.canvas = scene.SceneCanvas(size=(700, 700), keys='interactive', show=True, bgcolor='w')
         self.canvas.events.mouse_move.connect(self.on_canvas_mouse_move)
@@ -77,8 +102,11 @@ class MainWindow(QMainWindow):
 
         # Add calculation buttons (Init, Start, Stop)
         self.start_button = QPushButton("Start clustering")
+        #self.start_button = Button("Start clustering")
         self.stop_button = QPushButton("Stop clustering")
+        #self.stop_button = Button("Stop clustering")
         self.init_button = QPushButton("Initialize")
+        #self.init_button = Button("Initialize")
 
         self.start_button.pressed.connect(self.run_calc)
         self.stop_button.pressed.connect(self.stop_calc)
@@ -109,7 +137,6 @@ class MainWindow(QMainWindow):
         self.calc_layout.addWidget(self.pval_widget)
         self.calc_layout.addStretch()
 
-
         # Add the calc_layout to the main layout
         self.main_layout.addLayout(self.calc_layout)
 
@@ -117,21 +144,15 @@ class MainWindow(QMainWindow):
         self.mode_label = QLabel("Interaction mode:")
         self.mode_label.setStyleSheet("color: maroon; font-weight: bold;")
         self.mode_combo = QComboBox()
-        self.mode_combo.addItems(["Move/Rotate/Pan", "Select data-points"])
+        self.mode_combo.addItems(["Move/Rotate/Pan", "Manual selection"])
         self.mode_combo.currentIndexChanged.connect(self.change_mode)
-
-        #self.mode_layout.addWidget(self.mode_label)
-        #self.mode_layout.addWidget(self.mode_combo)
-        #self.mode_layout.addStretch()
-
-        #self.main_layout.addLayout(self.mode_layout)
 
         self.selection_label = QLabel("Selection options:")
         self.selection_label.setStyleSheet("color: maroon; font-weight: bold;")
 
         # Add a combo-box to switch between sequences / groups selection
         self.selection_type_combo = QComboBox()
-        self.selection_type_combo.addItems(["Sequences selection", "Groups selection"])
+        self.selection_type_combo.addItems(["Data-points selection", "Groups selection"])
         self.selection_type_combo.currentIndexChanged.connect(self.change_selection_type)
 
         # Add a button to select all the sequences / groups
@@ -177,8 +198,7 @@ class MainWindow(QMainWindow):
         # Add a button to show the selected sequences/groups names on screen
         self.show_selected_button = QPushButton("Show selected names")
         self.show_selected_button.setCheckable(True)
-        #if self.view_in_dimensions_num == 3:
-            #self.show_selected_button.setEnabled(False)
+        self.show_selected_button.setEnabled(False)
         self.show_selected_button.released.connect(self.show_selected_names)
 
         # Add a button to show all the groups names on screen
@@ -208,23 +228,34 @@ class MainWindow(QMainWindow):
         # Add the view_layout to the main layout
         self.main_layout.addLayout(self.view_layout)
 
-        # Add a 'save to file' button
-        self.save_file_button = QPushButton("Save to file")
-        self.save_file_button.released.connect(self.save_file)
+        self.groups_label = QLabel("Groups options:")
+        self.groups_label.setStyleSheet("color: maroon; font-weight: bold;")
 
-        # Add a 'save as image' button
-        self.save_image_button = QPushButton("Save image")
-        self.save_image_button.released.connect(self.save_image)
+        # Add a button to edit the groups (opens the editing-groups window)
+        self.edit_groups_button = QPushButton("Edit groups")
+        self.edit_groups_button.released.connect(self.edit_groups)
 
-        self.save_layout.addWidget(self.save_file_button)
-        self.save_layout.addWidget(self.save_image_button)
-        self.save_layout.addStretch()
+        # Add a button for adding the selected sequences to a new / existing (opens a dialog)
+        self.add_to_group_button = QPushButton("Add selected to group")
+        self.add_to_group_button.released.connect(self.open_add_to_group_dialog)
+        self.add_to_group_button.setEnabled(False)
 
-        self.main_layout.addLayout(self.save_layout)
+        # Add a button for removing the selected sequences from their group(s)
+        self.remove_selected_button = QPushButton("Remove selected from group(s)")
+        self.remove_selected_button.released.connect(self.remove_selected_from_group)
+        self.remove_selected_button.setEnabled(False)
+
+        self.groups_layout.addWidget(self.groups_label)
+        self.groups_layout.addSpacerItem(self.horizontal_spacer_short)
+        self.groups_layout.addWidget(self.edit_groups_button)
+        self.groups_layout.addWidget(self.add_to_group_button)
+        self.groups_layout.addWidget(self.remove_selected_button)
+        self.groups_layout.addStretch()
+
+        self.main_layout.addLayout(self.groups_layout)
 
         self.widget = QWidget()
         self.widget.setLayout(self.main_layout)
-
         self.setCentralWidget(self.widget)
 
         self.show()
@@ -318,6 +349,7 @@ class MainWindow(QMainWindow):
                 self.dimensions_view_combo.setCurrentIndex(0)
 
             # Disable all setup changes while calculating
+            self.init_button.setEnabled(False)
             self.dimensions_clustering_combo.setEnabled(False)
             self.pval_widget.setEnabled(False)
             self.dimensions_view_combo.setEnabled(False)
@@ -329,8 +361,9 @@ class MainWindow(QMainWindow):
             self.selection_type_combo.setEnabled(False)
             self.select_all_button.setEnabled(False)
             self.clear_selection_button.setEnabled(False)
-            self.save_file_button.setEnabled(False)
-            self.save_image_button.setEnabled(False)
+            self.edit_groups_button.setEnabled(False)
+            self.add_to_group_button.setEnabled(False)
+            self.remove_selected_button.setEnabled(False)
 
             # Execute
             self.threadpool.start(self.run_calc_worker)
@@ -359,6 +392,7 @@ class MainWindow(QMainWindow):
         self.is_running_calc = 0
 
         # Enable all settings buttons
+        self.init_button.setEnabled(True)
         self.dimensions_clustering_combo.setEnabled(True)
         if cfg.run_params['dimensions_num_for_clustering'] == 3:
             self.dimensions_view_combo.setEnabled(True)
@@ -367,13 +401,17 @@ class MainWindow(QMainWindow):
         if self.view_in_dimensions_num == 2:
             self.show_group_names_button.setEnabled(True)
             self.move_group_names_button.setEnabled(True)
-        self.show_selected_button.setEnabled(True)
         self.mode_combo.setEnabled(True)
         self.selection_type_combo.setEnabled(True)
         self.select_all_button.setEnabled(True)
         self.clear_selection_button.setEnabled(True)
-        self.save_file_button.setEnabled(True)
-        self.save_image_button.setEnabled(True)
+        self.edit_groups_button.setEnabled(True)
+
+        # If at least one point is selected -> enable all buttons related to actions on selected points
+        if self.network_plot.selected_points != {}:
+            self.show_selected_button.setEnabled(True)
+            self.add_to_group_button.setEnabled(True)
+            self.remove_selected_button.setEnabled(True)
 
         # Update the coordinates saved in the sequences_array
         seq.update_positions(fr.coordinates.T)
@@ -581,6 +619,11 @@ class MainWindow(QMainWindow):
         if self.is_show_selected_names == 1 and self.selection_type == 'groups':
             self.network_plot.show_group_names(self.view, 'all')
 
+        # Enable the selection-related buttons
+        self.show_selected_button.setEnabled(True)
+        self.add_to_group_button.setEnabled(True)
+        self.remove_selected_button.setEnabled(True)
+
     def clear_selection(self):
         if self.view_in_dimensions_num == 2 or self.mode == "selection":
             dim_num = 2
@@ -590,6 +633,9 @@ class MainWindow(QMainWindow):
 
         # Hide the sequences names and release the button (if was checked)
         self.show_selected_button.setChecked(False)
+        self.show_selected_button.setEnabled(False)
+        self.add_to_group_button.setEnabled(False)
+        self.remove_selected_button.setEnabled(False)
         self.is_show_selected_names = 0
         self.network_plot.hide_sequences_names()
         if self.is_show_group_names == 0:
@@ -623,7 +669,8 @@ class MainWindow(QMainWindow):
             self.is_show_group_names = 0
             self.network_plot.hide_group_names()
             #self.move_group_names_button.setChecked(False)
-            #self.move_group_names()
+            #
+            self.move_group_names()
 
     def move_group_names(self):
         if self.move_group_names_button.isChecked():
@@ -638,6 +685,55 @@ class MainWindow(QMainWindow):
             self.canvas.events.mouse_release.disconnect(self.on_canvas_mouse_release)
             self.view.camera._viewbox.events.mouse_move.connect(self.view.camera.viewbox_mouse_event)
             self.view.camera._viewbox.events.mouse_press.connect(self.view.camera.viewbox_mouse_event)
+
+    def edit_groups(self):
+        pass
+
+    def open_add_to_group_dialog(self):
+
+        dlg = gd.AddToGroupDialog()
+
+        if dlg.exec_():
+            choice, group_index = dlg.get_choice()
+
+            if choice == 'new':
+                print("Create a new group")
+                self.create_group_from_selected()
+
+            # The user chose to add the selected sequences to an existing group
+            else:
+                print("Add the sequences to group " + cfg.groups_list[group_index]['name'])
+                self.add_sequences_to_group(group_index)
+
+    def add_sequences_to_group(self, group_index):
+
+        # Add the sequences to the main group_list array
+        groups.add_to_group(self.network_plot.selected_points, group_index)
+
+        # Update the look of the selected data-points according to the new group definitions
+        if self.view_in_dimensions_num == 2 or self.mode == "selection":
+            dim_num = 2
+        else:
+            dim_num = 3
+        self.network_plot.add_to_group(self.network_plot.selected_points, group_index, dim_num)
+
+    def create_group_from_selected(self):
+        pass
+
+    def open_create_group_dialog(self):
+        pass
+
+    def remove_selected_from_group(self):
+
+        # Remove the selected sequences group-assignment in the main group_list array
+        groups.remove_from_group(self.network_plot.selected_points)
+
+        # Update the look of the selected data-points to the default look (without group assignment)
+        if self.view_in_dimensions_num == 2 or self.mode == "selection":
+            dim_num = 2
+        else:
+            dim_num = 3
+        self.network_plot.remove_from_group(self.network_plot.selected_points, dim_num)
 
     ## Callback functions to deal with mouse and key events
 
@@ -684,6 +780,12 @@ class MainWindow(QMainWindow):
                     # Selection type is 'Groups' => update the group names display
                     if self.selection_type == 'groups':
                         self.network_plot.show_group_names(self.view, 'selection')
+
+            # If at least one point is selected -> enable all buttons related to actions on selected points
+            if self.network_plot.selected_points != {}:
+                self.show_selected_button.setEnabled(True)
+                self.add_to_group_button.setEnabled(True)
+                self.remove_selected_button.setEnabled(True)
 
         # Interactive mode
         else:
@@ -739,6 +841,9 @@ class MainWindow(QMainWindow):
 
         if self.mode == "interactive":
             self.network_plot.update_moved_positions(self.view_in_dimensions_num)
+
+
+
 
 
 
