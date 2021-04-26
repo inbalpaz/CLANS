@@ -19,7 +19,7 @@ sequences_array = np.empty(run_params['total_sequences_num'], dtype=seq_dt)
 # a list of dictionaries holding the following info for each group:
 # 'name', 'shape_type', 'size', 'hide', 'color', 'numbers', 'color_array', 'seqIDs'
 # 'seqIDs' is a dictionary holding the indices of the sequences belonging to each group
-groups_list = []
+groups_dict = dict()
 
 similarity_values_list = []  # a list of the non-redundant significant HSPs ('seq1_index', 'seq2_index', 'Evalue')
 similarity_values_mtx = []  # a 2D matrix filled with Evalues for all pairs (redundant). The diagonal and non-significant pairs = 1

@@ -46,7 +46,7 @@ class ScatterPlot3D:
             if cfg.sequences_array[seq_index]['in_group'] >= 0:
                 self.outline = 1.0
                 group_index = int(cfg.sequences_array[seq_index]['in_group'])
-                color_str = cfg.groups_list[group_index]['color']
+                color_str = cfg.groups_dict[group_index]['color']
                 color_arr = color_str.split(';')
                 for i in range(3):
                     self.colors_array[seq_index, i] = int(color_arr[i]) / 255

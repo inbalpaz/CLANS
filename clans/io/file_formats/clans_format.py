@@ -63,11 +63,12 @@ class ClansFormat:
                 elif line.strip() == "<seqgroups>":
                     in_seqgroups_block = 1
                     self.is_groups = 1
+                    group_ID = 1
                 elif in_seqgroups_block:
                     if line.strip() == "</seqgroups>":
                         in_seqgroups_block = 0
                     else:
-                        m = re.search("^(\w+)\=(\S+)", line)
+                        m = re.search("^(\w+)\=(.+)\n", line)
                         if m:
                             k = m.group(1)
                             v = m.group(2)
@@ -80,8 +81,10 @@ class ClansFormat:
                                 for num in (v.split(';')):
                                     if num != '':
                                         d['seqIDs'][int(num)] = 1
-                                # Add the dictionary with the current group's info to the main groups list
-                                cfg.groups_list.append(d.copy())
+                                # Add the dictionary with the current group's info to the groups dictionary
+                                #cfg.groups_list.append(d.copy())
+                                cfg.groups_dict[group_ID] = d.copy()
+                                group_ID += 1
                             elif k == 'color':
                                 d[k] = v
                                 color_arr = v.split(';')
@@ -195,11 +198,11 @@ class ClansFormat:
         # If there sre groups - add the information to the sequences_list
         if self.is_groups:
             in_groups_array = np.full(cfg.run_params['total_sequences_num'], -1)
-            for group_index in range(len(cfg.groups_list)):
-                if cfg.groups_list[group_index]['color'] != "0;0;0;255":
-                    for seq_num in cfg.groups_list[group_index]['seqIDs']:
+            for group_ID in cfg.groups_dict:
+                if cfg.groups_dict[group_ID]['color'] != "0;0;0;255":
+                    for seq_num in cfg.groups_dict[group_ID]['seqIDs']:
                         seq_index = int(seq_num)
-                        in_groups_array[seq_index] = group_index
+                        in_groups_array[seq_index] = group_ID
             seq.add_in_group_column(in_groups_array)
 
         if self.type_of_values == "hsp":
@@ -229,16 +232,17 @@ class ClansFormat:
         output.write(seq_block)
         output.write('</seq>\n')
 
-        if cfg.groups_list:
+        if len(cfg.groups_dict) > 0:
             groups_block = ""
             output.write('<seqgroups>\n')
-            for i in range(len(cfg.groups_list)):
-                groups_block += 'name=' + cfg.groups_list[i]['name'] + '\n'
-                groups_block += 'type=' + cfg.groups_list[i]['type'] + '\n'
-                groups_block += 'size=' + cfg.groups_list[i]['size'] + '\n'
-                groups_block += 'hide=' + cfg.groups_list[i]['hide'] + '\n'
-                groups_block += 'color=' + cfg.groups_list[i]['color'] + '\n'
-                groups_block += 'numbers=' + cfg.groups_list[i]['numbers'] + '\n'
+            #for i in range(len(cfg.groups_list)):
+            for group_ID in cfg.groups_dict:
+                groups_block += 'name=' + cfg.groups_dict[group_ID]['name'] + '\n'
+                groups_block += 'type=' + cfg.groups_dict[group_ID]['type'] + '\n'
+                groups_block += 'size=' + cfg.groups_dict[group_ID]['size'] + '\n'
+                groups_block += 'hide=' + cfg.groups_dict[group_ID]['hide'] + '\n'
+                groups_block += 'color=' + cfg.groups_dict[group_ID]['color'] + '\n'
+                groups_block += 'numbers=' + cfg.groups_dict[group_ID]['numbers'] + '\n'
             output.write(groups_block)
             output.write('</seqgroups>\n')
 

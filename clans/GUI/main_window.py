@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
         self.ctrl_key_pressed = 0
 
         self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
-        self.setGeometry(50, 50, 900, 800)
+        self.setGeometry(50, 50, 1000, 850)
 
         # Define layouts within the main window
         self.main_layout = QVBoxLayout()
@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.save_file_action)
         self.file_menu.addAction(self.save_image_action)
 
-        self.canvas = scene.SceneCanvas(size=(700, 700), keys='interactive', show=True, bgcolor='w')
+        self.canvas = scene.SceneCanvas(size=(800, 750), keys='interactive', show=True, bgcolor='w')
         self.canvas.events.mouse_move.connect(self.on_canvas_mouse_move)
         self.canvas.events.key_press.connect(self.on_canvas_key_press)
         self.canvas.events.key_release.connect(self.on_canvas_key_release)
@@ -202,9 +202,9 @@ class MainWindow(QMainWindow):
         self.show_selected_button.released.connect(self.show_selected_names)
 
         # Add a button to show all the groups names on screen
-        self.show_group_names_button = QPushButton("Show all group names")
+        self.show_group_names_button = QPushButton("Show group names")
         self.show_group_names_button.setCheckable(True)
-        if self.view_in_dimensions_num == 3:
+        if self.view_in_dimensions_num == 3 or len(cfg.groups_dict) == 0:
             self.show_group_names_button.setEnabled(False)
         self.show_group_names_button.released.connect(self.manage_group_names)
 
@@ -326,8 +326,7 @@ class MainWindow(QMainWindow):
 
             # Hide the connections
             self.connections_button.setChecked(False)
-            self.is_show_connections = 0
-            self.network_plot.hide_connections()
+            self.manage_connections()
 
             # Hide the selected names
             self.show_selected_button.setChecked(False)
@@ -398,9 +397,8 @@ class MainWindow(QMainWindow):
             self.dimensions_view_combo.setEnabled(True)
         self.pval_widget.setEnabled(True)
         self.connections_button.setEnabled(True)
-        if self.view_in_dimensions_num == 2:
+        if self.view_in_dimensions_num == 2 and len(cfg.groups_dict) != 0:
             self.show_group_names_button.setEnabled(True)
-            self.move_group_names_button.setEnabled(True)
         self.mode_combo.setEnabled(True)
         self.selection_type_combo.setEnabled(True)
         self.select_all_button.setEnabled(True)
@@ -452,9 +450,15 @@ class MainWindow(QMainWindow):
             self.network_plot.reset_group_names_positions(self.view)
 
     def manage_connections(self):
+
+        # Show the connections
         if self.connections_button.isChecked():
             self.is_show_connections = 1
+
+            # Display the connecting lines
             self.network_plot.show_connections(self.view)
+
+        # Hide the connections
         else:
             self.is_show_connections = 0
             self.network_plot.hide_connections()
@@ -510,15 +514,17 @@ class MainWindow(QMainWindow):
             self.move_group_names()
 
             self.network_plot.set_3d_view(self.view)
+            #self.network_plot.set_3d_view_turntable(self.view)
 
         # 2D view
         else:
             self.view_in_dimensions_num = 2
 
-            self.show_group_names_button.setEnabled(True)
-            self.move_group_names_button.setEnabled(True)
+            if len(cfg.groups_dict) != 0:
+                self.show_group_names_button.setEnabled(True)
 
             self.network_plot.set_2d_view(self.view)
+            #self.network_plot.set_2d_view_panzoom(self.view)
 
     def change_dimensions_num_for_clustering(self):
 
@@ -557,7 +563,7 @@ class MainWindow(QMainWindow):
             self.pval_widget.setEnabled(True)
             if cfg.run_params['dimensions_num_for_clustering'] == 3:
                 self.dimensions_view_combo.setEnabled(True)
-            if self.view_in_dimensions_num == 2:
+            if self.view_in_dimensions_num == 2 and self.is_show_group_names:
                 self.move_group_names_button.setEnabled(True)
 
             # Disconnect the selection-special special mouse-events and connect back the default behaviour of the
@@ -659,18 +665,30 @@ class MainWindow(QMainWindow):
                 self.network_plot.hide_group_names()
 
     def manage_group_names(self):
+
+        # The 'show group names' button is checked
         if self.show_group_names_button.isChecked():
             self.is_show_group_names = 1
             if self.selection_type == 'groups':
                 self.show_selected_button.setChecked(False)
                 self.is_show_selected_names = 0
+
+            if self.mode == 'interactive':
+                self.move_group_names_button.setEnabled(True)
+                self.network_plot.set_selection_mode(self.view, 2)
+
             self.network_plot.show_group_names(self.view, 'all')
+
+        # The 'show group names' button is not checked
         else:
             self.is_show_group_names = 0
             self.network_plot.hide_group_names()
-            #self.move_group_names_button.setChecked(False)
-            #
-            self.move_group_names()
+
+            if self.mode == 'interactive':
+                if self.move_group_names_button.isChecked():
+                    self.move_group_names_button.setChecked(False)
+                    self.move_group_names()
+                self.move_group_names_button.setEnabled(False)
 
     def move_group_names(self):
         if self.move_group_names_button.isChecked():
@@ -694,7 +712,7 @@ class MainWindow(QMainWindow):
         dlg = gd.AddToGroupDialog()
 
         if dlg.exec_():
-            choice, group_index = dlg.get_choice()
+            choice, group_ID = dlg.get_choice()
 
             if choice == 'new':
                 print("Create a new group")
@@ -702,26 +720,57 @@ class MainWindow(QMainWindow):
 
             # The user chose to add the selected sequences to an existing group
             else:
-                print("Add the sequences to group " + cfg.groups_list[group_index]['name'])
-                self.add_sequences_to_group(group_index)
+                print("Add the sequences to group " + cfg.groups_dict[group_ID]['name'])
+                self.add_sequences_to_group(group_ID)
 
-    def add_sequences_to_group(self, group_index):
+    def add_sequences_to_group(self, group_ID):
 
         # Add the sequences to the main group_list array
-        groups.add_to_group(self.network_plot.selected_points, group_index)
+        groups.add_to_group(self.network_plot.selected_points, group_ID)
 
         # Update the look of the selected data-points according to the new group definitions
         if self.view_in_dimensions_num == 2 or self.mode == "selection":
             dim_num = 2
         else:
             dim_num = 3
-        self.network_plot.add_to_group(self.network_plot.selected_points, group_index, dim_num)
+        self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, dim_num)
 
     def create_group_from_selected(self):
-        pass
 
-    def open_create_group_dialog(self):
-        pass
+        # Open the 'Create group from selected' dialog
+        dlg = gd.CreateGroupDialog(self.network_plot)
+
+        # The user defined a new group
+        if dlg.exec_():
+            # Get all the group definitions entered by the user
+            group_name, size, color_rgb, color_array, hide = dlg.get_group_info()
+
+            # Add the new group to the main groups array
+            group_dict = dict()
+            group_dict['name'] = group_name
+            group_dict['shape_type'] = 'disc'
+            group_dict['size'] = size
+            group_dict['hide'] = hide
+            group_dict['color'] = color_rgb
+            group_dict['color_array'] = color_array
+            group_ID = groups.add_group_with_sequences(self.network_plot.selected_points, group_dict)
+
+            # Add the new group to the graph
+            self.network_plot.add_group(group_ID, self.view)
+
+            # Update the look of the selected data-points according to the new group definitions
+            if self.view_in_dimensions_num == 2 or self.mode == "selection":
+                dim_num = 2
+            else:
+                dim_num = 3
+            self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, dim_num)
+
+            # The group names are displayed -> update them including the new group
+            if self.is_show_group_names:
+                self.network_plot.show_group_names(self.view, 'all')
+
+            # Enable the 'Show group names' button
+            self.show_group_names_button.setEnabled(True)
 
     def remove_selected_from_group(self):
 
@@ -734,6 +783,10 @@ class MainWindow(QMainWindow):
         else:
             dim_num = 3
         self.network_plot.remove_from_group(self.network_plot.selected_points, dim_num)
+
+        # Check if there are groups left. If not, disable the 'Show group names' button
+        if len(cfg.groups_dict) == 0:
+            self.show_group_names_button.setEnabled(False)
 
     ## Callback functions to deal with mouse and key events
 
@@ -801,7 +854,6 @@ class MainWindow(QMainWindow):
 
             # Initiation of dragging -> create a rectangle visual
             if len(pos_array) == 3:
-                print(pos_array[0])
                 self.network_plot.start_dragging_rectangle(self.view, pos_array[0])
 
             # Mouse dragging continues -> update the rectangle
