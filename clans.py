@@ -10,3 +10,4 @@ parser.parse_arguments()
 app = QApplication([])
 window = gui.MainWindow()
 window.app.run()
+

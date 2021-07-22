@@ -26,20 +26,33 @@ def find_HSPs():
     #  one as the original (with one-line sequence) and the other with indices as titles
     prepare_fasta(cfg.run_params['input_file'], fasta_2line, fasta_indexed)
 
+    # Verify that the files were indeed created
+    if not os.path.isfile(fasta_2line) or os.path.getsize(fasta_2line) == 0:
+        cfg.run_params['is_problem'] = True
+        cfg.run_params['error'] = "Error: creating the two-lines FASTA file " + fasta_2line + " - cannot run BLAST."
+        return
+    if not os.path.isfile(fasta_indexed) or os.path.getsize(fasta_indexed) == 0:
+        cfg.run_params['is_problem'] = True
+        cfg.run_params['error'] = "Error creating the indexed file " + fasta_indexed + " - cannot make BLAST DB."
+        return
+
     # Create a BLAST database from the input FASTA file
     make_blast_DB(fasta_indexed)
 
     # Run the all-vs-all BLAST search
     run_blast(fasta_indexed, out_blast)
 
+    # Verify that the BLAST output file was indeed created
+    if not os.path.isfile(out_blast) or os.path.getsize(out_blast) == 0:
+        cfg.run_params['is_problem'] = True
+        cfg.run_params['error'] = "Error running BLAST - cannot read output."
+        return
+
     # Read the list of HSPs (BLAST output) and save the lower value for each pair of sequences in the global arrays
     # similarity_values_list and similarity_values_mtx
     read_blast_HSPs(out_blast)
-    #print("similarity matrix:\n" + str(cfg.similarity_values_mtx))
 
-    # Calculate and save the attraction values
-    sp.calculate_attraction_values()
-    sp.define_connected_sequences('hsp')
+    fill_values()
 
 
 def prepare_fasta(orig_file_path, two_line_file, indexed_file):
@@ -95,7 +108,12 @@ def run_blast(query, out_blast):
 
 
 def read_blast_HSPs(blast_out):
-    cfg.similarity_values_mtx = np.ones([cfg.run_params['total_sequences_num'], cfg.run_params['total_sequences_num']])
+
+    # Create a 2D Numpy array for the similarity values and initialize it with 100
+    cfg.similarity_values_mtx = np.full([cfg.run_params['total_sequences_num'],
+                                         cfg.run_params['total_sequences_num']], 100, dtype=float)
+    cfg.attraction_values_mtx = np.zeros([cfg.run_params['total_sequences_num'],
+                                          cfg.run_params['total_sequences_num']])
 
     with open(blast_out) as infile:
         for line in infile:
@@ -106,25 +124,23 @@ def read_blast_HSPs(blast_out):
                 evalue = float(m.group(3))
 
                 if index1 < index2:
-                    cfg.similarity_values_mtx[index1][index2] = evalue
-
-                elif index1 > index2:
-                    # The E-value of the reciprocal pair is better - update the matrix
-                    if evalue < cfg.similarity_values_mtx[index2][index1]:
+                    # Assign the Evalue to the pair + reciprocal pair
+                    if float(evalue) == 0.0:
+                        cfg.similarity_values_mtx[index1][index2] = 10 ** -180
+                        cfg.similarity_values_mtx[index2][index1] = 10 ** -180
+                    else:
                         cfg.similarity_values_mtx[index1][index2] = evalue
                         cfg.similarity_values_mtx[index2][index1] = evalue
-                    else:
-                        cfg.similarity_values_mtx[index1][index2] = cfg.similarity_values_mtx[index2][index1]
 
-        # Save the HSP line (in CLANS format) with the original E-value in the non-redundant pairs-list
-        for i in range(cfg.run_params['total_sequences_num']-1):
-            for j in range(i+1, cfg.run_params['total_sequences_num']):
-                if i < j:
-                    if cfg.similarity_values_mtx[i][j] <= cfg.run_params['evalue_cutoff']:
-                        hsp_line = str(i) + ' ' + str(j) + ':' + str(cfg.similarity_values_mtx[i][j]) + '\n'
-                        cfg.similarity_values_list.append(hsp_line)
-                        if cfg.similarity_values_mtx[i][j] == 0.0:
-                            cfg.similarity_values_mtx[i][j] = 10 ** -180
+                    pair_tuple = (index1, index2, evalue)
+                    cfg.similarity_values_list.append(pair_tuple)
+
+
+# Calculate and save the attraction values and apply the similarity cutoff
+def fill_values():
+    cfg.run_params['type_of_values'] = "hsp"
+    sp.calculate_attraction_values()
+    sp.define_connected_sequences('hsp')
 
 
 

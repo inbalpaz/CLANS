@@ -31,8 +31,8 @@ def calculate_new_positions():
 
     # Calculate the movement created by the attractive and repulsive forces between the pairs
     calculate_pair_forces(coordinates, attraction_values, connected_sequences, movement,
-                          cfg.run_params['dimensions_num_for_clustering'], cfg.run_params['att_val'], cfg.run_params['att_exp'],
-                          cfg.run_params['rep_val'], cfg.run_params['rep_exp'])
+                          cfg.run_params['dimensions_num_for_clustering'], cfg.run_params['att_val'],
+                          cfg.run_params['att_exp'], cfg.run_params['rep_val'], cfg.run_params['rep_exp'])
     #print("movement:" + str(movement))
 
     # Add the 'gravity' movement towards the origin

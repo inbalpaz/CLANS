@@ -1,25 +1,32 @@
 from PyQt5.QtCore import QObject, QRunnable, pyqtSignal, pyqtSlot
 import clans.config as cfg
 import clans.io.file_formats.clans_format as clans
+import clans.io.file_formats.tab_delimited_format as tab
 import clans.data.sequence_pairs as sp
 import time
 
 
 class ReadInputSignals(QObject):
-    finished = pyqtSignal(int)
+    finished = pyqtSignal(int, str)
 
 
 class ReadInputWorker(QRunnable):
-    def __init__(self):
+    def __init__(self, format):
         super().__init__()
 
         self.signals = ReadInputSignals()
-        self.format_object = clans.ClansFormat()
+
+        if format == 'clans':
+            self.format_object = clans.ClansFormat()
+        else:
+            self.format_object = tab.DelimitedFormat()
 
         self.before = None
         self.after = None
 
     def load_complete(self):
+
+        file_name = self.format_object.file_name
 
         # If the file is valid without errors, fill the sequences information in the related global variables
         if self.format_object.file_is_valid == 1:
@@ -37,13 +44,13 @@ class ReadInputWorker(QRunnable):
             duration = (self.after - self.before)
             print("Building the list of connected pairs took " + str(duration) + " seconds")
 
-            self.signals.finished.emit(0)
+            self.signals.finished.emit(0, file_name)
 
         # The file has an error
         else:
-            cfg.run_params['is_problem'] = 1
+            cfg.run_params['is_problem'] = True
             cfg.run_params['error'] = self.format_object.error
-            self.signals.finished.emit(1)
+            self.signals.finished.emit(1, file_name)
 
     @pyqtSlot()
     def run(self):
@@ -65,10 +72,12 @@ class FileHandler:
 
         if self.file_format == 'clans':
             self.format_object = clans.ClansFormat()
+        else:
+            self.format_object = tab.DelimitedFormat()
 
-    def write_file(self, file_path):
+    def write_file(self, file_path, is_param):
         self.file_path = file_path
-        self.format_object.write_file(file_path)
+        self.format_object.write_file(file_path, is_param)
 
         if self.format_object.error == "":
             print("Successfully saved to: " + str(self.file_path))

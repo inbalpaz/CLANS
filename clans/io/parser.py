@@ -5,8 +5,12 @@ import clans.config as cfg
 def parse_arguments():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-load", metavar="clans_file_path", help="Load an existing CLANS file", type=str)
-    parser.add_argument("-logfile", metavar="clans_logfile_path", help="a destination file for logging", type=str)
+    parser.add_argument("-load", metavar="input_file_path",
+                        help="Load a network file containing at least pairs of sequences and similarity-scores",
+                        type=str)
+    parser.add_argument("-format", metavar="input_file_format", help="Input file format (default is CLANS format)",
+                        type=str, choices=['clans', 'delimited'], default=cfg.input_format)
+    #parser.add_argument("-logfile", metavar="clans_logfile_path", help="a destination file for logging", type=str)
 
     ## Clustering parameters
     parser.add_argument("-dorounds", metavar="rounds", help="Number of clustering rounds to perform (default=0)",
@@ -58,13 +62,16 @@ def parse_arguments():
 
     if args.load is not None:
         cfg.run_params['input_file'] = args.load
-        cfg.run_params['input_format'] = 'clans'
+        if args.format is not None:
+            cfg.run_params['input_format'] = args.format
+        else:
+            cfg.run_params['input_format'] = cfg.input_format
     else:
         cfg.run_params['input_file'] = None
-    if args.logfile is not None:
-        cfg.run_params['logfile'] = args.logfile
-    else:
-        cfg.run_params['logfile'] = "logfile.txt"
+    #if args.logfile is not None:
+        #cfg.run_params['logfile'] = args.logfile
+    #else:
+        #cfg.run_params['logfile'] = "logfile.txt"
 
     cfg.run_params['num_of_rounds'] = args.dorounds
     cfg.run_params['similarity_cutoff'] = args.pval
@@ -90,19 +97,26 @@ def parse_arguments_cmd():
 
     ## I/O parameters
     parser.add_argument("-infile", metavar="fasta_file_path", help="a FASTA file input for BLAST search", type=str)
-    parser.add_argument("-load", metavar="clans_file_path", help="Load an existing CLANS file", type=str)
-    parser.add_argument("-saveto", metavar="destination_file_path", help="a destination path for saving the output "
-                                                                         "CLANS file", type=str)
-    parser.add_argument("-logfile", metavar="clans_logfile_path", help="a destination file for logging", type=str)
-    parser.add_argument("-graphics", help="Open the graphical interface", action='store_true', default=False)
+    parser.add_argument("-load", metavar="network_file_path", help="Load an existing network file in CLANS "
+                                                                 "or tab-delimited formats", type=str)
+    parser.add_argument("-input_format", metavar="input_file_format",
+                        help="Input file format (default is CLANS format)", type=str,
+                        choices=['clans', 'delimited'], default=cfg.input_format)
+    parser.add_argument("-saveto", metavar="destination_file_path", required=True,
+                        help="A destination path for saving the output file (in CLANS format, by default)", type=str)
+    parser.add_argument("-output_format", metavar="output_file_format",
+                        help="Output file format (default is CLANS format)", type=str,
+                        choices=['clans', 'delimited'], default=cfg.output_format)
+    #parser.add_argument("-logfile", metavar="clans_logfile_path", help="a destination file for logging", type=str)
 
     ## Blast search parameters
     parser.add_argument("-eval", metavar="E-value_threshold", help="E-value threshold for extracting BLAST HSPs "
                                                                    "(default="+str(cfg.BLAST_Evalue_cutoff)+")",
                         type=float, default=cfg.BLAST_Evalue_cutoff)
     parser.add_argument("-matrix", metavar="scoring_matrix", help="Scoring matrix for BLAST search (default:"
-                        + cfg.BLAST_scoring_matrix + ")" , type=str,
-                        choices=['BLOSUM62', 'BLOSUM45', 'BLOSUM80', 'PAM30', 'PAM70'], default=cfg.BLAST_scoring_matrix)
+                        + cfg.BLAST_scoring_matrix + ")", type=str,
+                        choices=['BLOSUM62', 'BLOSUM45', 'BLOSUM80', 'PAM30', 'PAM70'],
+                        default=cfg.BLAST_scoring_matrix)
 
     ## Clustering parameters
     parser.add_argument("-dorounds", metavar="rounds", help="Number of clustering rounds to perform (default=0)",
@@ -155,20 +169,21 @@ def parse_arguments_cmd():
     else:
         if args.load is not None:
             cfg.run_params['input_file'] = args.load
-            cfg.run_params['input_format'] = 'clans'
+            cfg.run_params['input_format'] = args.input_format
             cfg.run_params['run_blast'] = False
         else:
             cfg.run_params['error'] = "You must provide an input file - either a FASTA file for BLAST search " \
-                                      "(using -infile) or an existing CLANS file (using -load)"
+                                      "(using -infile) or an existing network file (using -load)"
             return
     if args.saveto is not None:
         cfg.run_params['output_file'] = args.saveto
+        cfg.run_params['output_format'] = args.output_format
     else:
         cfg.run_params['output_file'] = None
-    if args.logfile is not None:
-        cfg.run_params['logfile'] = args.logfile
-    else:
-        cfg.run_params['logfile'] = "logfile.txt"
+    #if args.logfile is not None:
+        #cfg.run_params['logfile'] = args.logfile
+    #else:
+        #cfg.run_params['logfile'] = "logfile.txt"
 
     cfg.run_params['evalue_cutoff'] = args.eval
     cfg.run_params['scoring_matrix'] = args.matrix
@@ -186,10 +201,6 @@ def parse_arguments_cmd():
         cfg.run_params['dimensions_num_for_clustering'] = 2
     else:
         cfg.run_params['dimensions_num_for_clustering'] = 3
-    if args.graphics:
-        cfg.run_params['is_graphics'] = True
-    else:
-        cfg.run_params['is_graphics'] = False
 
     for i in cfg.run_params:
         print(i, cfg.run_params[i])

@@ -1,4 +1,5 @@
 import numpy as np
+import numba
 import clans.config as cfg
 import random
 
@@ -23,14 +24,34 @@ def add_in_group_column(in_group_array):
 
 
 #@profile
-def update_positions(xyz_coor):
-    cfg.sequences_array['x_coor'] = xyz_coor[0]
-    cfg.sequences_array['y_coor'] = xyz_coor[1]
+# Mode: full / subset
+def update_positions(xyz_coor, mode):
 
-    if cfg.run_params['dimensions_num_for_clustering'] == 3:
-        cfg.sequences_array['z_coor'] = xyz_coor[2]
-    #else:
-        #cfg.sequences_array['z_coor'] = 0
+    # Full data mode -> update 'normal' coordinates
+    if mode == "full":
+        cfg.sequences_array['x_coor'] = xyz_coor[0]
+        cfg.sequences_array['y_coor'] = xyz_coor[1]
+
+        if cfg.run_params['dimensions_num_for_clustering'] == 3:
+            cfg.sequences_array['z_coor'] = xyz_coor[2]
+
+    # Subset mode -> update the subset coordinates after clustering the subset only
+    else:
+        cfg.sequences_array['x_coor_subset'] = xyz_coor[0]
+        cfg.sequences_array['y_coor_subset'] = xyz_coor[1]
+
+        if cfg.run_params['dimensions_num_for_clustering'] == 3:
+            cfg.sequences_array['z_coor_subset'] = xyz_coor[2]
+
+
+# Subset_dict is a dictionary holding the indices of the sequences in the subset
+def update_positions_subset(xyz_coor, subset_dict):
+    i = 0
+    for seq_index in sorted(subset_dict):
+        cfg.sequences_array['x_coor_subset'][seq_index] = xyz_coor[i][0]
+        cfg.sequences_array['y_coor_subset'][seq_index] = xyz_coor[i][1]
+        cfg.sequences_array['z_coor_subset'][seq_index] = xyz_coor[i][2]
+        i += 1
 
 
 # Returns a random coordinate between -1 and 1
@@ -39,13 +60,21 @@ def generate_rand_pos():
     return rand
 
 
-def init_positions():
-    for i in range(cfg.run_params['total_sequences_num']):
-        cfg.sequences_array['x_coor'][i] = generate_rand_pos()
-        cfg.sequences_array['y_coor'][i] = generate_rand_pos()
+@numba.njit(parallel=True)
+def init_positions(seq_num):
+    coor_array = np.zeros((seq_num, 3))
 
-        if cfg.run_params['dimensions_num_for_clustering'] == 3:
-            cfg.sequences_array['z_coor'][i] = generate_rand_pos()
+    for i in range(seq_num):
+        for j in range(3):
+            coor_array[i][j] = random.random() * 2 - 1
+    return coor_array[:, 0], coor_array[:, 1], coor_array[:, 2]
+
+
+def rollback_subset_positions():
+    for i in range(cfg.run_params['total_sequences_num']):
+        cfg.sequences_array['x_coor_subset'][i] = cfg.sequences_array['x_coor'][i]
+        cfg.sequences_array['y_coor_subset'][i] = cfg.sequences_array['y_coor'][i]
+        cfg.sequences_array['z_coor_subset'][i] = cfg.sequences_array['z_coor'][i]
 
 
 

@@ -1,5 +1,4 @@
 from PyQt5.QtCore import QObject, QRunnable, pyqtSignal, pyqtSlot
-import clans.layouts.fruchterman_reingold as fr
 import time
 
 
@@ -9,8 +8,11 @@ class LayoutCalculationSignals(QObject):
 
 
 class LayoutCalculationWorker(QRunnable):
-    def __init__(self):
+    def __init__(self, layout_object, is_subset_mode):
         super().__init__()
+
+        self.layout_object = layout_object
+        self.is_subset_mode = is_subset_mode
 
         self.signals = LayoutCalculationSignals()
 
@@ -19,7 +21,7 @@ class LayoutCalculationWorker(QRunnable):
     @pyqtSlot()
     def run(self):
         while self.is_stopped is False:
-            fr.calculate_new_positions()
+            self.layout_object.calculate_new_positions(self.is_subset_mode)
             self.signals.finished_iteration.emit()
             time.sleep(0.01)
 

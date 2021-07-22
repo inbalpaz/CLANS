@@ -3,16 +3,19 @@ from PyQt5.QtWidgets import *
 from vispy import app, scene
 import vispy.io
 import numpy as np
+import time
+import re
 import clans.config as cfg
 import clans.io.io_gui as io
 import clans.layouts.layout_gui as lg
-import clans.layouts.fruchterman_reingold as fr
+import clans.layouts.fruchterman_reingold_class as fr_class
 import clans.graphics.network3d_vispy as net
 import clans.data.sequences as seq
 import clans.data.sequence_pairs as sp
 import clans.data.groups as groups
 import clans.GUI.group_dialogs as gd
-import time
+import clans.GUI.windows as windows
+import clans.GUI.conf_dialogs as cd
 
 
 class Button(QPushButton):
@@ -32,8 +35,15 @@ class MainWindow(QMainWindow):
         self.app = app.use_app('pyqt5')
 
         self.threadpool = QThreadPool()
+
         # Define a runner that will be executed in a different thread
         self.run_calc_worker = None
+
+        # Define an object to hold the fruchterman-reingold calculation information
+        self.fr_object = None
+
+        # To hold the loaded / saved file-name
+        self.file_name = ""
 
         # Calculation-related variables
         self.before = None
@@ -41,12 +51,17 @@ class MainWindow(QMainWindow):
         self.is_running_calc = 0
         self.is_show_connections = 0
         self.is_show_selected_names = 0
+        self.is_show_selected_numbers = 0
         self.is_show_group_names = 0
         self.rounds_done = 0
+        self.rounds_done_subset = 0
         self.view_in_dimensions_num = cfg.run_params['dimensions_num_for_clustering']
         self.mode = "interactive"  # Modes of interaction: 'interactive' (rotate/pan) / 'selection'
         self.selection_type = "sequences"  # switch between 'sequences' and 'groups' modes
+        self.is_subset_mode = 0  # In subset mode, only the selected data-points are displayed
+        self.z_indexing_mode = "auto"  # Switch between 'auto' and 'groups' modes
         self.ctrl_key_pressed = 0
+        self.is_init = 1
 
         self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
         self.setGeometry(50, 50, 1000, 850)
@@ -65,20 +80,53 @@ class MainWindow(QMainWindow):
         self.horizontal_spacer_short = QSpacerItem(10, 24, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         # Define a menu-bar
-        self.main_menu = self.menuBar()
+        self.main_menu = QMenuBar()
+        self.setMenuBar(self.main_menu)
+        self.main_menu.setNativeMenuBar(False)
+        #self.main_menu.setStyleSheet("border-bottom: 1px solid black; background-color: gray;")
 
         # Create the File menu
         self.file_menu = self.main_menu.addMenu("File")
+        self.load_file_submenu = self.file_menu.addMenu("Load file")
+        self.save_file_submenu = self.file_menu.addMenu("Save to file")
 
-        self.save_file_action = QAction("Save to file", self)
-        self.save_file_action.triggered.connect(self.save_file)
+        self.load_clans_file_action = QAction("CLANS format", self)
+        self.load_clans_file_action.triggered.connect(self.load_clans_file)
+
+        self.load_delimited_file_action = QAction("Tab-delimited format", self)
+        self.load_delimited_file_action.triggered.connect(self.load_delimited_file)
+
+        self.load_file_submenu.addAction(self.load_clans_file_action)
+        self.load_file_submenu.addAction(self.load_delimited_file_action)
+
+        self.save_clans_file_action = QAction("CLANS format", self)
+        self.save_clans_file_action.triggered.connect(self.save_clans_file)
+
+        self.save_delimited_file_action = QAction("Tab-delimited format", self)
+        self.save_delimited_file_action.triggered.connect(self.save_delimited_file)
+
+        self.save_file_submenu.addAction(self.save_clans_file_action)
+        self.save_file_submenu.addAction(self.save_delimited_file_action)
 
         self.save_image_action = QAction("Save as image", self)
         self.save_image_action.triggered.connect(self.save_image)
 
-        self.file_menu.addAction(self.save_file_action)
-        self.file_menu.addAction(self.save_image_action)
+        self.quit_action = QAction("Quit", self)
+        self.quit_action.triggered.connect(qApp.quit)
 
+        self.file_menu.addAction(self.save_image_action)
+        self.file_menu.addAction(self.quit_action)
+
+        # Create the Configuration menu
+        self.conf_menu = self.main_menu.addMenu("Configure")
+        self.conf_layout_submenu = self.conf_menu.addMenu("Layout")
+
+        self.conf_FR_layout_action = QAction("Fruchterman-Reingold", self)
+        self.conf_FR_layout_action.triggered.connect(self.conf_FR_layout)
+
+        self.conf_layout_submenu.addAction(self.conf_FR_layout_action)
+
+        # Create the canvas (the graph area)
         self.canvas = scene.SceneCanvas(size=(800, 750), keys='interactive', show=True, bgcolor='w')
         self.canvas.events.mouse_move.connect(self.on_canvas_mouse_move)
         self.canvas.events.key_press.connect(self.on_canvas_key_press)
@@ -87,6 +135,9 @@ class MainWindow(QMainWindow):
 
         # Add a ViewBox to let the user zoom/rotate
         self.view = self.canvas.central_widget.add_view()
+
+        self.error_label = QLabel("")
+        self.error_label.setStyleSheet("color: red;")
 
         # Add a label for displaying the number of rounds done
         self.rounds_label = QLabel("Round: " + str(self.rounds_done))
@@ -102,26 +153,29 @@ class MainWindow(QMainWindow):
 
         # Add calculation buttons (Init, Start, Stop)
         self.start_button = QPushButton("Start clustering")
-        #self.start_button = Button("Start clustering")
-        self.stop_button = QPushButton("Stop clustering")
-        #self.stop_button = Button("Stop clustering")
-        self.init_button = QPushButton("Initialize")
-        #self.init_button = Button("Initialize")
-
+        self.start_button.setEnabled(False)
         self.start_button.pressed.connect(self.run_calc)
+
+        self.stop_button = QPushButton("Stop clustering")
+        self.stop_button.setEnabled(False)
         self.stop_button.pressed.connect(self.stop_calc)
+
+        self.init_button = QPushButton("Initialize")
+        self.init_button.setEnabled(False)
         self.init_button.pressed.connect(self.init_coor)
 
         # Add a button to switch between 3D and 2D clustering
         self.dimensions_clustering_combo = QComboBox()
         self.dimensions_clustering_combo.addItems(["Cluster in 3D", "Cluster in 2D"])
+        self.dimensions_clustering_combo.setEnabled(False)
         self.dimensions_clustering_combo.currentIndexChanged.connect(self.change_dimensions_num_for_clustering)
 
         # Add a text-field for the P-value / attraction-value threshold
         self.pval_label = QLabel("P-value threshold:")
         self.pval_widget = QLineEdit()
         self.pval_widget.setFixedSize(60, 24)
-        self.pval_widget.setPlaceholderText(str(cfg.run_params['similarity_cutoff']))
+        self.pval_widget.setText(str(cfg.run_params['similarity_cutoff']))
+        self.pval_widget.setEnabled(False)
         self.pval_widget.returnPressed.connect(self.update_cutoff)
 
         # Add the widgets to the calc_layout
@@ -135,6 +189,7 @@ class MainWindow(QMainWindow):
         self.calc_layout.addSpacerItem(self.horizontal_spacer_long)
         self.calc_layout.addWidget(self.pval_label)
         self.calc_layout.addWidget(self.pval_widget)
+        self.calc_layout.addWidget(self.error_label)
         self.calc_layout.addStretch()
 
         # Add the calc_layout to the main layout
@@ -145,6 +200,7 @@ class MainWindow(QMainWindow):
         self.mode_label.setStyleSheet("color: maroon; font-weight: bold;")
         self.mode_combo = QComboBox()
         self.mode_combo.addItems(["Move/Rotate/Pan", "Manual selection"])
+        self.mode_combo.setEnabled(False)
         self.mode_combo.currentIndexChanged.connect(self.change_mode)
 
         self.selection_label = QLabel("Selection options:")
@@ -152,19 +208,33 @@ class MainWindow(QMainWindow):
 
         # Add a combo-box to switch between sequences / groups selection
         self.selection_type_combo = QComboBox()
-        self.selection_type_combo.addItems(["Data-points selection", "Groups selection"])
+        self.selection_type_combo.addItems(["Data-points", "Groups"])
+        self.selection_type_combo.setEnabled(False)
         self.selection_type_combo.currentIndexChanged.connect(self.change_selection_type)
 
         # Add a button to select all the sequences / groups
         self.select_all_button = QPushButton("Select all")
+        self.select_all_button.setEnabled(False)
         self.select_all_button.released.connect(self.select_all)
 
         # Add a button to clear the current selection
-        self.clear_selection_button = QPushButton("Clear selection")
+        self.clear_selection_button = QPushButton("Clear")
+        self.clear_selection_button.setEnabled(False)
         self.clear_selection_button.released.connect(self.clear_selection)
+
+        # Add a button to show the selected sequences/groups names on screen
+        self.open_selected_button = QPushButton("Edit selected")
+        self.open_selected_button.setEnabled(False)
+        self.open_selected_button.released.connect(self.open_selected_window)
+
+        # Add a button to show the selected sequences/groups names on screen
+        self.select_by_name_button = QPushButton("Select by name")
+        self.select_by_name_button.setEnabled(False)
+        self.select_by_name_button.released.connect(self.select_by_name)
 
         # Add the widgets to the selection_layout
         self.selection_layout.addWidget(self.mode_label)
+        self.selection_layout.addSpacerItem(self.horizontal_spacer_short)
         self.selection_layout.addWidget(self.mode_combo)
         self.selection_layout.addSpacerItem(self.horizontal_spacer_long)
         self.selection_layout.addWidget(self.selection_label)
@@ -172,6 +242,8 @@ class MainWindow(QMainWindow):
         self.selection_layout.addWidget(self.selection_type_combo)
         self.selection_layout.addWidget(self.select_all_button)
         self.selection_layout.addWidget(self.clear_selection_button)
+        self.selection_layout.addWidget(self.select_by_name_button)
+        self.selection_layout.addWidget(self.open_selected_button)
         self.selection_layout.addStretch()
 
         # Add the selection_layout to the main layout
@@ -183,23 +255,71 @@ class MainWindow(QMainWindow):
         # Add a combo-box to switch between 3D and 2D views
         self.dimensions_view_combo = QComboBox()
         self.dimensions_view_combo.addItems(["3D view", "2D view"])
-        if cfg.run_params['dimensions_num_for_clustering'] == 3:
-            self.dimensions_view_combo.setCurrentIndex(0)
-        else:
-            self.dimensions_view_combo.setCurrentIndex(1)
-            self.dimensions_view_combo.setEnabled(False)
+        self.dimensions_view_combo.setEnabled(False)
         self.dimensions_view_combo.currentIndexChanged.connect(self.change_dimensions_view)
 
         # Add a button to show/hide the connections
-        self.connections_button = QPushButton("Show connections")
+        self.connections_button = QPushButton("Connections")
         self.connections_button.setCheckable(True)
+        self.connections_button.setEnabled(False)
         self.connections_button.released.connect(self.manage_connections)
 
-        # Add a button to show the selected sequences/groups names on screen
-        self.show_selected_button = QPushButton("Show selected names")
-        self.show_selected_button.setCheckable(True)
-        self.show_selected_button.setEnabled(False)
-        self.show_selected_button.released.connect(self.show_selected_names)
+        # Add a button to show the selected sequences names on screen
+        self.show_selected_names_button = QPushButton("Selected names")
+        self.show_selected_names_button.setCheckable(True)
+        self.show_selected_names_button.setEnabled(False)
+        self.show_selected_names_button.released.connect(self.show_selected_names)
+
+        # Add a button to show/hide the numbers of the sequences
+        self.show_selected_numbers_button = QPushButton("Selected numbers")
+        self.show_selected_numbers_button.setCheckable(True)
+        self.show_selected_numbers_button.setEnabled(False)
+        self.show_selected_numbers_button.released.connect(self.show_selected_numbers)
+
+        # Add a button to show only the selected sequences/groups on the graph
+        self.show_subset_button = QPushButton("Selected subset view")
+        self.show_subset_button.setCheckable(True)
+        self.show_subset_button.setEnabled(False)
+        self.show_subset_button.released.connect(self.manage_subset_presentation)
+
+        # Add a button to change the Z-indexing of nodes in 2D presentation
+        self.z_index_mode_combo = QComboBox()
+        self.z_index_mode_combo.addItems(["Automatic Z-index", "Z-index by groups"])
+        if self.view_in_dimensions_num == 3:
+            self.z_index_mode_combo.setEnabled(False)
+        self.z_index_mode_combo.currentIndexChanged.connect(self.manage_z_indexing)
+
+        # Add the widgets to the view_layout
+        self.view_layout.addWidget(self.view_label)
+        self.view_layout.addSpacerItem(self.horizontal_spacer_short)
+        self.view_layout.addWidget(self.dimensions_view_combo)
+        self.view_layout.addWidget(self.z_index_mode_combo)
+        self.view_layout.addWidget(self.connections_button)
+        self.view_layout.addWidget(self.show_selected_names_button)
+        self.view_layout.addWidget(self.show_selected_numbers_button)
+        self.view_layout.addWidget(self.show_subset_button)
+        self.view_layout.addStretch()
+
+        # Add the view_layout to the main layout
+        self.main_layout.addLayout(self.view_layout)
+
+        self.groups_label = QLabel("Groups options:")
+        self.groups_label.setStyleSheet("color: maroon; font-weight: bold;")
+
+        # Add a button to edit the groups (opens the editing-groups window)
+        self.edit_groups_button = QPushButton("Edit groups")
+        self.edit_groups_button.setEnabled(False)
+        self.edit_groups_button.released.connect(self.edit_groups)
+
+        # Add a button for adding the selected sequences to a new / existing (opens a dialog)
+        self.add_to_group_button = QPushButton("Add selected to group")
+        self.add_to_group_button.released.connect(self.open_add_to_group_dialog)
+        self.add_to_group_button.setEnabled(False)
+
+        # Add a button for removing the selected sequences from their group(s)
+        self.remove_selected_button = QPushButton("Remove selected from group(s)")
+        self.remove_selected_button.released.connect(self.remove_selected_from_group)
+        self.remove_selected_button.setEnabled(False)
 
         # Add a button to show all the groups names on screen
         self.show_group_names_button = QPushButton("Show group names")
@@ -215,41 +335,13 @@ class MainWindow(QMainWindow):
             self.move_group_names_button.setEnabled(False)
         self.move_group_names_button.released.connect(self.move_group_names)
 
-        # Add the widgets to the view_layout
-        self.view_layout.addWidget(self.view_label)
-        self.view_layout.addSpacerItem(self.horizontal_spacer_short)
-        self.view_layout.addWidget(self.dimensions_view_combo)
-        self.view_layout.addWidget(self.connections_button)
-        self.view_layout.addWidget(self.show_selected_button)
-        self.view_layout.addWidget(self.show_group_names_button)
-        self.view_layout.addWidget(self.move_group_names_button)
-        self.view_layout.addStretch()
-
-        # Add the view_layout to the main layout
-        self.main_layout.addLayout(self.view_layout)
-
-        self.groups_label = QLabel("Groups options:")
-        self.groups_label.setStyleSheet("color: maroon; font-weight: bold;")
-
-        # Add a button to edit the groups (opens the editing-groups window)
-        self.edit_groups_button = QPushButton("Edit groups")
-        self.edit_groups_button.released.connect(self.edit_groups)
-
-        # Add a button for adding the selected sequences to a new / existing (opens a dialog)
-        self.add_to_group_button = QPushButton("Add selected to group")
-        self.add_to_group_button.released.connect(self.open_add_to_group_dialog)
-        self.add_to_group_button.setEnabled(False)
-
-        # Add a button for removing the selected sequences from their group(s)
-        self.remove_selected_button = QPushButton("Remove selected from group(s)")
-        self.remove_selected_button.released.connect(self.remove_selected_from_group)
-        self.remove_selected_button.setEnabled(False)
-
         self.groups_layout.addWidget(self.groups_label)
         self.groups_layout.addSpacerItem(self.horizontal_spacer_short)
         self.groups_layout.addWidget(self.edit_groups_button)
         self.groups_layout.addWidget(self.add_to_group_button)
         self.groups_layout.addWidget(self.remove_selected_button)
+        self.groups_layout.addWidget(self.show_group_names_button)
+        self.groups_layout.addWidget(self.move_group_names_button)
         self.groups_layout.addStretch()
 
         self.main_layout.addLayout(self.groups_layout)
@@ -263,13 +355,118 @@ class MainWindow(QMainWindow):
         # Create the graph object
         self.network_plot = net.Network3D(self.view)
 
-        self.load_file_label = scene.widgets.Label("Loading the input file - please wait")
+        # Create a window for the selected sequences (without showing it)
+        self.selected_seq_window = windows.SelectedSeqWindow(self, self.network_plot)
+
+        # Create a window to display sequence search results (without showing it)
+        self.search_window = windows.SearchResultsWindow(self, self.network_plot)
+
+        # Create a text visual to display the 'loading file' message
+        self.load_file_label = scene.widgets.Label("Loading the input file - please wait", bold=True,
+                                                   font_size=15)
+
+        # Create a text visual to display an error message when any
+        self.file_error_label = scene.widgets.Label("", bold=True, font_size=15, color='red')
+
 
         # The file to load has been given in the command-line -> load and display it
         if cfg.run_params['input_file'] is not None:
             # Define a runner for loading the file that will be executed in a different thread
-            self.load_file_worker = io.ReadInputWorker()
+            self.load_file_worker = io.ReadInputWorker(cfg.run_params['input_format'])
             self.load_input_file()
+
+    # Bring all the buttons to their default state
+    def reset_window(self):
+
+        self.is_init = 1
+
+        self.file_error_label.text = ""
+        self.file_error_label.parent = None
+        self.error_label.setText("")
+
+        self.start_button.setText("Start clustering")
+        self.dimensions_clustering_combo.setCurrentIndex(0)
+
+        self.mode_combo.setCurrentIndex(0)
+        self.selection_type_combo.setCurrentIndex(0)
+        self.open_selected_button.setEnabled(False)
+
+        if cfg.run_params['dimensions_num_for_clustering'] == 3:
+            self.dimensions_view_combo.setCurrentIndex(0)
+        else:
+            self.dimensions_view_combo.setCurrentIndex(1)
+            self.dimensions_view_combo.setEnabled(False)
+
+        self.z_index_mode_combo.setEnabled(False)
+        self.z_index_mode_combo.setCurrentIndex(0)
+
+        self.connections_button.setChecked(False)
+        self.show_selected_names_button.setChecked(False)
+        self.show_selected_names_button.setEnabled(False)
+        self.show_selected_numbers_button.setChecked(False)
+        self.show_selected_numbers_button.setEnabled(False)
+        self.show_subset_button.setChecked(False)
+        self.show_subset_button.setEnabled(False)
+
+        self.add_to_group_button.setEnabled(False)
+        self.remove_selected_button.setEnabled(False)
+        self.edit_groups_button.setEnabled(False)
+        self.show_group_names_button.setChecked(False)
+        self.show_group_names_button.setEnabled(False)
+        self.move_group_names_button.setChecked(False)
+        self.move_group_names_button.setEnabled(False)
+
+        # Reset the list of sequences in the 'selected sequences' window
+        self.selected_seq_window.clear_list()
+        # Close the window
+        self.selected_seq_window.close_window()
+
+        self.is_init = 0
+
+    def reset_variables(self):
+
+        # Reset global variables
+        cfg.groups_dict = {}
+        cfg.similarity_values_list = []
+        cfg.similarity_values_mtx = []
+        cfg.attraction_values_list = []
+        cfg.attraction_values_mtx = []
+        cfg.connected_sequences_mtx = []
+        cfg.connected_sequences_list = []
+        cfg.att_values_for_connected_list = []
+        cfg.connected_sequences_list_subset = []
+        cfg.att_values_for_connected_list_subset = []
+
+        cfg.run_params['num_of_rounds'] = 0
+        cfg.run_params['is_problem'] = False
+        cfg.run_params['error'] = None
+        cfg.run_params['input_format'] = cfg.input_format
+        cfg.run_params['output_format'] = cfg.output_format
+        cfg.run_params['type_of_values'] = cfg.type_of_values
+        cfg.run_params['similarity_cutoff'] = cfg.similarity_cutoff
+        cfg.run_params['cooling'] = cfg.layouts['FR']['params']['cooling']
+        cfg.run_params['maxmove'] = cfg.layouts['FR']['params']['maxmove']
+        cfg.run_params['att_val'] = cfg.layouts['FR']['params']['att_val']
+        cfg.run_params['att_exp'] = cfg.layouts['FR']['params']['att_exp']
+        cfg.run_params['rep_val'] = cfg.layouts['FR']['params']['rep_val']
+        cfg.run_params['rep_exp'] = cfg.layouts['FR']['params']['rep_exp']
+        cfg.run_params['dampening'] = cfg.layouts['FR']['params']['dampening']
+        cfg.run_params['gravity'] = cfg.layouts['FR']['params']['gravity']
+
+        # Reset MainWindow class variables
+        self.is_running_calc = 0
+        self.is_show_connections = 0
+        self.is_show_selected_names = 0
+        self.is_show_selected_numbers = 0
+        self.is_show_group_names = 0
+        self.rounds_done = 0
+        self.rounds_done_subset = 0
+        self.view_in_dimensions_num = cfg.run_params['dimensions_num_for_clustering']
+        self.mode = "interactive"  # Modes of interaction: 'interactive' (rotate/pan) / 'selection'
+        self.selection_type = "sequences"  # switch between 'sequences' and 'groups' modes
+        self.is_subset_mode = 0  # In subset mode, only the selected data-points are displayed
+        self.z_indexing_mode = "auto"  # Switch between 'auto' and 'groups' modes
+        self.ctrl_key_pressed = 0
 
     def load_input_file(self):
         self.load_file_worker.signals.finished.connect(self.receive_load_status)
@@ -282,44 +479,149 @@ class MainWindow(QMainWindow):
         # Put a 'loading file' message
         self.canvas.central_widget.add_widget(self.load_file_label)
 
-    def receive_load_status(self, status):
+    def receive_load_status(self, status, file_name):
+
+        self.file_name = file_name
+
+        # Loaded file is valid
         if status == 0:
             self.after = time.time()
             duration = (self.after - self.before)
             print("Finished loading the input file - file is valid")
 
-            # Init the layout variables
-            fr.init_variables()
+            # Print the parameters
+            for i in cfg.run_params:
+                print(i, cfg.run_params[i])
+
+            # Create a new Fruchterman-Reingold object to be able to start the calculation
+            self.fr_object = fr_class.FruchtermanReingold(cfg.sequences_array['x_coor'], cfg.sequences_array['y_coor'],
+                                                          cfg.sequences_array['z_coor'])
 
             # Remove the 'loading file' message
             self.load_file_label.parent = None
 
+            # Set the window title to include the file name
+            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View of " + self.file_name)
+
+            # Enable the controls
+            self.start_button.setEnabled(True)
+            self.stop_button.setEnabled(True)
+            self.init_button.setEnabled(True)
+            self.dimensions_clustering_combo.setEnabled(True)
+            self.dimensions_view_combo.setEnabled(True)
+            self.pval_widget.setEnabled(True)
+            self.mode_combo.setEnabled(True)
+            self.selection_type_combo.setEnabled(True)
+            self.select_all_button.setEnabled(True)
+            self.clear_selection_button.setEnabled(True)
+            self.select_by_name_button.setEnabled(True)
+            self.connections_button.setEnabled(True)
+            if len(cfg.groups_dict) > 0:
+                self.edit_groups_button.setEnabled(True)
+
+            # Update the file name in the selected sequences window
+            self.selected_seq_window.update_window_title(self.file_name)
+
             # Create and display the FR layout as scatter plot
             self.before = time.time()
-            self.network_plot.init_data(self.view)
+            self.network_plot.init_data(self.view, self.fr_object)
             self.after = time.time()
             duration = (self.after - self.before)
             print("Prepare and display the initial plot took " + str(duration) + " seconds")
 
-            # Update the text-field for the threshold if the file contains attraction values
+            # Update the number of rounds label
+            self.rounds_done = cfg.run_params['num_of_rounds']
+            self.rounds_label.setText("Round: " + str(self.rounds_done))
+            if self.rounds_done > 0:
+                self.start_button.setText("Resume clustering")
+
+            # Update the text-field for the threshold according to the type of values
             if cfg.type_of_values == 'att':
                 self.pval_label.setText("Attraction value threshold:")
-                self.pval_widget.setPlaceholderText(str(cfg.run_params['similarity_cutoff']))
+            else:
+                self.pval_label.setText("P-value threshold:")
+            self.pval_widget.setText(str(cfg.run_params['similarity_cutoff']))
+
+            if cfg.run_params['dimensions_num_for_clustering'] == 2:
+                self.dimensions_clustering_combo.setCurrentIndex(1)
+                self.dimensions_view_combo.setCurrentIndex(1)
+                self.dimensions_view_combo.setEnabled(False)
 
         else:
-            print("Input file is not valid:\n"+cfg.run_params['error'])
+            # Remove the 'loading file' message from the scene and put an error message instead
+            self.load_file_label.parent = None
+            self.file_error_label.text = cfg.run_params['error'] + "\n\nPlease load a new file and select the correct format"
+            self.canvas.central_widget.add_widget(self.file_error_label)
+
+    def load_clans_file(self):
+
+        opened_file, _ = QFileDialog.getOpenFileName()
+
+        if opened_file:
+            print("Loading " + opened_file)
+            cfg.run_params['input_file'] = opened_file
+            cfg.run_params['input_file_format'] = 'clans'
+            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
+
+            # Clear the canvas
+            self.network_plot.reset_data(self.view)
+
+            # Initialize all the global data-structures
+            self.reset_variables()
+
+            # Define a runner for loading the file that will be executed in a different thread
+            self.load_file_worker = io.ReadInputWorker(cfg.run_params['input_file_format'])
+            self.load_input_file()
+
+            # Bring the controls to their initial state
+            self.reset_window()
+
+    def load_delimited_file(self):
+
+        opened_file, _ = QFileDialog.getOpenFileName()
+
+        if opened_file:
+            print("Loading " + opened_file)
+            cfg.run_params['input_file'] = opened_file
+            cfg.run_params['input_file_format'] = 'delimited'
+            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
+
+            # Clear the canvas
+            self.network_plot.reset_data(self.view)
+
+            # Initialize all the global data-structures
+            self.reset_variables()
+
+            # Define a runner for loading the file that will be executed in a different thread
+            self.load_file_worker = io.ReadInputWorker(cfg.run_params['input_file_format'])
+            self.load_input_file()
+
+            # Bring the controls to their initial state
+            self.reset_window()
 
     def run_calc(self):
 
-        if self.rounds_done == 0:
-            print("Start the calculation")
-            self.before = time.time()
-        elif self.is_running_calc == 0:
-            print("Resume the calculation")
+        # Full data mode
+        if self.is_subset_mode == 0:
+            if self.rounds_done == 0:
+                print("Start the calculation")
+                self.before = time.time()
+            elif self.is_running_calc == 0:
+                print("Resume the calculation")
+
+        # Subset mode
+        else:
+            if self.rounds_done_subset == 0:
+                print("Start the calculation")
+                self.before = time.time()
+            elif self.is_running_calc == 0:
+                print("Resume the calculation")
 
         # Create a new calculation worker and start it only if the system is in init/stop state
         if self.is_running_calc == 0:
-            self.run_calc_worker = lg.LayoutCalculationWorker()
+
+            # Create a new calculation worker
+            self.run_calc_worker = lg.LayoutCalculationWorker(self.fr_object, self.is_subset_mode)
             self.run_calc_worker.signals.finished_iteration.connect(self.update_plot)
             self.run_calc_worker.signals.stopped.connect(self.stopped_state)
             self.is_running_calc = 1
@@ -329,9 +631,12 @@ class MainWindow(QMainWindow):
             self.manage_connections()
 
             # Hide the selected names
-            self.show_selected_button.setChecked(False)
+            self.show_selected_names_button.setChecked(False)
+            self.show_selected_numbers_button.setChecked(False)
             self.is_show_selected_names = 0
+            self.is_show_selected_numbers = 0
             self.network_plot.hide_sequences_names()
+            self.network_plot.hide_sequences_numbers()
             self.network_plot.hide_group_names()
 
             # Hide the group names
@@ -344,16 +649,25 @@ class MainWindow(QMainWindow):
             self.move_group_names()
 
             # If the clustering is done in 3D -> Move back to 3D view
-            if cfg.run_params['dimensions_num_for_clustering'] == 3 and self.view_in_dimensions_num == 2:
-                self.dimensions_view_combo.setCurrentIndex(0)
+            if cfg.run_params['dimensions_num_for_clustering'] == 3:
+                if self.view_in_dimensions_num == 2:
+                    self.dimensions_view_combo.setCurrentIndex(0)
+            # 2D clustering
+            else:
+                # Move to automatic z-indexing
+                self.z_index_mode_combo.setCurrentIndex(0)
 
             # Disable all setup changes while calculating
             self.init_button.setEnabled(False)
+            self.start_button.setEnabled(False)
             self.dimensions_clustering_combo.setEnabled(False)
             self.pval_widget.setEnabled(False)
             self.dimensions_view_combo.setEnabled(False)
             self.connections_button.setEnabled(False)
-            self.show_selected_button.setEnabled(False)
+            self.show_selected_names_button.setEnabled(False)
+            self.show_selected_numbers_button.setEnabled(False)
+            self.open_selected_button.setEnabled(False)
+            self.show_subset_button.setEnabled(False)
             self.show_group_names_button.setEnabled(False)
             self.move_group_names_button.setEnabled(False)
             self.mode_combo.setEnabled(False)
@@ -363,61 +677,95 @@ class MainWindow(QMainWindow):
             self.edit_groups_button.setEnabled(False)
             self.add_to_group_button.setEnabled(False)
             self.remove_selected_button.setEnabled(False)
+            self.z_index_mode_combo.setEnabled(False)
 
             # Execute
             self.threadpool.start(self.run_calc_worker)
 
     def update_plot(self):
-        self.rounds_done += 1
-        self.network_plot.update_data(self.view, self.view_in_dimensions_num, 1)
-        self.rounds_label.setText("Round: "+str(self.rounds_done))
 
-        if self.rounds_done % 100 == 0:
-            self.after = time.time()
-            duration = (self.after - self.before)
-            print("The calculation of " + str(self.rounds_done) + " rounds took " + str(duration) + " seconds")
+        self.network_plot.update_data(self.view, self.view_in_dimensions_num, self.fr_object, 1)
+
+        # Full data mode
+        if self.is_subset_mode == 0:
+            self.rounds_done += 1
+            self.rounds_label.setText("Round: " + str(self.rounds_done))
+            if self.rounds_done % 100 == 0:
+                self.after = time.time()
+                duration = (self.after - self.before)
+                print("The calculation of " + str(self.rounds_done) + " rounds took " + str(duration) + " seconds")
+
+        # Subset mode
+        else:
+            self.rounds_done_subset += 1
+            self.rounds_label.setText("Round: " + str(self.rounds_done_subset))
 
     def stop_calc(self):
         if self.is_running_calc == 1:
             self.run_calc_worker.stop()
 
     def stopped_state(self):
-        self.after = time.time()
-        duration = (self.after - self.before)
-        print("The calculation has stopped at round no. " + str(self.rounds_done))
-        print("The calculation of " + str(self.rounds_done) + " rounds took " + str(duration) + " seconds")
+        if self.is_subset_mode == 0:
+            self.after = time.time()
+            duration = (self.after - self.before)
+            print("The calculation has stopped at round no. " + str(self.rounds_done))
+            print("The calculation of " + str(self.rounds_done) + " rounds took " + str(duration) + " seconds")
 
-        self.start_button.setText("Resume")
+        self.start_button.setText("Resume clustering")
         self.is_running_calc = 0
 
         # Enable all settings buttons
         self.init_button.setEnabled(True)
+        self.start_button.setEnabled(True)
         self.dimensions_clustering_combo.setEnabled(True)
         if cfg.run_params['dimensions_num_for_clustering'] == 3:
             self.dimensions_view_combo.setEnabled(True)
         self.pval_widget.setEnabled(True)
         self.connections_button.setEnabled(True)
+
         if self.view_in_dimensions_num == 2 and len(cfg.groups_dict) != 0:
             self.show_group_names_button.setEnabled(True)
-        self.mode_combo.setEnabled(True)
+
+            if self.is_subset_mode == 0:
+                self.z_index_mode_combo.setEnabled(True)
+
+        if len(cfg.groups_dict) > 0:
+            self.edit_groups_button.setEnabled(True)
         self.selection_type_combo.setEnabled(True)
-        self.select_all_button.setEnabled(True)
-        self.clear_selection_button.setEnabled(True)
-        self.edit_groups_button.setEnabled(True)
+
+        # Enable selection-related buttons only in full data mode
+        if self.is_subset_mode == 0:
+            self.mode_combo.setEnabled(True)
+            self.select_all_button.setEnabled(True)
+            self.clear_selection_button.setEnabled(True)
 
         # If at least one point is selected -> enable all buttons related to actions on selected points
         if self.network_plot.selected_points != {}:
-            self.show_selected_button.setEnabled(True)
+            self.show_selected_names_button.setEnabled(True)
+            self.show_selected_numbers_button.setEnabled(True)
+            self.open_selected_button.setEnabled(True)
             self.add_to_group_button.setEnabled(True)
             self.remove_selected_button.setEnabled(True)
+            if len(self.network_plot.selected_points) >= 4:
+                self.show_subset_button.setEnabled(True)
 
-        # Update the coordinates saved in the sequences_array
-        seq.update_positions(fr.coordinates.T)
+        # Whole data calculation mode
+        if self.is_subset_mode == 0:
+            # Update the coordinates saved in the sequences_array
+            seq.update_positions(self.fr_object.coordinates.T, 'full')
+
+            self.network_plot.reset_group_names_positions(self.view)
+
+        # Subset calculation mode
+        else:
+            # Update the subset-coordinates saved in the sequences_array
+            seq.update_positions(self.fr_object.coordinates.T, 'subset')
 
         # Calculate the azimuth and elevation angles of the new points positions
         self.network_plot.calculate_initial_angles()
 
-        self.network_plot.reset_group_names_positions(self.view)
+        # Update the global variable of number of rounds
+        cfg.run_params['num_of_rounds'] = self.rounds_done
 
     def init_coor(self):
         # Initialize the coordinates only if the calculation is not running
@@ -428,12 +776,35 @@ class MainWindow(QMainWindow):
             self.is_running_calc = 0
 
             # Reset the number of rounds
-            self.rounds_done = 0
-            self.rounds_label.setText("Round: " + str(self.rounds_done))
+            if self.is_subset_mode == 0:
+                self.rounds_done = 0
+            else:
+                self.rounds_done_subset = 0
 
-            seq.init_positions()
-            fr.init_variables()
-            self.network_plot.update_data(self.view, self.view_in_dimensions_num, 1)
+            self.rounds_label.setText("Round: 0")
+
+            # Generate random positions to be saved in the main sequences array
+            # Subset mode -> only for the sequences in the subset
+            if self.is_subset_mode:
+                cfg.sequences_array['x_coor_subset'], cfg.sequences_array['y_coor_subset'], \
+                cfg.sequences_array['z_coor_subset'] = seq.init_positions(cfg.run_params['total_sequences_num'])
+
+                # Update the coordinates in the fruchterman-reingold object
+                self.fr_object.init_calculation(cfg.sequences_array['x_coor_subset'],
+                                                cfg.sequences_array['y_coor_subset'],
+                                                cfg.sequences_array['z_coor_subset'])
+
+            # Full mode -> Init the whole dataset
+            else:
+                cfg.sequences_array['x_coor'], cfg.sequences_array['y_coor'], cfg.sequences_array['z_coor'] = \
+                    seq.init_positions(cfg.run_params['total_sequences_num'])
+
+                # Update the coordinates in the fruchterman-reingold object
+                self.fr_object.init_calculation(cfg.sequences_array['x_coor'],
+                                                cfg.sequences_array['y_coor'],
+                                                cfg.sequences_array['z_coor'])
+
+            self.network_plot.update_data(self.view, self.view_in_dimensions_num, self.fr_object, 1)
             # Calculate the angles of each point for future use when having rotations
             self.network_plot.calculate_initial_angles()
 
@@ -464,46 +835,95 @@ class MainWindow(QMainWindow):
             self.network_plot.hide_connections()
 
     def update_cutoff(self):
-        print("Similairy cutoff has changed to: " + self.pval_widget.text())
-        cfg.run_params['similarity_cutoff'] = float(self.pval_widget.text())
-        sp.define_connected_sequences(cfg.type_of_values)
-        sp.define_connected_sequences_list()
-        self.network_plot.create_connections_by_bins()
 
-        # 3D view
-        if self.view_in_dimensions_num == 3:
-            self.network_plot.update_connections(3)
+        entered_pval = self.pval_widget.text()
 
-        # 2D view
-        else:
-            # 3D clustering -> need to present the rotated-coordinates
-            if cfg.run_params['dimensions_num_for_clustering'] == 3:
-                self.network_plot.update_view(2)
-            # 2D clustering
+        # The user entered a float number
+        if re.search("^\d+\.?\d*(e-\d+)*$", entered_pval):
+
+            # The number is not between 0 and 1 => print error
+            if float(entered_pval) < 0 or float(entered_pval) > 1:
+                self.error_label.setText("Enter 0 <= threshold <= 1")
+                self.pval_widget.setText("")
+                self.pval_widget.setFocus()
+
+            # The number is valid
             else:
-                self.network_plot.update_connections(2)
 
-    def save_file(self):
-        file_dialog = QFileDialog()
-        saved_file, _ = file_dialog.getSaveFileName()
+                self.error_label.setText("")
 
-        if saved_file != "":
-            file_object = io.FileHandler(cfg.output_format)
-            file_object.write_file(saved_file)
+                print("Similairy cutoff has changed to: " + entered_pval)
+                cfg.run_params['similarity_cutoff'] = float(entered_pval)
+                sp.define_connected_sequences(cfg.type_of_values)
+                sp.define_connected_sequences_list()
+                self.network_plot.create_connections_by_bins()
+
+                # If in subset mode, update the connections also for the subset
+                if self.is_subset_mode:
+                    sp.define_connected_sequences_list_subset()
+                    self.network_plot.create_connections_by_bins_subset()
+
+                # Update the connections matrix in the fruchterman-reingold object
+                self.fr_object.update_connections()
+
+                # 3D view
+                if self.view_in_dimensions_num == 3:
+                    self.network_plot.update_connections(3)
+
+                # 2D view
+                else:
+                    # 3D clustering -> need to present the rotated-coordinates
+                    if cfg.run_params['dimensions_num_for_clustering'] == 3:
+                        self.network_plot.update_view(2)
+                    # 2D clustering
+                    else:
+                        self.network_plot.update_connections(2)
+
+        # The user entered invalid characters
+        else:
+            self.error_label.setText("Invalid characters")
+            self.pval_widget.setText("")
+            self.pval_widget.setFocus()
+
+    def save_clans_file(self):
+
+        saved_file, _ = QFileDialog.getSaveFileName()
+
+        if saved_file:
+            file_object = io.FileHandler('clans')
+            file_object.write_file(saved_file, True)
+
+    def save_delimited_file(self):
+
+        saved_file, _ = QFileDialog.getSaveFileName()
+
+        if saved_file:
+            file_object = io.FileHandler('delimited')
+            file_object.write_file(saved_file, False)
 
     def save_image(self):
-        file_dialog = QFileDialog()
-        saved_file, _ = file_dialog.getSaveFileName()
 
-        if saved_file != "":
-            img = self.canvas.render()
-            vispy.io.write_png(saved_file, img)
+        saved_file, _ = QFileDialog.getSaveFileName()
+        img = self.canvas.render()
+        vispy.io.write_png(saved_file, img)
+
+    def conf_FR_layout(self):
+
+        conf_dlg = cd.FruchtermanReingoldConfig()
+
+        if conf_dlg.exec_():
+            cfg.run_params['att_val'], cfg.run_params['att_exp'], cfg.run_params['rep_val'], \
+            cfg.run_params['rep_exp'], cfg.run_params['gravity'], cfg.run_params['dampening'], \
+            cfg.run_params['maxmove'], cfg.run_params['cooling'] = conf_dlg.get_parameters()
 
     def change_dimensions_view(self):
 
         # 3D view
         if self.dimensions_view_combo.currentIndex() == 0:
             self.view_in_dimensions_num = 3
+
+            # Update the window title
+            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View of " + self.file_name)
 
             if self.show_group_names_button.isChecked():
                 self.network_plot.hide_group_names()
@@ -513,39 +933,77 @@ class MainWindow(QMainWindow):
             self.move_group_names_button.setChecked(False)
             self.move_group_names()
 
-            self.network_plot.set_3d_view(self.view)
-            #self.network_plot.set_3d_view_turntable(self.view)
+            self.z_index_mode_combo.setEnabled(False)
+
+            # Not in init file mode
+            if self.is_init == 0:
+                self.network_plot.set_3d_view(self.view, self.fr_object)
 
         # 2D view
         else:
             self.view_in_dimensions_num = 2
 
+            # Update the window title
+            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View of " + self.file_name)
+
             if len(cfg.groups_dict) != 0:
                 self.show_group_names_button.setEnabled(True)
 
-            self.network_plot.set_2d_view(self.view)
-            #self.network_plot.set_2d_view_panzoom(self.view)
+                # Only in full data mode
+                if self.is_subset_mode == 0:
+                    self.z_index_mode_combo.setEnabled(True)
+
+            # Not in init file mode
+            if self.is_init == 0:
+                self.network_plot.set_2d_view(self.view, self.z_indexing_mode, self.fr_object)
 
     def change_dimensions_num_for_clustering(self):
 
         # 3D clustering
         if self.dimensions_clustering_combo.currentIndex() == 0:
             cfg.run_params['dimensions_num_for_clustering'] = 3
+
+            # Update the coordinates in the Fruchterman-Reingold object
+            # Full data mode
+            if self.is_subset_mode == 0:
+                self.fr_object.init_coordinates(cfg.sequences_array['x_coor'],
+                                                cfg.sequences_array['y_coor'],
+                                                cfg.sequences_array['z_coor'])
+            # Subset mode
+            else:
+                self.fr_object.init_coordinates(cfg.sequences_array['x_coor_subset'],
+                                                cfg.sequences_array['y_coor_subset'],
+                                                cfg.sequences_array['z_coor_subset'])
+
             self.dimensions_view_combo.setCurrentIndex(0)
             self.dimensions_view_combo.setEnabled(True)
 
         # 2D clustering
         else:
             cfg.run_params['dimensions_num_for_clustering'] = 2
+
             self.dimensions_view_combo.setEnabled(False)
 
             # The view was already in 2D -> update the rotated positions
             if self.view_in_dimensions_num == 2:
-                self.network_plot.save_rotated_coordinates(self.view, 2)
+                self.network_plot.save_rotated_coordinates(2, self.fr_object)
 
             # Set 2D view
             else:
                 self.dimensions_view_combo.setCurrentIndex(1)
+
+    def manage_z_indexing(self):
+
+        # Automatic Z-indexing
+        if self.z_index_mode_combo.currentIndex() == 0:
+            self.z_indexing_mode = 'auto'
+
+        # Z-indexing by groups order
+        else:
+            self.z_indexing_mode = 'groups'
+
+        if self.z_index_mode_combo.isEnabled():
+            self.network_plot.update_2d_view(self.view, self.z_indexing_mode)
 
     def change_mode(self):
 
@@ -554,7 +1012,9 @@ class MainWindow(QMainWindow):
             self.mode = "interactive"
             print("Interactive mode")
 
-            self.network_plot.set_interactive_mode(self.view, self.view_in_dimensions_num)
+            # Not in init file mode
+            if self.is_init == 0:
+                self.network_plot.set_interactive_mode(self.view, self.view_in_dimensions_num, self.fr_object)
 
             self.init_button.setEnabled(True)
             self.start_button.setEnabled(True)
@@ -577,7 +1037,7 @@ class MainWindow(QMainWindow):
             self.mode = "selection"
             print("Selection mode")
 
-            self.network_plot.set_selection_mode(self.view, self.view_in_dimensions_num)
+            self.network_plot.set_selection_mode(self.view, self.view_in_dimensions_num, self.z_indexing_mode, self.fr_object)
 
             self.init_button.setEnabled(False)
             self.start_button.setEnabled(False)
@@ -601,83 +1061,183 @@ class MainWindow(QMainWindow):
             self.selection_type = "sequences"
 
             # In case the 'show selected names' button is on - show sequences names instead of group names
-            if self.is_show_selected_names:
-                self.network_plot.hide_group_names()
-                self.network_plot.show_sequences_names(self.view)
+            #if self.is_show_selected_names:
+                #self.network_plot.hide_group_names()
+                #self.network_plot.show_sequences_names(self.view)
 
         # Groups selection
         else:
             self.selection_type = "groups"
 
             # In case the 'show selected names' button is on - show group names instead of sequences names
-            if self.is_show_selected_names:
-                self.network_plot.hide_sequences_names()
-                self.network_plot.show_group_names(self.view, 'selected')
+            #if self.is_show_selected_names:
+                #self.network_plot.hide_sequences_names()
+                #self.network_plot.show_group_names(self.view, 'selected')
 
     def select_all(self):
         if self.view_in_dimensions_num == 2 or self.mode == "selection":
             dim_num = 2
         else:
             dim_num = 3
-        self.network_plot.select_all(self.view, self.selection_type, dim_num)
+        self.network_plot.select_all(self.view, self.selection_type, dim_num, self.z_indexing_mode)
+
+        # Update the selected sequences window
+        self.selected_seq_window.update_sequences()
 
         # Update the presentation of group names
-        if self.is_show_selected_names == 1 and self.selection_type == 'groups':
-            self.network_plot.show_group_names(self.view, 'all')
+        #if self.is_show_selected_names == 1 and self.selection_type == 'groups':
+            #self.network_plot.show_group_names(self.view, 'all')
 
         # Enable the selection-related buttons
-        self.show_selected_button.setEnabled(True)
+        self.show_selected_names_button.setEnabled(True)
+        self.show_selected_numbers_button.setEnabled(True)
+        self.open_selected_button.setEnabled(True)
         self.add_to_group_button.setEnabled(True)
         self.remove_selected_button.setEnabled(True)
+
+        # Disable the 'Show selected only' option (make no sense if selecting all)
+        self.show_subset_button.setChecked(False)
+        #self.show_subset_button.setEnabled(False)
 
     def clear_selection(self):
         if self.view_in_dimensions_num == 2 or self.mode == "selection":
             dim_num = 2
         else:
             dim_num = 3
-        self.network_plot.reset_selection(dim_num)
+        self.network_plot.reset_selection(self.view, dim_num, self.z_indexing_mode)
+
+        # Update the selected sequences window
+        self.selected_seq_window.update_sequences()
 
         # Hide the sequences names and release the button (if was checked)
-        self.show_selected_button.setChecked(False)
-        self.show_selected_button.setEnabled(False)
+        self.show_selected_names_button.setChecked(False)
+        self.show_selected_names_button.setEnabled(False)
+        self.show_selected_numbers_button.setChecked(False)
+        self.show_selected_numbers_button.setEnabled(False)
+        self.open_selected_button.setEnabled(False)
+        self.show_subset_button.setChecked(False)
+        self.show_subset_button.setEnabled(False)
         self.add_to_group_button.setEnabled(False)
         self.remove_selected_button.setEnabled(False)
         self.is_show_selected_names = 0
+        self.is_show_selected_numbers = 0
         self.network_plot.hide_sequences_names()
+        self.network_plot.hide_sequences_numbers()
         if self.is_show_group_names == 0:
             self.network_plot.hide_group_names()
 
     def show_selected_names(self):
-        if self.show_selected_button.isChecked():
+        if self.show_selected_names_button.isChecked():
             self.is_show_selected_names = 1
-            # Show sequence names
-            if self.selection_type == 'sequences':
-                self.network_plot.show_sequences_names(self.view)
-            # Show group names
-            else:
-                self.show_group_names_button.setChecked(False)
-                self.is_show_group_names = 0
-                self.network_plot.show_group_names(self.view, 'selected')
+
+            # Currently displaying the numbers => hide the numbers
+            if self.is_show_selected_numbers:
+                self.is_show_selected_numbers = 0
+                self.show_selected_numbers_button.setChecked(False)
+                self.network_plot.hide_sequences_numbers()
+
+            # Display the names
+            self.network_plot.show_sequences_names(self.view)
+
         else:
             self.is_show_selected_names = 0
             self.network_plot.hide_sequences_names()
-            if self.is_show_group_names == 0:
-                self.network_plot.hide_group_names()
+
+    def show_selected_numbers(self):
+        if self.show_selected_numbers_button.isChecked():
+            self.is_show_selected_numbers = 1
+
+            # Currently displaying the names => hide the names
+            if self.is_show_selected_names:
+                self.is_show_selected_names = 0
+                self.show_selected_names_button.setChecked(False)
+                self.network_plot.hide_sequences_names()
+
+            # Display the names
+            self.network_plot.show_sequences_numbers(self.view)
+
+        else:
+            self.is_show_selected_numbers = 0
+            self.network_plot.hide_sequences_numbers()
+
+    def open_selected_window(self):
+
+        self.selected_seq_window.update_sequences()
+
+        if self.selected_seq_window.is_visible == 0:
+            self.selected_seq_window.open_window()
+
+    def select_by_name(self):
+
+        self.search_window.open_window()
+
+    def manage_subset_presentation(self):
+
+        # Subset mode
+        if self.show_subset_button.isChecked():
+            self.is_subset_mode = 1
+
+            self.start_button.setText("Start clustering")
+            self.rounds_label.setText("Round: 0")
+            self.rounds_done_subset = 0
+
+            # Disable all selection-related buttons
+            self.mode_combo.setEnabled(False)
+            self.mode_combo.setCurrentIndex(0)
+            self.select_all_button.setEnabled(False)
+            self.clear_selection_button.setEnabled(False)
+            self.z_index_mode_combo.setEnabled(False)
+            self.z_index_mode_combo.setCurrentIndex(0)
+
+            self.network_plot.set_subset_view(self.view_in_dimensions_num)
+
+            if self.is_show_group_names:
+                self.network_plot.show_group_names(self.view, 'selected')
+
+        # Full data mode
+        else:
+            self.is_subset_mode = 0
+
+            if self.rounds_done > 0:
+                self.start_button.setText("Resume clustering")
+            else:
+                self.start_button.setText("Start clustering")
+            self.rounds_label.setText("Round: " + str(self.rounds_done))
+
+            # Enable all selection-related buttons
+            self.mode_combo.setEnabled(True)
+            self.select_all_button.setEnabled(True)
+            self.clear_selection_button.setEnabled(True)
+
+            if self.view_in_dimensions_num == 2 and len(cfg.groups_dict) != 0:
+                self.z_index_mode_combo.setEnabled(True)
+
+            # Update the coordinates in the fruchterman-reingold object
+            self.fr_object.init_coordinates(cfg.sequences_array['x_coor'],
+                                            cfg.sequences_array['y_coor'],
+                                            cfg.sequences_array['z_coor'])
+
+            self.network_plot.set_full_view(self.view, self.view_in_dimensions_num)
+
+            if self.is_show_group_names:
+                self.network_plot.show_group_names(self.view, 'all')
 
     def manage_group_names(self):
 
         # The 'show group names' button is checked
         if self.show_group_names_button.isChecked():
             self.is_show_group_names = 1
-            if self.selection_type == 'groups':
-                self.show_selected_button.setChecked(False)
-                self.is_show_selected_names = 0
 
             if self.mode == 'interactive':
                 self.move_group_names_button.setEnabled(True)
-                self.network_plot.set_selection_mode(self.view, 2)
+                self.network_plot.set_selection_mode(self.view, 2, self.z_indexing_mode, self.fr_object)
 
-            self.network_plot.show_group_names(self.view, 'all')
+            # Full data mode
+            if self.is_subset_mode == 0:
+                self.network_plot.show_group_names(self.view, 'all')
+            # Subset mode
+            else:
+                self.network_plot.show_group_names(self.view, 'selected')
 
         # The 'show group names' button is not checked
         else:
@@ -705,7 +1265,14 @@ class MainWindow(QMainWindow):
             self.view.camera._viewbox.events.mouse_press.connect(self.view.camera.viewbox_mouse_event)
 
     def edit_groups(self):
-        pass
+
+        dlg = gd.ManageGroupsDialog(self.network_plot, self.view, self.view_in_dimensions_num, self.z_indexing_mode)
+
+        if dlg.exec_():
+
+            # The order of the groups has changed
+            if dlg.changed_order_flag:
+                self.network_plot.update_groups_order(self.view_in_dimensions_num, self.view, self.z_indexing_mode)
 
     def open_add_to_group_dialog(self):
 
@@ -733,7 +1300,7 @@ class MainWindow(QMainWindow):
             dim_num = 2
         else:
             dim_num = 3
-        self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, dim_num)
+        self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, dim_num, self.view, self.z_indexing_mode)
 
     def create_group_from_selected(self):
 
@@ -743,7 +1310,7 @@ class MainWindow(QMainWindow):
         # The user defined a new group
         if dlg.exec_():
             # Get all the group definitions entered by the user
-            group_name, size, color_rgb, color_array, hide = dlg.get_group_info()
+            group_name, size, color_clans, color_rgb, color_array, hide = dlg.get_group_info()
 
             # Add the new group to the main groups array
             group_dict = dict()
@@ -751,8 +1318,10 @@ class MainWindow(QMainWindow):
             group_dict['shape_type'] = 'disc'
             group_dict['size'] = size
             group_dict['hide'] = hide
-            group_dict['color'] = color_rgb
+            group_dict['color'] = color_clans
+            group_dict['color_rgb'] = color_rgb
             group_dict['color_array'] = color_array
+            group_dict['order'] = len(cfg.groups_dict)
             group_ID = groups.add_group_with_sequences(self.network_plot.selected_points, group_dict)
 
             # Add the new group to the graph
@@ -763,14 +1332,11 @@ class MainWindow(QMainWindow):
                 dim_num = 2
             else:
                 dim_num = 3
-            self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, dim_num)
+            self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, dim_num, self.view, self.z_indexing_mode)
 
             # The group names are displayed -> update them including the new group
             if self.is_show_group_names:
                 self.network_plot.show_group_names(self.view, 'all')
-
-            # Enable the 'Show group names' button
-            self.show_group_names_button.setEnabled(True)
 
     def remove_selected_from_group(self):
 
@@ -782,7 +1348,7 @@ class MainWindow(QMainWindow):
             dim_num = 2
         else:
             dim_num = 3
-        self.network_plot.remove_from_group(self.network_plot.selected_points, dim_num)
+        self.network_plot.remove_from_group(self.network_plot.selected_points, dim_num, self.view, self.z_indexing_mode)
 
         # Check if there are groups left. If not, disable the 'Show group names' button
         if len(cfg.groups_dict) == 0:
@@ -816,29 +1382,25 @@ class MainWindow(QMainWindow):
             # One-click event -> find the selected point
             if len(pos_array) == 1 or len(pos_array) == 2 and pos_array[0][0] == pos_array[1][0] \
                     and pos_array[0][1] == pos_array[1][1]:
-                self.network_plot.find_selected_point(self.view, self.selection_type, event.pos)
-
-                # The 'Show selected names' is on and Selection type is 'Groups' => update the group names display
-                if self.is_show_selected_names and self.selection_type == 'groups':
-                    self.network_plot.show_group_names(self.view, 'selection')
+                self.network_plot.find_selected_point(self.view, self.selection_type, event.pos, self.z_indexing_mode)
 
             # Drag event
             else:
                 self.network_plot.remove_dragging_rectangle()
-                self.network_plot.find_selected_area(self.view, self.selection_type, pos_array[0], event.pos)
-
-                # The 'Show selected names' is on
-                if self.is_show_selected_names == 1:
-
-                    # Selection type is 'Groups' => update the group names display
-                    if self.selection_type == 'groups':
-                        self.network_plot.show_group_names(self.view, 'selection')
+                self.network_plot.find_selected_area(self.view, self.selection_type, pos_array[0], event.pos, self.z_indexing_mode)
 
             # If at least one point is selected -> enable all buttons related to actions on selected points
             if self.network_plot.selected_points != {}:
-                self.show_selected_button.setEnabled(True)
+                self.show_selected_names_button.setEnabled(True)
+                self.show_selected_numbers_button.setEnabled(True)
+                self.open_selected_button.setEnabled(True)
                 self.add_to_group_button.setEnabled(True)
                 self.remove_selected_button.setEnabled(True)
+                if len(self.network_plot.selected_points) >= 4:
+                    self.show_subset_button.setEnabled(True)
+
+            # Update the selected sequences window
+            self.selected_seq_window.update_sequences()
 
         # Interactive mode
         else:
@@ -872,7 +1434,7 @@ class MainWindow(QMainWindow):
                 distance = np.linalg.norm(pos_array[-1] - pos_array[-2])
                 if distance >= 1:
                     self.network_plot.move_selected_points(self.view, self.view_in_dimensions_num, pos_array[-2],
-                                                           pos_array[-1])
+                                                           pos_array[-1], self.z_indexing_mode)
 
             # 'Move group names' button is checked
             elif self.move_group_names_button.isChecked():
@@ -893,6 +1455,12 @@ class MainWindow(QMainWindow):
 
         if self.mode == "interactive":
             self.network_plot.update_moved_positions(self.view_in_dimensions_num)
+
+            # Update the coordinates in the fruchterman-reingold object
+            self.fr_object.init_coordinates(cfg.sequences_array['x_coor'],
+                                            cfg.sequences_array['y_coor'],
+                                            cfg.sequences_array['z_coor'])
+
 
 
 
