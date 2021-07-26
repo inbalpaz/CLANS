@@ -137,6 +137,7 @@ dmypy.json
 
 # I/O files
 blast_output/
+external_scripts/
 input/
 output/
 

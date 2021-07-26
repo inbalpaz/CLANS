@@ -1,0 +1,55 @@
+name: CLANS_Python_3_8
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - biopython=1.78=py38haf1e3a3_0
+  - blas=1.0=mkl
+  - ca-certificates=2021.5.25=hecd8cb5_1
+  - certifi=2021.5.30=py38hecd8cb5_0
+  - dbus=1.13.18=h18a8e69_0
+  - expat=2.2.10=hb1e8313_2
+  - fontconfig=2.13.1=hd23ceaa_1004
+  - freetype=2.10.4=h4cff582_1
+  - freetype-py=2.2.0=pyh9f0ad1d_0
+  - gettext=0.19.8.1=hb0f4f8b_2
+  - glib=2.66.1=h9bbe63b_0
+  - icu=58.2=h0a44026_3
+  - intel-openmp=2019.4=233
+  - jpeg=9b=he5867d9_2
+  - libcxx=10.0.0=1
+  - libedit=3.1.20191231=h1de35cc_1
+  - libffi=3.3=hb1e8313_2
+  - libiconv=1.16=haf1e3a3_0
+  - libllvm9=9.0.1=h21ff451_1
+  - libpng=1.6.37=h7cec526_2
+  - libxml2=2.9.10=h7cdb67c_3
+  - llvm-openmp=10.0.0=h28b9765_0
+  - llvmlite=0.33.0=py38ha11be7d_1
+  - mkl=2019.4=233
+  - mkl-service=2.3.0=py38h9ed2024_0
+  - mkl_fft=1.2.0=py38hc64f4ea_0
+  - mkl_random=1.1.1=py38h959d312_0
+  - ncurses=6.2=h0a44026_1
+  - numba=0.50.1=py38h959d312_1
+  - numpy=1.19.2=py38h456fd55_0
+  - numpy-base=1.19.2=py38hcfb5961_0
+  - openssl=1.1.1k=h9ed2024_0
+  - pcre=8.44=hb1e8313_0
+  - pip=20.3.3=py38hecd8cb5_0
+  - pyqt=5.9.2=py38h655552a_2
+  - python=3.8.5=h26836e1_1
+  - python_abi=3.8=1_cp38
+  - qt=5.9.7=h468cd18_1
+  - readline=8.1=h9ed2024_0
+  - setuptools=52.0.0=py38hecd8cb5_0
+  - sip=4.19.8=py38h0a44026_0
+  - six=1.15.0=py38hecd8cb5_0
+  - sqlite=3.33.0=hffcf06c_0
+  - tbb=2020.3=h879752b_0
+  - tk=8.6.10=hb0a8c7a_0
+  - vispy=0.6.4=py38hde76a60_1
+  - wheel=0.36.2=pyhd3eb1b0_0
+  - xz=5.2.5=h1de35cc_0
+  - zlib=1.2.11=h1de35cc_3
+prefix: /opt/anaconda3/envs/CLANS_Python_3_8
