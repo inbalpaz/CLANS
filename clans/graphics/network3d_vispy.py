@@ -733,8 +733,11 @@ class Network3D:
                                                                           self.selected_pos_array[:4, :])
 
     def show_connections(self, view):
-        for i in range(5):
-            self.lines[i].parent = view.scene
+
+        if cfg.run_params['connections_num'] > 0:
+
+            for i in range(5):
+                self.lines[i].parent = view.scene
 
     # Update the connections plot after changes in P-value threshold or number of dimensions to view
     def update_connections(self, dim_num):
