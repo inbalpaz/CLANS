@@ -173,9 +173,9 @@ class DelimitedFormat:
             if cfg.run_params['input_format'] == 'delimited':
                 pair_str = cfg.sequences_array[int(index1)]['seq_title'] + "\t" + \
                            cfg.sequences_array[int(index2)]['seq_title'] + \
-                           "\t" + score + "\t" + cfg.type_of_values + "\n"
+                           "\t" + score + "\t" + cfg.run_params['type_of_values'] + "\n"
             else:
-                pair_str = str(index1) + "\t" + str(index2) + "\t" + str(score) + "\t" + cfg.type_of_values + "\n"
+                pair_str = str(index1) + "\t" + str(index2) + "\t" + str(score) + "\t" + cfg.run_params['type_of_values'] + "\n"
 
             output.write(pair_str)
 

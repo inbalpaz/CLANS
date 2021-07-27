@@ -361,7 +361,7 @@ class ClansFormat:
         output.write('</pos>\n')
 
         # Write the HSPs (<hsp>) block
-        if cfg.type_of_values == 'hsp':
+        if cfg.run_params['type_of_values'] == 'hsp':
             output.write('<hsp>\n')
             for i in range(len(cfg.similarity_values_list)):
                 index1 = cfg.similarity_values_list[i][0]
@@ -371,7 +371,7 @@ class ClansFormat:
                 output.write(pair_str)
             output.write('</hsp>')
         # Write the attraction values (<att>) block
-        elif cfg.type_of_values == 'att':
+        elif cfg.run_params['type_of_values'] == 'att':
             output.write('<att>\n')
             for i in range(len(cfg.similarity_values_list)):
                 index1 = cfg.similarity_values_list[i][0]

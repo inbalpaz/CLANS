@@ -141,3 +141,5 @@ external_scripts/
 input/
 output/
 
+main.py.lprof
+

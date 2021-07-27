@@ -536,7 +536,7 @@ class MainWindow(QMainWindow):
                 self.start_button.setText("Resume clustering")
 
             # Update the text-field for the threshold according to the type of values
-            if cfg.type_of_values == 'att':
+            if cfg.run_params['type_of_values'] == 'att':
                 self.pval_label.setText("Attraction value threshold:")
             else:
                 self.pval_label.setText("P-value threshold:")
@@ -854,7 +854,7 @@ class MainWindow(QMainWindow):
 
                 print("Similairy cutoff has changed to: " + entered_pval)
                 cfg.run_params['similarity_cutoff'] = float(entered_pval)
-                sp.define_connected_sequences(cfg.type_of_values)
+                sp.define_connected_sequences(cfg.run_params['type_of_values'])
                 sp.define_connected_sequences_list()
                 self.network_plot.create_connections_by_bins()
 
