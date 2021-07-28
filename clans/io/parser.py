@@ -10,7 +10,6 @@ def parse_arguments():
                         type=str)
     parser.add_argument("-format", metavar="input_file_format", help="Input file format (default is CLANS format)",
                         type=str, choices=['clans', 'delimited'], default=cfg.input_format)
-    #parser.add_argument("-logfile", metavar="clans_logfile_path", help="a destination file for logging", type=str)
 
     ## Clustering parameters
     parser.add_argument("-dorounds", metavar="rounds", help="Number of clustering rounds to perform (default=0)",
@@ -58,6 +57,10 @@ def parse_arguments():
                                           + str(cfg.layouts['FR']['params']['gravity']) + ")",
                         type=float, default=cfg.layouts['FR']['params']['gravity'])
 
+    ## Misc parameters
+    parser.add_argument("--debug", help="Debug mode: add debug printouts", action='store_true', default=False)
+    # parser.add_argument("-logfile", metavar="clans_logfile_path", help="a destination file for logging", type=str)
+
     args = parser.parse_args()
 
     if args.load is not None:
@@ -83,13 +86,16 @@ def parse_arguments():
     cfg.run_params['rep_exp'] = args.rep_exp
     cfg.run_params['dampening'] = args.dampening
     cfg.run_params['gravity'] = args.gravity
+    cfg.run_params['is_debug_mode'] = args.debug
     if args.cluster2d:
         cfg.run_params['dimensions_num_for_clustering'] = 2
     else:
         cfg.run_params['dimensions_num_for_clustering'] = 3
 
-    for i in cfg.run_params:
-        print(i, cfg.run_params[i])
+    if cfg.run_params['is_debug_mode']:
+        print("Run parameters:")
+        for i in cfg.run_params:
+            print(i, cfg.run_params[i])
 
 
 def parse_arguments_cmd():
@@ -107,7 +113,6 @@ def parse_arguments_cmd():
     parser.add_argument("-output_format", metavar="output_file_format",
                         help="Output file format (default is CLANS format)", type=str,
                         choices=['clans', 'delimited'], default=cfg.output_format)
-    #parser.add_argument("-logfile", metavar="clans_logfile_path", help="a destination file for logging", type=str)
 
     ## Blast search parameters
     parser.add_argument("-eval", metavar="E-value_threshold", help="E-value threshold for extracting BLAST HSPs "
@@ -159,6 +164,10 @@ def parse_arguments_cmd():
                                           + str(cfg.layouts['FR']['params']['gravity']) + ")",
                         type=float, default=cfg.layouts['FR']['params']['gravity'])
 
+    ## Misc parameters
+    parser.add_argument("--debug", help="Debug mode: add debug printouts", action='store_true', default=False)
+    # parser.add_argument("-logfile", metavar="clans_logfile_path", help="a destination file for logging", type=str)
+
     args = parser.parse_args()
 
     ## Assign the given arguments to the global 'run_params' dict
@@ -197,13 +206,16 @@ def parse_arguments_cmd():
     cfg.run_params['rep_exp'] = args.rep_exp
     cfg.run_params['dampening'] = args.dampening
     cfg.run_params['gravity'] = args.gravity
+    cfg.run_params['is_debug_mode'] = args.debug
     if args.cluster2d:
         cfg.run_params['dimensions_num_for_clustering'] = 2
     else:
         cfg.run_params['dimensions_num_for_clustering'] = 3
 
-    for i in cfg.run_params:
-        print(i, cfg.run_params[i])
+    if cfg.run_params['is_debug_mode']:
+        print("Run parameters:")
+        for i in cfg.run_params:
+            print(i, cfg.run_params[i])
 
 
 

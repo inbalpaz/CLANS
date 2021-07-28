@@ -32,7 +32,6 @@ class Network3D:
         self.nodes_symbol = 'disc'
         self.nodes_default_color = [0.0, 0.0, 0.0, 1.0]
         self.nodes_highlight_color = [0.0, 1.0, 1.0, 1.0] # Tourquise
-        #self.nodes_highlight_color = [1.0, 1.0, 0.0, 1.0] # yellow
         self.nodes_outline_default_color = [0.0, 0.0, 0.0, 1.0]
         self.selected_outline_color = [1.0, 0.0, 1.0, 1.0]
         self.highlighted_outline_color = [1.0, 0.0, 1.0, 1.0]

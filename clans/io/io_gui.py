@@ -33,16 +33,20 @@ class ReadInputWorker(QRunnable):
 
             self.before = time.time()
             self.format_object.fill_values()
-            self.after = time.time()
-            duration = (self.after - self.before)
-            print("Filling connections and groups took " + str(duration) + " seconds")
+
+            if cfg.run_params['is_debug_mode']:
+                self.after = time.time()
+                duration = (self.after - self.before)
+                print("Filling connections and groups took " + str(duration) + " seconds")
 
             # Build the list of connected pairs (non-redundant, [indexi][indexj]) for the edges display
             self.before = time.time()
             sp.define_connected_sequences_list()
-            self.after = time.time()
-            duration = (self.after - self.before)
-            print("Building the list of connected pairs took " + str(duration) + " seconds")
+
+            if cfg.run_params['is_debug_mode']:
+                self.after = time.time()
+                duration = (self.after - self.before)
+                print("Building the list of connected pairs took " + str(duration) + " seconds")
 
             self.signals.finished.emit(0, file_name)
 
@@ -57,9 +61,11 @@ class ReadInputWorker(QRunnable):
 
         self.before = time.time()
         self.format_object.read_file(cfg.run_params['input_file'])
-        self.after = time.time()
-        duration = (self.after - self.before)
-        print("Reading the file took " + str(duration) + " seconds")
+
+        if cfg.run_params['is_debug_mode']:
+            self.after = time.time()
+            duration = (self.after - self.before)
+            print("Reading the file took " + str(duration) + " seconds")
 
         self.load_complete()
 

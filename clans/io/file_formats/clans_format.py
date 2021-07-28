@@ -45,7 +45,7 @@ class ClansFormat:
             m = re.search("^sequences=(\d+)", line)
             if m:
                 cfg.run_params['total_sequences_num'] = int(m.group(1))
-                print("ClansFormat.read_file: Total number of sequences: " + str(cfg.run_params['total_sequences_num']))
+                print("Total number of sequences: " + str(cfg.run_params['total_sequences_num']))
             else:
                 self.file_is_valid = 0
                 self.error = "The file " + self.file_name + " has invalid CLANS format:\n"

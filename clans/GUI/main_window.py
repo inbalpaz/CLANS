@@ -485,13 +485,14 @@ class MainWindow(QMainWindow):
 
         # Loaded file is valid
         if status == 0:
-            self.after = time.time()
-            duration = (self.after - self.before)
-            print("Finished loading the input file - file is valid")
 
-            # Print the parameters
-            for i in cfg.run_params:
-                print(i, cfg.run_params[i])
+            if cfg.run_params['is_debug_mode']:
+                print("Finished loading the input file - file is valid")
+
+                # Print the parameters
+                print("Run parameters:")
+                for i in cfg.run_params:
+                    print(i, cfg.run_params[i])
 
             # Create a new Fruchterman-Reingold object to be able to start the calculation
             self.fr_object = fr_class.FruchtermanReingold(cfg.sequences_array['x_coor'], cfg.sequences_array['y_coor'],
@@ -525,9 +526,11 @@ class MainWindow(QMainWindow):
             # Create and display the FR layout as scatter plot
             self.before = time.time()
             self.network_plot.init_data(self.view, self.fr_object)
-            self.after = time.time()
-            duration = (self.after - self.before)
-            print("Prepare and display the initial plot took " + str(duration) + " seconds")
+
+            if cfg.run_params['is_debug_mode']:
+                self.after = time.time()
+                duration = (self.after - self.before)
+                print("Prepare and display the initial plot took " + str(duration) + " seconds")
 
             # Update the number of rounds label
             self.rounds_done = cfg.run_params['num_of_rounds']
@@ -690,10 +693,12 @@ class MainWindow(QMainWindow):
         if self.is_subset_mode == 0:
             self.rounds_done += 1
             self.rounds_label.setText("Round: " + str(self.rounds_done))
-            if self.rounds_done % 100 == 0:
-                self.after = time.time()
-                duration = (self.after - self.before)
-                print("The calculation of " + str(self.rounds_done) + " rounds took " + str(duration) + " seconds")
+
+            if cfg.run_params['is_debug_mode']:
+                if self.rounds_done % 100 == 0:
+                    self.after = time.time()
+                    duration = (self.after - self.before)
+                    print("The calculation of " + str(self.rounds_done) + " rounds took " + str(duration) + " seconds")
 
         # Subset mode
         else:
@@ -709,7 +714,9 @@ class MainWindow(QMainWindow):
             self.after = time.time()
             duration = (self.after - self.before)
             print("The calculation has stopped at round no. " + str(self.rounds_done))
-            print("The calculation of " + str(self.rounds_done) + " rounds took " + str(duration) + " seconds")
+
+            if cfg.run_params['is_debug_mode']:
+                print("The calculation of " + str(self.rounds_done) + " rounds took " + str(duration) + " seconds")
 
         self.start_button.setText("Resume clustering")
         self.is_running_calc = 0
@@ -808,7 +815,7 @@ class MainWindow(QMainWindow):
             # Calculate the angles of each point for future use when having rotations
             self.network_plot.calculate_initial_angles()
 
-            print("Coordinates are initiated.")
+            print("Coordinates were initiated.")
 
             # Move back to interactive mode
             self.mode_combo.setCurrentIndex(0)
@@ -1010,7 +1017,9 @@ class MainWindow(QMainWindow):
         # Interactive mode (rotate/pan)
         if self.mode_combo.currentIndex() == 0:
             self.mode = "interactive"
-            print("Interactive mode")
+
+            if cfg.run_params['is_debug_mode']:
+                print("Interactive mode")
 
             # Not in init file mode
             if self.is_init == 0:
@@ -1035,7 +1044,9 @@ class MainWindow(QMainWindow):
         # Manual selection mode
         elif self.mode_combo.currentIndex() == 1:
             self.mode = "selection"
-            print("Selection mode")
+
+            if cfg.run_params['is_debug_mode']:
+                print("Selection mode")
 
             self.network_plot.set_selection_mode(self.view, self.view_in_dimensions_num, self.z_indexing_mode, self.fr_object)
 
@@ -1177,6 +1188,8 @@ class MainWindow(QMainWindow):
         if self.show_subset_button.isChecked():
             self.is_subset_mode = 1
 
+            print("Displaying selected subset")
+
             self.start_button.setText("Start clustering")
             self.rounds_label.setText("Round: 0")
             self.rounds_done_subset = 0
@@ -1197,6 +1210,8 @@ class MainWindow(QMainWindow):
         # Full data mode
         else:
             self.is_subset_mode = 0
+
+            print("Back to full-data view")
 
             if self.rounds_done > 0:
                 self.start_button.setText("Resume clustering")
@@ -1282,12 +1297,13 @@ class MainWindow(QMainWindow):
             choice, group_ID = dlg.get_choice()
 
             if choice == 'new':
-                print("Create a new group")
+
+                print("Creating a new group")
                 self.create_group_from_selected()
 
             # The user chose to add the selected sequences to an existing group
             else:
-                print("Add the sequences to group " + cfg.groups_dict[group_ID]['name'])
+                print("Adding the sequences to group " + cfg.groups_dict[group_ID]['name'])
                 self.add_sequences_to_group(group_ID)
 
     def add_sequences_to_group(self, group_ID):

@@ -105,6 +105,7 @@ class DelimitedFormat:
 
         # Get the total number of sequences
         cfg.run_params['total_sequences_num'] = seq_index
+        print("Total number of sequences: " + str(cfg.run_params['total_sequences_num']))
 
         # Create a 2D Numpy array for the similarity values and initialize it with 1
         cfg.similarity_values_mtx = np.full([cfg.run_params['total_sequences_num'],

@@ -47,7 +47,13 @@ def define_connected_sequences_list():
     cfg.connected_sequences_list = np.array(connections_list, dtype=int)
     cfg.att_values_for_connected_list = np.array(att_values_list, dtype=float)
     cfg.run_params['connections_num'] = hsp_num
-    print("Number of HSPs (under the P-value of " + str(cfg.run_params['similarity_cutoff']) + "): " + str(hsp_num))
+
+    if cfg.run_params['type_of_values'] == 'hsp':
+        print("Number of connections (under the P-value of " + str(cfg.run_params['similarity_cutoff']) + "): "
+              + str(hsp_num))
+    else:
+        print("Number of connections (above the threshold of " + str(cfg.run_params['similarity_cutoff']) + "): "
+              + str(hsp_num))
 
 # Create a list of connected pairs (non-redundant, [indexi][indexj]) for the line plot graphics
 @numba.njit
@@ -86,6 +92,11 @@ def define_connected_sequences_list_subset():
 
     cfg.connected_sequences_list_subset = np.array(connections_list, dtype=int)
     cfg.att_values_for_connected_list_subset = np.array(att_values_list, dtype=float)
-    print("Number of HSPs in the subset (under the P-value of " + str(cfg.run_params['similarity_cutoff']) + "): "
-          + str(hsp_num))
+
+    if cfg.run_params['type_of_values'] == 'hsp':
+        print("Number of connections in the subset (under the P-value of " + str(cfg.run_params['similarity_cutoff'])
+              + "): " + str(hsp_num))
+    else:
+        print("Number of connections in the subset (above the threshold of " + str(cfg.run_params['similarity_cutoff'])
+              + "): " + str(hsp_num))
 

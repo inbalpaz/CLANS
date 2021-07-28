@@ -35,6 +35,7 @@ run_params = {  # a dict to hold all the running parameters (given by the user /
     'input_format': input_format,
     'output_format': output_format,
     'type_of_values': type_of_values,
+    'is_debug_mode': False,
 }
 
 ## Data-related variables
