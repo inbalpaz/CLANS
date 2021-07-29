@@ -1357,7 +1357,7 @@ class MainWindow(QMainWindow):
     def remove_selected_from_group(self):
 
         # Remove the selected sequences group-assignment in the main group_list array
-        groups.remove_from_group(self.network_plot.selected_points)
+        groups.remove_from_group(self.network_plot.selected_points.copy())
 
         # Update the look of the selected data-points to the default look (without group assignment)
         if self.view_in_dimensions_num == 2 or self.mode == "selection":
