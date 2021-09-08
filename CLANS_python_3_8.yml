@@ -1,11 +1,12 @@
-name: CLANS_Python_3_8
+name: CLANS_python_3_8
 channels:
   - conda-forge
   - defaults
 dependencies:
+  - altgraph=0.17=pyhd8ed1ab_0
   - biopython=1.78=py38haf1e3a3_0
   - blas=1.0=mkl
-  - ca-certificates=2021.5.25=hecd8cb5_1
+  - ca-certificates=2021.7.5=hecd8cb5_1
   - certifi=2021.5.30=py38hecd8cb5_0
   - dbus=1.13.18=h18a8e69_0
   - expat=2.2.10=hb1e8313_2
@@ -26,6 +27,7 @@ dependencies:
   - libxml2=2.9.10=h7cdb67c_3
   - llvm-openmp=10.0.0=h28b9765_0
   - llvmlite=0.33.0=py38ha11be7d_1
+  - macholib=1.14=pyh9f0ad1d_1
   - mkl=2019.4=233
   - mkl-service=2.3.0=py38h9ed2024_0
   - mkl_fft=1.2.0=py38hc64f4ea_0
@@ -34,9 +36,11 @@ dependencies:
   - numba=0.50.1=py38h959d312_1
   - numpy=1.19.2=py38h456fd55_0
   - numpy-base=1.19.2=py38hcfb5961_0
-  - openssl=1.1.1k=h9ed2024_0
+  - openssl=1.1.1l=h9ed2024_0
   - pcre=8.44=hb1e8313_0
-  - pip=20.3.3=py38hecd8cb5_0
+  - pip=21.0.1=py38hecd8cb5_0
+  - pyinstaller=4.4=py38h4fe204b_0
+  - pyinstaller-hooks-contrib=2021.2=pyhd8ed1ab_0
   - pyqt=5.9.2=py38h655552a_2
   - python=3.8.5=h26836e1_1
   - python_abi=3.8=1_cp38
@@ -52,4 +56,4 @@ dependencies:
   - wheel=0.36.2=pyhd3eb1b0_0
   - xz=5.2.5=h1de35cc_0
   - zlib=1.2.11=h1de35cc_3
-prefix: /opt/anaconda3/envs/CLANS_Python_3_8
+prefix: /opt/anaconda3/envs/CLANS_python_3_8
