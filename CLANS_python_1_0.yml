@@ -1,0 +1,12 @@
+name: CLANS_python_1_0
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8.5
+  - biopython=1.78
+  - numpy=1.19.2
+  - numba=0.50.1
+  - pyqt=5.9.2
+  - vispy=0.6.4
+  - altgraph=0.17
