@@ -222,7 +222,7 @@ class SelectedSeqWindow(QWidget):
             text, is_case_sensitive = find_dlg.get_input()
 
             # The user entered some text
-            if text is not "":
+            if text != "":
 
                 self.seq_list.clearSelection()
                 # Turn off highlighting
@@ -373,7 +373,7 @@ class SearchResultsWindow(QWidget):
             self.clear_seq_list()
 
             # The user entered some text
-            if text is not "":
+            if text != "":
                 self.update_message("Searching data...")
                 self.find_in_data(text, is_case_sensitive)
             else:
