@@ -1009,13 +1009,13 @@ class Network3D:
         interval = (ymax - ymin) / self.group_name_interval
 
         # Define the size of the text according to the data size
-        #if cfg.run_params['total_sequences_num'] <= 1000:
-            #self.text_size = self.text_size_large
-        #elif 1000 < cfg.run_params['total_sequences_num'] <= 4000:
-            #self.text_size = self.text_size_medium
-        #else:
-            #self.text_size = self.text_size_small
-        self.text_size = self.text_size_medium
+        if cfg.run_params['total_sequences_num'] <= 1000:
+            self.text_size = self.text_size_large
+        elif 1000 < cfg.run_params['total_sequences_num'] <= 4000:
+            self.text_size = self.text_size_medium
+        else:
+            self.text_size = self.text_size_small
+        #self.text_size = self.text_size_medium
 
         for group_ID in self.ordered_groups_to_show:
             text_vis = scene.visuals.Text(method='gpu', bold=True)

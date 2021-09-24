@@ -1,8 +1,8 @@
 from PyQt5.QtCore import QThreadPool
 from PyQt5.QtWidgets import *
 from vispy import app, scene
-import vispy.io
 import numpy as np
+from PIL import Image
 import time
 import re
 import clans.config as cfg
@@ -127,6 +127,7 @@ class MainWindow(QMainWindow):
         self.conf_layout_submenu.addAction(self.conf_FR_layout_action)
 
         # Create the canvas (the graph area)
+        #self.canvas = scene.SceneCanvas(size=(800, 750), keys='interactive', show=True, bgcolor='w', dpi=200.0)
         self.canvas = scene.SceneCanvas(size=(800, 750), keys='interactive', show=True, bgcolor='w')
         self.canvas.events.mouse_move.connect(self.on_canvas_mouse_move)
         self.canvas.events.key_press.connect(self.on_canvas_key_press)
@@ -558,7 +559,7 @@ class MainWindow(QMainWindow):
 
     def load_clans_file(self):
 
-        opened_file, _ = QFileDialog.getOpenFileName()
+        opened_file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "Clans files (*.clans)")
 
         if opened_file:
             print("Loading " + opened_file)
@@ -581,7 +582,8 @@ class MainWindow(QMainWindow):
 
     def load_delimited_file(self):
 
-        opened_file, _ = QFileDialog.getOpenFileName()
+        #opened_file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "Text files (*.txt);;" "All files (*.*)",)
+        opened_file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "All files (*.*)")
 
         if opened_file:
             print("Loading " + opened_file)
@@ -910,9 +912,22 @@ class MainWindow(QMainWindow):
 
     def save_image(self):
 
-        saved_file, _ = QFileDialog.getSaveFileName()
-        img = self.canvas.render()
-        vispy.io.write_png(saved_file, img)
+        # Convert the canvas to numpy image array
+        img_array = self.canvas.render(alpha=False)
+
+        # Create a PIL.Image object from the array
+        img = Image.fromarray(img_array)
+
+        # Open a save file dialog with the following format options:  png, tiff, jpeg, eps
+        saved_file, _ = QFileDialog.getSaveFileName(self, "Save image", "", "PNG (*.png);; Tiff (*.tiff);; "
+                                                                            "Jpeg (*.jpg);; EPS (*.eps)")
+
+        if saved_file:
+
+            # Save the image array in the format specified by the file extension
+            img.save(saved_file)
+
+            print("Image was saved in file " + str(saved_file))
 
     def conf_FR_layout(self):
 

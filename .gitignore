@@ -1,3 +1,14 @@
+# Project-specific files
+
+# I/O files
+blast_output/
+external_scripts/
+input/
+output/
+
+main.py.lprof
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -135,11 +146,4 @@ dmypy.json
 # IDE files
 .idea/
 
-# I/O files
-blast_output/
-external_scripts/
-input/
-output/
-
-main.py.lprof
 

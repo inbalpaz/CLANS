@@ -1,7 +1,7 @@
 # The main script for running clans as a graphical application #
 ################################################################
-import clans.io.parser as parser
 from PyQt5.QtWidgets import QApplication
+import clans.io.parser as parser
 import clans.GUI.main_window as gui
 
 # Parse the command-line arguments
