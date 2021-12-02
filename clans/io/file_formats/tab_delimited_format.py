@@ -27,8 +27,6 @@ class DelimitedFormat:
             self.error = "The file \'" + file_path + "\' does not exist"
             return
 
-        fields_num = 0
-
         # Open and read the delimited text file
         with open(file_path) as infile:
             reader = csv.reader(infile, delimiter='\t')
@@ -60,9 +58,9 @@ class DelimitedFormat:
                     continue
 
                 # The score field is not a valid number
-                if not re.search("^\d+\.?\d*(e-\d+)*$", score):
+                if not re.search("^\d+\.?\d*[Ee]?[-+]?\d*$", score):
                     self.file_is_valid = 0
-                    self.error = "The file " + self.file_name + " has invalid format:\n"
+                    self.error = "The file " + self.file_name + " has an invalid format:\n"
                     self.error += "The third column must contain a float or exponential number for the " \
                                  "similarity-score or P_value"
                     return

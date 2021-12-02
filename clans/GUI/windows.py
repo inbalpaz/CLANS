@@ -94,8 +94,14 @@ class SelectedSeqWindow(QWidget):
         if len(self.sorted_seq_indices) > 0:
             for i in range(len(self.sorted_seq_indices)):
                 seq_index = self.sorted_seq_indices[i]
-                seq_title = cfg.sequences_array[seq_index]['seq_title'][1:]
-                line_str = str(seq_index) + "  " + seq_title
+                seq_title = cfg.sequences_array[seq_index]['seq_title'][0:]
+
+                # The sequence header is the same as the index -> display only once
+                if str(seq_index) == seq_title:
+                    line_str = str(seq_index)
+                else:
+                    line_str = str(seq_index) + "  " + seq_title
+
                 self.items.append(QListWidgetItem(line_str))
                 self.seq_list.insertItem(i, self.items[i])
 
@@ -394,7 +400,12 @@ class SearchResultsWindow(QWidget):
             if m:
                 self.sorted_seq_indices.append(seq_index)
 
-                line_str = str(seq_index) + "  " + seq_title
+                # The sequence header is the same as the index -> display only once
+                if str(seq_index) == seq_title:
+                    line_str = str(seq_index)
+                else:
+                    line_str = str(seq_index) + "  " + seq_title
+
                 self.items.append(QListWidgetItem(line_str))
                 self.seq_list.insertItem(i, self.items[i])
 
@@ -443,9 +454,10 @@ class SearchResultsWindow(QWidget):
             # Enable all the controls that are related to selected items in the Main Window
             self.main_window_object.open_selected_button.setEnabled(True)
             self.main_window_object.show_selected_names_button.setEnabled(True)
-            self.main_window_object.show_selected_numbers_button.setEnabled(True)
+            self.main_window_object.add_to_group_button.setEnabled(True)
+            self.main_window_object.remove_selected_button.setEnabled(True)
             if len(self.net_plot_object.selected_points) >= 4:
-                self.main_window_object.show_subset_button.setEnabled(True)
+                self.main_window_object.data_mode_combo.setEnabled(True)
 
     def set_as_selected(self):
 
@@ -476,8 +488,9 @@ class SearchResultsWindow(QWidget):
             # Enable all the controls that are related to selected items in the Main Window
             self.main_window_object.open_selected_button.setEnabled(True)
             self.main_window_object.show_selected_names_button.setEnabled(True)
-            self.main_window_object.show_selected_numbers_button.setEnabled(True)
+            self.main_window_object.add_to_group_button.setEnabled(True)
+            self.main_window_object.remove_selected_button.setEnabled(True)
             if len(self.net_plot_object.selected_points) >= 4:
-                self.main_window_object.show_subset_button.setEnabled(True)
+                self.main_window_object.data_mode_combo.setEnabled(True)
 
 

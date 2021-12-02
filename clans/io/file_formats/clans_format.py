@@ -124,6 +124,11 @@ class ClansFormat:
                             else:
                                 d[k] = v
                                 d['order'] = order
+                                # Add a default for the group-name size, bold and italic states
+                                # (these parameters are not written in the clans file)
+                                d['name_size'] = 10
+                                d['is_bold'] = True
+                                d['is_italic'] = False
 
                 elif line.strip() == "<pos>":
                     in_pos_block = 1
@@ -132,6 +137,16 @@ class ClansFormat:
                     if line.strip() == "</pos>":
                         in_pos_block = 0
                     else:
+
+                        # If there was no <seq> lock, probably it's the minimal-clans format -> print an error
+                        if found_seq_block == 0:
+                            self.file_is_valid = 0
+                            self.error = "The file " + self.file_name + " has invalid CLANS format:\n"
+                            self.error += "The full CLANS format must contain a sequences block (<seq>)\n" \
+                                          "including the original sequences in FASTA format\n" \
+                                          "Alternatively, load a file in 'minimal-clans' format"
+                            break
+
                         m = re.search("^(\d+)\s+(\S+)\s+(\S+)\s+(\S+)", line.strip())
                         if m:
                             index = int(m.group(1))
@@ -203,7 +218,6 @@ class ClansFormat:
                                 self.error += "Attraction values must be numbers between 0 and 1"
                                 break
                             pair_tuple = (index1, index2, att)
-                            #cfg.attraction_values_list.append(pair_tuple)
                             cfg.similarity_values_list.append(pair_tuple)
                         else:
                             self.file_is_valid = 0
@@ -344,13 +358,12 @@ class ClansFormat:
             groups_block = ""
             output.write('<seqgroups>\n')
             for group_ID in cfg.groups_dict:
+
                 seq_ids_str = ""
                 for seq_index in cfg.groups_dict[group_ID]['seqIDs']:
                     seq_ids_str += str(seq_index) + ";"
                 groups_block += 'name=' + cfg.groups_dict[group_ID]['name'] + '\n'
-                groups_block += 'type=' + cfg.groups_dict[group_ID]['type'] + '\n'
                 groups_block += 'size=' + cfg.groups_dict[group_ID]['size'] + '\n'
-                groups_block += 'hide=' + cfg.groups_dict[group_ID]['hide'] + '\n'
                 groups_block += 'color=' + cfg.groups_dict[group_ID]['color'] + '\n'
                 groups_block += 'numbers=' + seq_ids_str + '\n'
             output.write(groups_block)
@@ -382,3 +395,4 @@ class ClansFormat:
             output.write('</att>')
 
         output.close()
+

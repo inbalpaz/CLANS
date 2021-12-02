@@ -39,10 +39,6 @@ def delete_group(group_ID):
         group_index = group_IDs_list[i]
         cfg.groups_dict[group_index]['order'] -= 1
 
-    # Remove the group assignment from all its members
-    #for seq_index in cfg.groups_dict[group_ID]['seqIDs']:
-        #cfg.sequences_array[seq_index]['in_group'] = -1
-
     # Delete the requested group from the main groups dictionary
     if group_ID in cfg.groups_dict:
         del cfg.groups_dict[group_ID]
@@ -67,6 +63,8 @@ def add_to_group(points_dict, group_ID):
 
 def remove_from_group(points_dict):
 
+    groups_with_deleted_members = {}
+
     # A loop over the sequences
     for seq_index in points_dict:
 
@@ -80,3 +78,10 @@ def remove_from_group(points_dict):
 
             # Remove the group index from the sequence
             cfg.sequences_array[seq_index]['in_group'] = -1
+
+            # Add the groupID to a dict of groups, that at least one member was deleted from
+            # (to be later checked if they are empty)
+            if group_ID not in groups_with_deleted_members:
+                groups_with_deleted_members[group_ID] = 1
+
+    return groups_with_deleted_members.copy()

@@ -1,4 +1,4 @@
-name: CLANS_python_0_1
+name: CLANS_python
 channels:
   - defaults
   - conda-forge

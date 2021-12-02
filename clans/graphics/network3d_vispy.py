@@ -1,3 +1,4 @@
+import re
 import numpy as np
 from vispy import app, scene, util
 import clans.config as cfg
@@ -28,7 +29,6 @@ class Network3D:
         self.text_size = self.text_size_medium
         self.selected_nodes_size = self.nodes_size + 5
         self.highlighted_nodes_size = self.selected_nodes_size + 5
-        self.group_name_interval = 28
         self.nodes_symbol = 'disc'
         self.nodes_default_color = [0.0, 0.0, 0.0, 1.0]
         self.nodes_highlight_color = [0.0, 1.0, 1.0, 1.0] # Tourquise
@@ -36,11 +36,11 @@ class Network3D:
         self.selected_outline_color = [1.0, 0.0, 1.0, 1.0]
         self.highlighted_outline_color = [1.0, 0.0, 1.0, 1.0]
         self.att_values_bins = np.array([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
-        self.edges_color_scale = {1: (0.7, 0.7, 0.7, 0.9),
-                                  2: (0.6, 0.6, 0.6, 0.9),
-                                  3: (0.5, 0.5, 0.5, 0.9),
-                                  4: (0.4, 0.4, 0.4, 0.9),
-                                  5: (0.3, 0.3, 0.3, 0.9)}
+        self.edges_color_scale = {1: (0.8, 0.8, 0.8, 1.0),
+                                  2: (0.6, 0.6, 0.6, 1.0),
+                                  3: (0.4, 0.4, 0.4, 1.0),
+                                  4: (0.2, 0.2, 0.2, 1.0),
+                                  5: (0.0, 0.0, 0.0, 1.0)}
         self.edges_width_scale = {1: 0.01,
                                   2: 0.01,
                                   3: 0.01,
@@ -51,9 +51,10 @@ class Network3D:
         # Dictionaries for holding the selected points / groups
         self.selected_points = {}
         self.selected_groups = {}
-        self.group_to_show = {}
+        self.groups_to_show = {}
         self.ordered_groups_to_show = []
         self.group_name_to_move = None
+        self.points_to_move = {}
 
         self.is_subset_mode = 0
 
@@ -97,6 +98,7 @@ class Network3D:
         self.scatter_plot = scene.visuals.Markers(parent=view.scene)
         self.scatter_plot.set_gl_state('translucent', blend=True, depth_test=True)
         self.scatter_plot.order = -1
+        self.scatter_plot.interactive = True
 
         # Create a dict to hold the scatter_by_groups visuals (in 2D presentation,
         # display the different groups as separate visuals, to enable control of the order in which they are displayed)
@@ -133,8 +135,12 @@ class Network3D:
         # Create a dict of text visuals to present all the groups names (separate visual to each group)
         self.groups_text_visual = {}
 
+        # Create a dict of text visuals that the user can add to the scene
+        #self.general_text_visual = {}
+
         # The XYZ axis is a workaround for a bug, causing the connecting-lines to be displayed wrong in 2D view
         self.axis = scene.visuals.XYZAxis()
+        self.axis.order = 7
 
     # Set the plot data for the first time
     def init_data(self, view, fr_object):
@@ -144,14 +150,11 @@ class Network3D:
         self.rotated_pos_array = self.pos_array.copy()
         if self.pos_array.shape[1] == 2:
             self.pos_array = np.column_stack((self.pos_array, cfg.sequences_array['z_coor']))
-        #print("\nInitial coordinates:\n")
-        #print(self.pos_array)
 
         # Build a dictionary of the groups that should be displayed
         for group_ID in cfg.groups_dict:
-            if cfg.groups_dict[group_ID]['hide'] == '0':
-                self.group_to_show[group_ID] = cfg.groups_dict[group_ID]['order']
-        self.ordered_groups_to_show = sorted(self.group_to_show, key=self.group_to_show.get)
+            self.groups_to_show[group_ID] = cfg.groups_dict[group_ID]['order']
+        self.ordered_groups_to_show = sorted(self.groups_to_show, key=self.groups_to_show.get)
 
         # Calculate and save the initial azimuth and elevation angles of all the points
         self.calculate_initial_angles()
@@ -181,7 +184,7 @@ class Network3D:
             # Build the colors array of the nodes according to the groups information (if any)
             if cfg.sequences_array[seq_index]['in_group'] >= 0:
                 group_ID = cfg.sequences_array[seq_index]['in_group']
-                if group_ID in self.group_to_show:
+                if group_ID in self.groups_to_show:
                     self.nodes_colors_array[seq_index] = cfg.groups_dict[group_ID]['color_array']
                     # Assign the node-size that is defined in the group
                     self.nodes_size_array[seq_index] = cfg.groups_dict[group_ID]['size']
@@ -251,7 +254,7 @@ class Network3D:
         self.nodes_outline_color_array = []
         self.selected_points = {}
         self.selected_groups = {}
-        self.group_to_show = {}
+        self.groups_to_show = {}
         self.ordered_groups_to_show = []
         self.group_name_to_move = None
         self.is_subset_mode = 0
@@ -488,7 +491,7 @@ class Network3D:
                 self.show_scatter_by_groups(view)
 
                 # Update the lines with the updated rotation. Set the correct order
-                order = len(self.group_to_show) + 6
+                order = len(self.groups_to_show) + 6
                 for i in range(5):
                     line_color = self.edges_color_scale[i + 1]
                     line_width = self.edges_width_scale[i + 1]
@@ -497,7 +500,7 @@ class Network3D:
                     self.lines[i].order = order
                     order -= 1
 
-                self.drag_rectangle.order = len(self.group_to_show)
+                self.drag_rectangle.order = len(self.groups_to_show)
 
         # Subset mode
         else:
@@ -827,7 +830,7 @@ class Network3D:
     def update_members_by_groups(self):
 
         # Update the member sequences of each group
-        for group_ID in self.group_to_show:
+        for group_ID in self.groups_to_show:
             members_array = []
             for seqID in cfg.groups_dict[group_ID]['seqIDs']:
                 members_array.append(seqID)
@@ -914,7 +917,6 @@ class Network3D:
                 pos_array[:, 2] = 0
 
             for key in self.selected_points:
-                #text_list.append('  '+cfg.sequences_array['seq_title'][key][1:])
                 text_list.append('  ' + cfg.sequences_array['seq_title'][key])
                 pos_list.append(tuple(pos_array[key]))
 
@@ -928,7 +930,6 @@ class Network3D:
 
             i = 0
             for seq_index in sorted(self.selected_points):
-                #text_list.append('  '+cfg.sequences_array['seq_title'][seq_index][1:])
                 text_list.append('  ' + cfg.sequences_array['seq_title'][seq_index])
                 pos_list.append(tuple(pos_array[i]))
                 i += 1
@@ -937,7 +938,7 @@ class Network3D:
         if len(pos_list) > 0:
             self.seq_text_visual.text = text_list
             self.seq_text_visual.pos = pos_list
-            self.seq_text_visual.font_size = self.text_size - 2
+            self.seq_text_visual.font_size = self.text_size_small
             self.seq_text_visual.anchors = ['top', 'left']
             self.seq_text_visual.color = [0.0, 0.0, 0.0, 1.0]
 
@@ -997,37 +998,18 @@ class Network3D:
         self.seq_number_visual.parent = None
 
     def build_group_names_visual(self, view):
-        trans = view.scene.transform
-        upper_left_data_coor = trans.imap([50, 30, 0, 1])
-
-        pos_x = upper_left_data_coor[0]
-        pos_y = upper_left_data_coor[1]
-        pos_z = 0
-
-        ymin = np.amin(self.pos_array[:, 1])
-        ymax = np.amax(self.pos_array[:, 1])
-        interval = (ymax - ymin) / self.group_name_interval
-
-        # Define the size of the text according to the data size
-        if cfg.run_params['total_sequences_num'] <= 1000:
-            self.text_size = self.text_size_large
-        elif 1000 < cfg.run_params['total_sequences_num'] <= 4000:
-            self.text_size = self.text_size_medium
-        else:
-            self.text_size = self.text_size_small
-        #self.text_size = self.text_size_medium
 
         for group_ID in self.ordered_groups_to_show:
             text_vis = scene.visuals.Text(method='gpu', bold=True)
             text_vis.set_gl_state('translucent', blend=True, depth_test=False)
             text_vis.text = cfg.groups_dict[group_ID]['name']
-            text_vis.pos = (pos_x, pos_y, pos_z)
-            text_vis.font_size = self.text_size
+            text_vis.font_size = cfg.groups_dict[group_ID]['name_size']
             text_vis.anchors = ['left', 'center']
             text_vis.color = cfg.groups_dict[group_ID]['color_array']
+            text_vis.interactive = True
             self.groups_text_visual[group_ID] = text_vis
 
-            pos_y -= interval
+        self.reset_group_names_positions(view)
 
     def add_to_group_names_visual(self, group_ID, view):
 
@@ -1036,9 +1018,10 @@ class Network3D:
         text_vis.set_gl_state('translucent', blend=True, depth_test=False)
         text_vis.text = cfg.groups_dict[group_ID]['name']
         text_vis.pos = (0, 0, 0)
-        text_vis.font_size = self.text_size
         text_vis.anchors = ['left', 'center']
         text_vis.color = cfg.groups_dict[group_ID]['color_array']
+        text_vis.font_size = cfg.groups_dict[group_ID]['name_size']
+        text_vis.interactive = True
         self.groups_text_visual[group_ID] = text_vis
 
         # Update the positions of all the group names, including the new one
@@ -1056,29 +1039,22 @@ class Network3D:
     def update_text_group_name_visual(self, group_ID):
         self.groups_text_visual[group_ID].text = cfg.groups_dict[group_ID]['name']
         self.groups_text_visual[group_ID].color = cfg.groups_dict[group_ID]['color_array']
+        self.groups_text_visual[group_ID].font_size = cfg.groups_dict[group_ID]['name_size']
+        self.groups_text_visual[group_ID].bold = cfg.groups_dict[group_ID]['is_bold']
+        self.groups_text_visual[group_ID].italic = cfg.groups_dict[group_ID]['is_italic']
 
     def show_group_names(self, view, mode):
-        trans = view.scene.transform
-        upper_left_data_coor = trans.imap([50, 30, 0, 1])
-
-        pos_x = upper_left_data_coor[0]
-        pos_y = upper_left_data_coor[1]
-        pos_z = 0
-
-        ymin = np.amin(self.pos_array[:, 1])
-        ymax = np.amax(self.pos_array[:, 1])
-        interval = (ymax - ymin) / self.group_name_interval
 
         # Show all group names
         if mode == 'all':
             # a loop over the groups
-            for group_index in self.group_to_show:
+            for group_index in self.groups_to_show:
                 self.groups_text_visual[group_index].parent = view.scene
 
         # Mode is 'selected' => show only the selected group names
         else:
             # a loop over the groups
-            for group_index in self.group_to_show:
+            for group_index in self.groups_to_show:
                 # If the group is selected => present it on the scene
                 if group_index in self.selected_groups:
                     self.groups_text_visual[group_index].parent = view.scene
@@ -1087,21 +1063,21 @@ class Network3D:
 
     def reset_group_names_positions(self, view):
 
+        x_init = 40
+        y_init = 30
+        y_interval = 15
+
         trans = view.scene.transform
-        upper_left_data_coor = trans.imap([50, 30, 0, 1])
-        pos_x = upper_left_data_coor[0]
-        pos_y = upper_left_data_coor[1]
-        pos_z = 0
 
-        pos_array = self.rotated_pos_array.copy()
-
-        ymin = np.amin(pos_array[:, 1])
-        ymax = np.amax(pos_array[:, 1])
-        interval = (ymax - ymin) / self.group_name_interval
-
+        x = x_init
+        y = y_init
         for group_ID in self.ordered_groups_to_show:
-            self.groups_text_visual[group_ID].pos = (pos_x, pos_y, pos_z)
-            pos_y -= interval
+            # Verify that the group is not empty
+            if len(cfg.groups_dict[group_ID]['seqIDs']) > 0:
+                data_coor = trans.imap([x, y, 0, 1])
+                pos_data_coor = (data_coor[0], data_coor[1], data_coor[2])
+                self.groups_text_visual[group_ID].pos = pos_data_coor
+                y += y_interval
 
     def hide_group_names(self):
         # Remove all the group names from the scene
@@ -1111,9 +1087,8 @@ class Network3D:
     def add_group(self, group_ID, view):
 
         # If the group should be presented, add it to the 'groups_to_show' dict
-        if cfg.groups_dict[group_ID]['hide'] == 0:
-            self.group_to_show[group_ID] = cfg.groups_dict[group_ID]['order']
-            self.ordered_groups_to_show.append(group_ID)
+        self.groups_to_show[group_ID] = cfg.groups_dict[group_ID]['order']
+        self.ordered_groups_to_show.append(group_ID)
 
         self.add_to_group_names_visual(group_ID, view)
 
@@ -1141,22 +1116,42 @@ class Network3D:
         self.remove_from_scatter_by_groups(group_ID, view, dim_num, z_index_mode)
 
         # 3. Remove the group from the groups_to_show dict and from the ordered_groups_to_show list
-        if group_ID in self.group_to_show:
-            del self.group_to_show[group_ID]
+        if group_ID in self.groups_to_show:
+            del self.groups_to_show[group_ID]
             self.ordered_groups_to_show.remove(group_ID)
 
         # 4. Update the group_names_visual
         self.remove_from_group_names_visual(group_ID, view)
 
+    def delete_empty_group(self, group_ID, view, dim_num, z_index_mode):
+
+        # 1. Remove the group from the scatter-plot visual
+        self.remove_from_scatter_by_groups(group_ID, view, dim_num, z_index_mode)
+
+        # 2. Remove the group from the groups_to_show dict and from the ordered_groups_to_show list
+        if group_ID in self.groups_to_show:
+            del self.groups_to_show[group_ID]
+            self.ordered_groups_to_show.remove(group_ID)
+
+        # 3. Update the group_names_visual
+        self.remove_from_group_names_visual(group_ID, view)
+
     def edit_group_parameters(self, group_ID, view, dim_num, z_index_mode):
 
-        # Update the group nodes with the new color and size
-        for seq_index in cfg.groups_dict[group_ID]['seqIDs']:
-            self.nodes_colors_array[seq_index] = cfg.groups_dict[group_ID]['color_array']
-            self.nodes_size_array[seq_index] = cfg.groups_dict[group_ID]['size']
+        # The group is not empty
+        if len(cfg.groups_dict[group_ID]['seqIDs']) > 0:
 
-        # Update the group name visual
-        self.update_text_group_name_visual(group_ID)
+            # Update the group nodes with the new color and size
+            for seq_index in cfg.groups_dict[group_ID]['seqIDs']:
+                self.nodes_colors_array[seq_index] = cfg.groups_dict[group_ID]['color_array']
+                self.nodes_size_array[seq_index] = cfg.groups_dict[group_ID]['size']
+
+            # Update the group name visual
+            self.update_text_group_name_visual(group_ID)
+
+        # The group is empty
+        else:
+            self.remove_from_group_names_visual(group_ID, view)
 
         if dim_num == 3:
             self.update_3d_view()
@@ -1165,12 +1160,12 @@ class Network3D:
 
     def update_groups_order(self, dim_num, view, z_index_mode):
 
-        # Update the order in group_to_show dict
-        for group_ID in self.group_to_show:
-            self.group_to_show[group_ID] = cfg.groups_dict[group_ID]['order']
+        # Update the order in groups_to_show dict
+        for group_ID in self.groups_to_show:
+            self.groups_to_show[group_ID] = cfg.groups_dict[group_ID]['order']
 
         # Re-sort the groups array according to the updated order
-        self.ordered_groups_to_show = sorted(self.group_to_show, key=self.group_to_show.get)
+        self.ordered_groups_to_show = sorted(self.groups_to_show, key=self.groups_to_show.get)
 
         # Update the positions of the group names
         self.reset_group_names_positions(view)
@@ -1186,7 +1181,7 @@ class Network3D:
 
     def add_to_group(self, points_dict, group_ID, dim_num, view, z_index_mode):
 
-        if group_ID in self.group_to_show:
+        if group_ID in self.groups_to_show:
             for seq_index in points_dict:
                 self.nodes_colors_array[seq_index] = cfg.groups_dict[group_ID]['color_array']
                 #self.nodes_size_array[seq_index] = cfg.groups_dict[group_ID]['size']
@@ -1201,7 +1196,6 @@ class Network3D:
     def remove_from_group(self, points_dict, dim_num, view, z_index_mode):
         for seq_index in points_dict:
             self.nodes_colors_array[seq_index] = self.nodes_default_color
-            #self.nodes_size_array[seq_index] = self.nodes_size
 
         self.update_members_by_groups()
 
@@ -1217,12 +1211,12 @@ class Network3D:
         groups_in_radius = {}
         deselect = 0
 
-        # Define the radius (in pixels) around the clicked position to look for a data point(s)
-        radius = self.nodes_size
-
         trans = view.scene.transform
 
         for seq_index in range(self.rotated_pos_array.shape[0]):
+
+            # Define the radius (in pixels) around the clicked position to look for a data point(s)
+            radius = self.nodes_size_array[seq_index]
 
             # Translate the data coordinates into screen coordinates
             data_screen_coor = trans.map(self.rotated_pos_array[seq_index])
@@ -1394,7 +1388,7 @@ class Network3D:
             self.nodes_size_array[seq_index] = self.selected_nodes_size
 
         if selection_type == 'groups':
-            for group_index in self.group_to_show:
+            for group_index in self.groups_to_show:
                 self.selected_groups[group_index] = 1
 
         if dim_num == 3:
@@ -1428,7 +1422,7 @@ class Network3D:
             group_ID = cfg.sequences_array[seq_index]['in_group']
 
             # If the sequence belongs to a group - set the size according to the group definitions
-            if group_ID > -1 and group_ID in self.group_to_show:
+            if group_ID > -1 and group_ID in self.groups_to_show:
                 self.nodes_size_array[seq_index] = int(cfg.groups_dict[group_ID]['size'])
 
             # Set the default size
@@ -1464,7 +1458,7 @@ class Network3D:
 
             if cfg.sequences_array[seq_index]['in_group'] >= 0:
                 group_ID = cfg.sequences_array[seq_index]['in_group']
-                if group_ID in self.group_to_show:
+                if group_ID in self.groups_to_show:
                     self.nodes_colors_array[seq_index] = cfg.groups_dict[group_ID]['color_array']
             else:
                 self.nodes_colors_array[seq_index] = self.nodes_default_color
@@ -1518,9 +1512,11 @@ class Network3D:
         trans = view.scene.transform
         start_move_data_coor = trans.imap(start_move_screen_coor)
         end_move_data_coor = trans.imap(end_move_screen_coor)
+
         if view.camera.fov != 0:
             start_move_data_coor /= start_move_data_coor[3]
             end_move_data_coor /= end_move_data_coor[3]
+
         distance_vec_data_coor = end_move_data_coor - start_move_data_coor
 
         if dim_num == 3:
@@ -1534,10 +1530,10 @@ class Network3D:
         #print("rotated_pos_array:")
         #print(self.rotated_pos_array)
 
-    def update_moved_positions(self, dim_num):
+    def update_moved_positions(self, moved_pos_dict, dim_num):
 
         if dim_num == 2:
-            for index in self.selected_points:
+            for index in moved_pos_dict:
                 rotated_array = np.append(self.rotated_pos_array[index], 1)
                 inverse_array = np.dot(self.inverse_affine_mtx, rotated_array)
                 self.pos_array[index] = inverse_array[:3]
@@ -1547,11 +1543,81 @@ class Network3D:
         # Calculate the angles of each point for future use when having rotations
         self.calculate_initial_angles()
 
+    def find_points_to_move(self, view, clicked_screen_coor):
+
+        trans = view.scene.transform
+
+        for seq_index in range(self.rotated_pos_array.shape[0]):
+
+            # Translate the data coordinates into screen coordinates
+            data_screen_coor = trans.map(self.rotated_pos_array[seq_index])
+            data_screen_coor /= data_screen_coor[3]
+
+            # Calculate the euclidean distances of all the points from the clicked point (in screen coor)
+            distance_screen_coor = np.linalg.norm(data_screen_coor[:2] - clicked_screen_coor)
+
+            # Define the radius (in pixels) around the clicked position to look for a data point(s)
+            radius = self.nodes_size_array[seq_index]
+
+            # Found a data point in the radius of the clicked point
+            if distance_screen_coor <= radius:
+                self.points_to_move[seq_index] = 1
+
+        if cfg.run_params['is_debug_mode']:
+            print("Found point(s) to move:")
+            print(self.points_to_move)
+
+    def move_points(self, view, start_move_screen_coor, end_move_screen_coor, z_index_mode):
+
+        trans = view.scene.transform
+        start_move_data_coor = trans.imap(start_move_screen_coor)
+        end_move_data_coor = trans.imap(end_move_screen_coor)
+
+        if view.camera.fov != 0:
+            start_move_data_coor /= start_move_data_coor[3]
+            end_move_data_coor /= end_move_data_coor[3]
+
+        distance_vec_data_coor = end_move_data_coor - start_move_data_coor
+
+        for index in self.points_to_move:
+            self.rotated_pos_array[index, :] += distance_vec_data_coor[:3]
+        self.update_2d_view(view, z_index_mode)
+
+    def finish_points_move(self, dim_num, fr_object):
+
+        #self.update_moved_positions(self.points_to_move, dim_num)
+
+        # Update the coordinates in the fruchterman-reingold object
+        #fr_object.init_coordinates(cfg.sequences_array['x_coor'],
+                                        #cfg.sequences_array['y_coor'],
+                                        #cfg.sequences_array['z_coor'])
+
+        self.points_to_move = {}
+
+    def find_visual(self, canvas, clicked_screen_coor):
+
+        visual = canvas.visual_at(clicked_screen_coor)
+
+        if re.search("Markers", str(visual)):
+            visual_type = "data"
+
+            if cfg.run_params['is_debug_mode']:
+                print("Found data-point visual to move")
+
+        elif re.search("Text", str(visual)):
+            visual_type = "text"
+
+            if cfg.run_params['is_debug_mode']:
+                print("Found text visual to move")
+
+        else:
+            visual_type = None
+
+        return visual_type
+
     def find_group_name_to_move(self, view, clicked_screen_coor):
 
         permitted_dist_x = 100
-        permitted_dist_y = 3
-        found_visual = 0
 
         trans = view.scene.transform
 
@@ -1565,14 +1631,47 @@ class Network3D:
             dist_x = clicked_screen_coor[0] - group_pos_screen_coor[0][0]
             dist_y = abs(clicked_screen_coor[1] - group_pos_screen_coor[0][1])
 
+            # Define the permitted distance in the Y axis according to the group-name size
+            permitted_dist_y = int(cfg.groups_dict[group_index]['name_size'])
+
             if 0 <= dist_x <= permitted_dist_x and dist_y <= permitted_dist_y:
-                found_visual = 1
                 self.group_name_to_move = group_index
-                group_visual.font_size = self.text_size + 2
-                print("Found group name visual. Index=" + str(group_index))
-                print("Clicked coor: " + str(clicked_screen_coor))
-                print("Group name coor: " + str(group_pos_screen_coor[0]))
+
+                if cfg.run_params['is_debug_mode']:
+                    print("Found group name visual. Index=" + str(group_index))
+                    #print("Clicked coor: " + str(clicked_screen_coor))
+                    #print("Group name coor: " + str(group_pos_screen_coor[0]))
+
                 break
+
+    def find_group_name_to_edit(self, view, clicked_screen_coor):
+
+        permitted_dist_x = 100
+
+        trans = view.scene.transform
+
+        for group_index in self.groups_text_visual:
+
+            group_visual = self.groups_text_visual[group_index]
+
+            # Translate the data coordinates into screen coordinates
+            group_pos_screen_coor = trans.map(group_visual.pos)
+
+            dist_x = clicked_screen_coor[0] - group_pos_screen_coor[0][0]
+            dist_y = abs(clicked_screen_coor[1] - group_pos_screen_coor[0][1])
+
+            # Define the permitted distance in the Y axis according to the group-name size
+            permitted_dist_y = int(cfg.groups_dict[group_index]['name_size'])
+
+            if 0 <= dist_x <= permitted_dist_x and dist_y <= permitted_dist_y:
+
+                if cfg.run_params['is_debug_mode']:
+                    print("Found group name visual. Index=" + str(group_index))
+                    #print("Clicked coor: " + str(clicked_screen_coor))
+                    #print("Group name coor: " + str(group_pos_screen_coor[0]))
+
+                return group_index
+
 
     def move_group_name(self, view, start_move_screen_coor, end_move_screen_coor):
         # There is a selected group name to move
@@ -1581,7 +1680,6 @@ class Network3D:
             end_move_data_coor = trans.imap(end_move_screen_coor)
             new_pos = (end_move_data_coor[0], end_move_data_coor[1], 0)
             self.groups_text_visual[self.group_name_to_move].pos = new_pos
-            self.groups_text_visual[self.group_name_to_move].font_size = self.text_size
 
     def finish_group_name_move(self):
         if self.group_name_to_move is not None:
@@ -1632,7 +1730,6 @@ class Network3D:
         #print(view.camera.get_state())
 
     def reset_turntable_camera(self, view):
-        #view.camera = 'turntable'
         view.camera.elevation = self.initial_elevation
         view.camera.azimuth = self.initial_azimuth
         view.camera.center = (0.0, 0.0, 0.0)
