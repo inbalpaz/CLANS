@@ -134,10 +134,10 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.quit_action)
 
         # Create the Edit menu
-        self.edit_menu = self.main_menu.addMenu("Edit")
+        #self.edit_menu = self.main_menu.addMenu("Edit")
 
         # Create the View menu
-        self.view_menu = self.main_menu.addMenu("View")
+        #self.view_menu = self.main_menu.addMenu("View")
 
         # Create the Configuration menu
         self.conf_menu = self.main_menu.addMenu("Configure")
@@ -149,7 +149,7 @@ class MainWindow(QMainWindow):
         self.conf_layout_submenu.addAction(self.conf_FR_layout_action)
 
         # Create the Tools menu
-        self.tools_menu = self.main_menu.addMenu("Tools")
+        #self.tools_menu = self.main_menu.addMenu("Tools")
 
         # Create the canvas (the graph area)
         self.canvas = scene.SceneCanvas(size=(800, 750), keys='interactive', show=True, bgcolor='w')
