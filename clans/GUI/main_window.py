@@ -1167,9 +1167,11 @@ class MainWindow(QMainWindow):
             self.stop_button.setEnabled(False)
             self.dimensions_clustering_combo.setEnabled(False)
             self.pval_widget.setEnabled(False)
-            self.selection_type_combo.setEnabled(True)
             self.dimensions_view_combo.setEnabled(False)
             self.z_index_mode_combo.setEnabled(True)
+
+            if len(cfg.groups_dict) > 0:
+                self.selection_type_combo.setEnabled(True)
 
             # Disconnect the default behaviour of the viewbox when the mouse moves
             # and connect special callbacks for mouse_move and mouse_release
@@ -1467,7 +1469,6 @@ class MainWindow(QMainWindow):
             # Add the new group to the main groups array
             group_dict = dict()
             group_dict['name'] = group_name
-            group_dict['shape_type'] = 'disc'
             group_dict['size'] = size
             group_dict['name_size'] = group_name_size
             group_dict['color'] = color_clans
@@ -1489,6 +1490,7 @@ class MainWindow(QMainWindow):
 
             self.edit_groups_button.setEnabled(True)
             self.show_group_names_button.setEnabled(True)
+            self.selection_type_combo.setEnabled(True)
 
             # The group names are displayed -> update them including the new group
             if self.is_show_group_names:
@@ -1516,12 +1518,15 @@ class MainWindow(QMainWindow):
                 # 2. Delete the group
                 groups.delete_group(group_ID)
 
-        # Check if there are groups left. If not, disable the 'Show group names' button
+        # Check if there are groups left. If not, disable the related groups controls
         if len(cfg.groups_dict) == 0:
             self.show_group_names_button.setChecked(False)
             self.show_group_names_button.setEnabled(False)
             self.show_groups_combo.setEnabled(False)
             self.reset_group_names_button.setEnabled(False)
+            self.selection_type_combo.setCurrentIndex(0)
+            self.selection_type_combo.setEnabled(False)
+            self.edit_groups_button.setEnabled(False)
 
     ## Callback functions to deal with mouse and key events
 

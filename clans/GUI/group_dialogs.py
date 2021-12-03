@@ -101,21 +101,25 @@ class CreateGroupDialog(QDialog):
         self.layout.addWidget(self.group_name_size_label, 1, 0)
         self.layout.addWidget(self.group_name_size, 1, 1)
 
-        # Set the size of the group nodes
-        self.size_label = QLabel("Data-points size:")
-        default_size = net_plot_object.nodes_size
-        self.group_size = QComboBox()
+        # Add Bold and Italic options
+        self.bold_label = QLabel("Bold")
+        self.bold_checkbox = QCheckBox()
+        self.bold_checkbox.setChecked(True)
+        self.bold_layout = QHBoxLayout()
+        self.bold_layout.addWidget(self.bold_checkbox)
+        self.bold_layout.addWidget(self.bold_label)
+        self.bold_layout.addStretch()
 
-        i = 0
-        for size in range(5, 21):
-            self.group_size.addItem(str(size))
-            if size == default_size:
-                default_index = i
-            i += 1
-        self.group_size.setCurrentIndex(default_index)
+        self.italic_label = QLabel("Italic")
+        self.italic_checkbox = QCheckBox()
+        self.italic_checkbox.setChecked(False)
+        self.italic_layout = QHBoxLayout()
+        self.italic_layout.addWidget(self.italic_checkbox)
+        self.italic_layout.addWidget(self.italic_label)
+        self.italic_layout.addStretch()
 
-        self.layout.addWidget(self.size_label, 2, 0)
-        self.layout.addWidget(self.group_size, 2, 1)
+        self.layout.addLayout(self.bold_layout, 2, 0)
+        self.layout.addLayout(self.italic_layout, 2, 1)
 
         # Set the color of the group's nodes
         self.color_label = QLabel("Color:")
@@ -132,6 +136,22 @@ class CreateGroupDialog(QDialog):
         self.layout.addWidget(self.color_label, 3, 0)
         self.layout.addWidget(self.selected_color_label, 3, 1)
         self.layout.addWidget(self.change_color_button, 3, 2)
+
+        # Set the size of the group nodes
+        self.size_label = QLabel("Data-points size:")
+        default_size = net_plot_object.nodes_size
+        self.group_size = QComboBox()
+
+        i = 0
+        for size in range(5, 21):
+            self.group_size.addItem(str(size))
+            if size == default_size:
+                default_index = i
+            i += 1
+        self.group_size.setCurrentIndex(default_index)
+
+        self.layout.addWidget(self.size_label, 4, 0)
+        self.layout.addWidget(self.group_size, 4, 1)
 
         # Add the OK/Cancel standard buttons
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)

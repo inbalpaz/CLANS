@@ -827,6 +827,22 @@ class Network3D:
                 members_array.append(seqID)
         self.members_array_by_groups[group_ID] = members_array.copy()
 
+    def add_to_scatter_by_groups(self, group_ID):
+
+        scatter = scene.visuals.Markers()
+        scatter.set_gl_state('translucent', blend=True, depth_test=True)
+        scatter.order = len(self.ordered_groups_to_show) - 2
+        self.scatter_by_groups[group_ID] = scatter
+        self.pos_array_by_groups[group_ID] = np.zeros((len(self.members_array_by_groups[group_ID]), 3),
+                                                      dtype=np.float32)
+        self.size_array_by_groups[group_ID] = np.zeros(len(self.members_array_by_groups[group_ID]),
+                                                       dtype=np.float32)
+        self.nodes_outline_color_array_by_groups[group_ID] = np.zeros((len(self.members_array_by_groups[group_ID]), 4),
+                                                                      dtype=np.float32)
+
+        # Move group 'none' to the bottom (increase order)
+        self.scatter_by_groups['none'].order = len(self.ordered_groups_to_show) - 1
+
     def update_members_by_groups(self):
 
         # Update the member sequences of each group
@@ -853,6 +869,9 @@ class Network3D:
         for i in range(current_order+2, len(self.ordered_groups_to_show)):
             group_index = self.ordered_groups_to_show[i]
             self.scatter_by_groups[group_index].order -= 1
+
+        # Update the order of group 'none'
+        self.scatter_by_groups['none'].order = len(self.ordered_groups_to_show) - 1
 
         # Delete the entry of this group from all the dictionaries related to the scatter_by_groups
         if group_ID in self.scatter_by_groups:
@@ -1096,16 +1115,7 @@ class Network3D:
         self.update_members_by_groups()
 
         # Add the group to the scatter-plot visual
-        scatter = scene.visuals.Markers()
-        scatter.set_gl_state('translucent', blend=True, depth_test=True)
-        scatter.order = len(self.ordered_groups_to_show) - 2
-        self.scatter_by_groups[group_ID] = scatter
-        self.pos_array_by_groups[group_ID] = np.zeros((len(self.members_array_by_groups[group_ID]), 3),
-                                                      dtype=np.float32)
-        self.size_array_by_groups[group_ID] = np.zeros(len(self.members_array_by_groups[group_ID]),
-                                                       dtype=np.float32)
-        self.nodes_outline_color_array_by_groups[group_ID] = np.zeros((len(self.members_array_by_groups[group_ID]), 4),
-                                                                      dtype=np.float32)
+        self.add_to_scatter_by_groups(group_ID)
 
     def delete_group(self, group_ID, seq_dict, view, dim_num, z_index_mode):
 
