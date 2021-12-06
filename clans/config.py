@@ -37,6 +37,8 @@ run_params = {  # a dict to hold all the running parameters (given by the user /
     'type_of_values': type_of_values,
     'is_debug_mode': False,
     'dimensions_num_for_clustering': num_of_dimensions,
+    'num_of_round': 0,
+    'rounds_done': 0,
     'cooling': layouts['FR']['params']['cooling'],
     'maxmove': layouts['FR']['params']['maxmove'],
     'att_val': layouts['FR']['params']['att_val'],

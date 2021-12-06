@@ -496,6 +496,7 @@ class MainWindow(QMainWindow):
         cfg.att_values_for_connected_list_subset = []
 
         cfg.run_params['num_of_rounds'] = 0
+        cfg.run_params['round_done'] = 0
         cfg.run_params['is_problem'] = False
         cfg.run_params['error'] = None
         cfg.run_params['input_format'] = cfg.input_format
@@ -592,7 +593,7 @@ class MainWindow(QMainWindow):
                 print("Prepare and display the initial plot took " + str(duration) + " seconds")
 
             # Update the number of rounds label
-            self.rounds_done = cfg.run_params['num_of_rounds']
+            self.rounds_done = cfg.run_params['rounds_done']
             self.rounds_label.setText("Round: " + str(self.rounds_done))
             if self.rounds_done > 0:
                 self.start_button.setText("Resume")
@@ -859,7 +860,7 @@ class MainWindow(QMainWindow):
         self.network_plot.calculate_initial_angles()
 
         # Update the global variable of number of rounds
-        cfg.run_params['num_of_rounds'] = self.rounds_done
+        cfg.run_params['rounds_done'] = self.rounds_done
 
     def init_coor(self):
         # Initialize the coordinates only if the calculation is not running

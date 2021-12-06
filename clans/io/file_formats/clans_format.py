@@ -325,7 +325,7 @@ class ClansFormat:
         # Write the parameters block
         if is_param:
             output.write('<param>\n')
-            output.write('rounds_done='+str(cfg.run_params['num_of_rounds'])+'\n')
+            output.write('rounds_done='+str(cfg.run_params['round_done'])+'\n')
             if cfg.run_params['dimensions_num_for_clustering'] == 2:
                 output.write('cluster2d=true\n')
             else:
