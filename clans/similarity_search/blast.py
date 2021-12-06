@@ -102,8 +102,8 @@ def run_blast(query, out_blast):
 
     print('Running all-against-all blastp for {} sequences...'.format(max_target_seqs))
     command = NcbiblastpCommandline(query=query, db=db, evalue=evalue, outfmt=outfmt, out=out_blast,
-                                    num_threads=threads_num, max_target_seqs=max_target_seqs, seg="no", gapopen=gapopen
-                                    , gapextend=gapext)
+                                    num_threads=threads_num, max_target_seqs=max_target_seqs, max_hsps=max_hsps,
+                                    seg="no", gapopen=gapopen, gapextend=gapext)
     stdout, stderr = command()
 
 
