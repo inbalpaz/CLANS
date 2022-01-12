@@ -85,7 +85,9 @@ class ClansFormat:
                             title.strip()
                         else:
                             sequence = line.strip()
-                            t = (title, sequence)
+                            organism = ""
+                            tax_ID = ""
+                            t = (title, sequence, organism, tax_ID)
                             self.sequences_list.append(t)
 
                 elif line.strip() == "<seqgroups>":
@@ -325,7 +327,7 @@ class ClansFormat:
         # Write the parameters block
         if is_param:
             output.write('<param>\n')
-            output.write('rounds_done='+str(cfg.run_params['round_done'])+'\n')
+            output.write('rounds_done='+str(cfg.run_params['rounds_done'])+'\n')
             if cfg.run_params['dimensions_num_for_clustering'] == 2:
                 output.write('cluster2d=true\n')
             else:

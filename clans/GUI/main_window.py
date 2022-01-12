@@ -17,6 +17,7 @@ import clans.GUI.group_dialogs as gd
 import clans.GUI.windows as windows
 #import clans.GUI.text_dialogs as td
 import clans.GUI.conf_dialogs as cd
+import clans.graphics.colors as colors
 
 
 class Button(QPushButton):
@@ -63,7 +64,8 @@ class MainWindow(QMainWindow):
         self.z_indexing_mode = "auto"  # Switch between 'auto' and 'groups' modes
         self.ctrl_key_pressed = 0
         self.visual_to_move = None
-        self.is_init = 1
+        self.is_init = 0
+        self.taxonomy_worker = None
 
         self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
         self.setGeometry(50, 50, 900, 850)
@@ -149,7 +151,14 @@ class MainWindow(QMainWindow):
         self.conf_layout_submenu.addAction(self.conf_FR_layout_action)
 
         # Create the Tools menu
-        #self.tools_menu = self.main_menu.addMenu("Tools")
+        self.tools_menu = self.main_menu.addMenu("Tools")
+        self.group_by_submenu = self.tools_menu.addMenu("Group data by:")
+
+        # Group by taxonomy action
+        self.group_by_tax_action = QAction("Taxonomy", self)
+        self.group_by_tax_action.triggered.connect(self.group_by_taxonomy)
+
+        self.group_by_submenu.addAction(self.group_by_tax_action)
 
         # Create the canvas (the graph area)
         self.canvas = scene.SceneCanvas(size=(800, 750), keys='interactive', show=True, bgcolor='w')
@@ -457,10 +466,6 @@ class MainWindow(QMainWindow):
         self.connections_button.setChecked(False)
         self.show_selected_names_button.setChecked(False)
         self.show_selected_names_button.setEnabled(False)
-        #self.show_selected_numbers_button.setChecked(False)
-        #self.show_selected_numbers_button.setEnabled(False)
-        #self.show_subset_button.setChecked(False)
-        #self.show_subset_button.setEnabled(False)
         self.data_mode_combo.setEnabled(False)
         self.data_mode_combo.setCurrentIndex(0)
 
@@ -472,8 +477,6 @@ class MainWindow(QMainWindow):
         self.reset_group_names_button.setEnabled(False)
         self.show_groups_combo.setCurrentIndex(0)
         self.show_groups_combo.setEnabled(False)
-        #self.move_group_names_button.setChecked(False)
-        #self.move_group_names_button.setEnabled(False)
 
         # Reset the list of sequences in the 'selected sequences' window
         self.selected_seq_window.clear_list()
@@ -486,6 +489,14 @@ class MainWindow(QMainWindow):
 
         # Reset global variables
         cfg.groups_dict = {}
+        cfg.taxonomy_dict = {}
+        cfg.organisms_dict = {}
+        cfg.seq_by_tax_level_dict['Family'] = {}
+        cfg.seq_by_tax_level_dict['Order'] = {}
+        cfg.seq_by_tax_level_dict['Class'] = {}
+        cfg.seq_by_tax_level_dict['Phylum'] = {}
+        cfg.seq_by_tax_level_dict['Kingdom'] = {}
+        cfg.seq_by_tax_level_dict['Domain'] = {}
         cfg.similarity_values_list = []
         cfg.similarity_values_mtx = []
         cfg.attraction_values_mtx = []
@@ -496,13 +507,15 @@ class MainWindow(QMainWindow):
         cfg.att_values_for_connected_list_subset = []
 
         cfg.run_params['num_of_rounds'] = 0
-        cfg.run_params['round_done'] = 0
+        cfg.run_params['rounds_done'] = 0
         cfg.run_params['is_problem'] = False
         cfg.run_params['error'] = None
         cfg.run_params['input_format'] = cfg.input_format
         cfg.run_params['output_format'] = cfg.output_format
         cfg.run_params['type_of_values'] = cfg.type_of_values
         cfg.run_params['similarity_cutoff'] = cfg.similarity_cutoff
+        cfg.run_params['is_taxonomy_available'] = False
+        cfg.run_params['finished_taxonomy_search'] = False
         cfg.run_params['cooling'] = cfg.layouts['FR']['params']['cooling']
         cfg.run_params['maxmove'] = cfg.layouts['FR']['params']['maxmove']
         cfg.run_params['att_val'] = cfg.layouts['FR']['params']['att_val']
@@ -719,12 +732,8 @@ class MainWindow(QMainWindow):
 
             # Hide the selected names
             self.show_selected_names_button.setChecked(False)
-            #self.show_selected_numbers_button.setChecked(False)
             self.is_show_selected_names = 0
-            self.is_show_selected_numbers = 0
             self.network_plot.hide_sequences_names()
-            self.network_plot.hide_sequences_numbers()
-            self.network_plot.hide_group_names()
 
             # Hide the group names
             self.show_group_names_button.setChecked(False)
@@ -766,6 +775,7 @@ class MainWindow(QMainWindow):
             self.selection_type_combo.setEnabled(False)
             self.select_all_button.setEnabled(False)
             self.clear_selection_button.setEnabled(False)
+            self.select_by_name_button.setEnabled(False)
             self.edit_groups_button.setEnabled(False)
             self.add_to_group_button.setEnabled(False)
             self.remove_selected_button.setEnabled(False)
@@ -834,6 +844,7 @@ class MainWindow(QMainWindow):
             self.mode_combo.setEnabled(True)
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
+            self.select_by_name_button.setEnabled(True)
 
         # If at least one point is selected -> enable all buttons related to actions on selected points
         if self.network_plot.selected_points != {}:
@@ -1465,7 +1476,8 @@ class MainWindow(QMainWindow):
         # The user defined a new group
         if dlg.exec_():
             # Get all the group definitions entered by the user
-            group_name, group_name_size, size, color_clans, color_rgb, color_array = dlg.get_group_info()
+            group_name, group_name_size, size, color_clans, color_rgb, color_array, is_bold, is_italic = \
+                dlg.get_group_info()
 
             # Add the new group to the main groups array
             group_dict = dict()
@@ -1475,6 +1487,8 @@ class MainWindow(QMainWindow):
             group_dict['color'] = color_clans
             group_dict['color_rgb'] = color_rgb
             group_dict['color_array'] = color_array
+            group_dict['is_bold'] = is_bold
+            group_dict['is_italic'] = is_italic
             group_dict['order'] = len(cfg.groups_dict) - 1
             group_ID = groups.add_group_with_sequences(self.network_plot.selected_points.copy(), group_dict)
 
@@ -1487,7 +1501,8 @@ class MainWindow(QMainWindow):
                 self.z_index_mode_combo.setEnabled(True)
             else:
                 dim_num = 3
-            self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, dim_num, self.view, self.z_indexing_mode)
+            self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, dim_num, self.view,
+                                           self.z_indexing_mode)
 
             self.edit_groups_button.setEnabled(True)
             self.show_group_names_button.setEnabled(True)
@@ -1528,6 +1543,103 @@ class MainWindow(QMainWindow):
             self.selection_type_combo.setCurrentIndex(0)
             self.selection_type_combo.setEnabled(False)
             self.edit_groups_button.setEnabled(False)
+
+    def group_by_taxonomy(self):
+
+        if self.view_in_dimensions_num == 2 or self.mode != "interactive":
+            dim_num = 2
+        else:
+            dim_num = 3
+
+        # Open the 'Group by taxonomy' dialog
+        dlg = gd.GroupByTaxDialog(self.network_plot)
+
+        # Create and execute the taxonomy worker to get the organism names and their taxonomy hierarchy
+        # (only the first time)
+        if not cfg.run_params['finished_taxonomy_search']:
+            self.taxonomy_worker = io.TaxonomyWorker()
+            self.threadpool.start(self.taxonomy_worker)
+            self.taxonomy_worker.signals.finished.connect(dlg.finished_tax_search)
+
+        if dlg.exec_():
+            tax_level, points_size, group_names_size, is_bold, is_italic = dlg.get_tax_level()
+
+            # If there are groups already - delete them and start from scratch
+            if len(cfg.groups_dict) > 0:
+
+                for group_ID in cfg.groups_dict.copy():
+                    seq_dict = cfg.groups_dict[group_ID]['seqIDs'].copy()
+
+                    # 1. Remove the sequences assigned to this group (they get '-1' assignment)
+                    groups.remove_from_group(seq_dict)
+
+                    # 2. Remove the group from the plot
+                    self.network_plot.delete_group(group_ID, seq_dict, self.view, dim_num, self.z_indexing_mode)
+
+                    # 3. Delete the group from the main groups dictionary
+                    groups.delete_group(group_ID)
+
+                if len(self.network_plot.selected_groups) > 0:
+                    self.clear_selection()
+
+            # Generate distinct colors according to the number of groups in the chosen level
+            color_map = colors.generate_distinct_colors(len(cfg.seq_by_tax_level_dict[tax_level])-1)
+            color_index = 0
+
+            # Sort the groups alphabetically and move the 'Unassigned' group to the end
+            tax_groups = sorted(cfg.seq_by_tax_level_dict[tax_level])
+            tax_groups.append(tax_groups.pop(tax_groups.index('Unassigned')))
+
+            # A loop over the groups in the chosen taxonomic level
+            #for tax_group in cfg.seq_by_tax_level_dict[tax_level]:
+            for tax_group in tax_groups:
+
+                if tax_group != "Unassigned":
+
+                    color = color_map[color_index].RGBA[0]
+                    r = color[0]
+                    g = color[1]
+                    b = color[2]
+                    color_rgb = str(r) + "," + str(g) + "," + str(b)
+                    color_clans = str(r) + ";" + str(g) + ";" + str(b) + ";255"
+                    color_array = color / 255
+
+                    color_index += 1
+
+                else:
+                    color_rgb = "217,217,217"
+                    color_clans = "217;217;217;255"
+                    color_array = [0.85, 0.85, 0.85, 1]
+
+                # Add the new group to the main groups array
+                group_dict = dict()
+                group_dict['name'] = tax_group
+                group_dict['size'] = points_size
+                group_dict['name_size'] = group_names_size
+                group_dict['color'] = color_clans
+                group_dict['color_rgb'] = color_rgb
+                group_dict['color_array'] = color_array
+                group_dict['is_bold'] = is_bold
+                group_dict['is_italic'] = is_italic
+                group_dict['order'] = len(cfg.groups_dict) - 1
+                seq_dict = cfg.seq_by_tax_level_dict[tax_level][tax_group].copy()
+                group_ID = groups.add_group_with_sequences(seq_dict, group_dict)
+
+                # Add the new group to the graph
+                self.network_plot.add_group(group_ID, self.view)
+
+                # Update the look of the selected data-points according to the new group definitions
+                self.network_plot.add_to_group(cfg.seq_by_tax_level_dict[tax_level][tax_group], group_ID, dim_num,
+                                               self.view, self.z_indexing_mode)
+
+                self.edit_groups_button.setEnabled(True)
+                self.show_group_names_button.setEnabled(True)
+                self.selection_type_combo.setEnabled(True)
+
+                # The group names are displayed -> update them including the new group
+                if self.is_show_group_names:
+                    self.network_plot.show_group_names(self.view, 'all')
+
 
     ## Callback functions to deal with mouse and key events
 

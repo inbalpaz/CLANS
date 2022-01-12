@@ -72,7 +72,11 @@ class ClansMinimalFormat:
                             z_coor = m.group(4)
                             # Create a tuple with the coordinates information + initialization for the 'in_group'
                             # and 'in_subset' fields
-                            coor_tuple = (index, "", x_coor, y_coor, z_coor, -1, False, x_coor, y_coor, z_coor)
+                            seq_title = ""
+                            organism = ""
+                            tax_ID = ""
+                            coor_tuple = (index, seq_title, organism, tax_ID, x_coor, y_coor, z_coor, -1, False,
+                                          x_coor, y_coor, z_coor)
                             self.sequences_list.append(coor_tuple)
                         else:
                             self.file_is_valid = 0

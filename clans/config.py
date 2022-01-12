@@ -36,8 +36,10 @@ run_params = {  # a dict to hold all the running parameters (given by the user /
     'output_format': output_format,
     'type_of_values': type_of_values,
     'is_debug_mode': False,
+    'is_taxonomy_available': False,
+    'finished_taxonomy_search': False,
     'dimensions_num_for_clustering': num_of_dimensions,
-    'num_of_round': 0,
+    'num_of_rounds': 0,
     'rounds_done': 0,
     'cooling': layouts['FR']['params']['cooling'],
     'maxmove': layouts['FR']['params']['maxmove'],
@@ -57,9 +59,10 @@ run_params = {  # a dict to hold all the running parameters (given by the user /
 # 'in_subset' is a boolean flag, stating whether the index is found in the selected subset or not (False by default)
 # the subset coordinates are used to save the subset new coordinates in case it was clustered separately.
 # They are initialized with the whole dataset coordinates at the beginning and whenever the view returns to full dataset.
-seq_dt = np.dtype([('seq_title', 'U300'), ('sequence', 'U3000'), ('x_coor', 'float32'), ('y_coor', 'float32'),
-                   ('z_coor', 'float32'), ('in_group', 'int16'), ('in_subset', 'bool'),
-                   ('x_coor_subset', 'float32'), ('y_coor_subset', 'float32'), ('z_coor_subset', 'float32')])
+seq_dt = np.dtype([('seq_title', 'U300'), ('sequence', 'U3000'), ('organism', 'U100'), ('tax_ID', 'U20'),
+                   ('x_coor', 'float32'), ('y_coor', 'float32'), ('z_coor', 'float32'), ('in_group', 'int16'),
+                   ('in_subset', 'bool'), ('x_coor_subset', 'float32'), ('y_coor_subset', 'float32'),
+                   ('z_coor_subset', 'float32')])
 sequences_array = np.empty(run_params['total_sequences_num'], dtype=seq_dt)
 
 # a list of dictionaries (the keys are unique 'Group_ID') holding the following info for each group:
@@ -80,6 +83,27 @@ att_values_for_connected_list = []  # a 2D matrix listing the attraction values 
 connected_sequences_list_subset = []  # a 2D matrix listing the pairs of connected sequences according to the current P-value (non-redundant).
 att_values_for_connected_list_subset = []  # a 2D matrix listing the attraction values of connected sequences according to the current P-value (non-redundant).
 
+# Taxonomy-related variables
+
+# a list of dictionaries (the keys are the unique tax_IDs)
+# holding the taxonomy hierarchy for each organism: tax_ID, genus, family, order, class, phylum, kingdom, domain
+taxonomy_dict = dict()
+
+# A organism_name => tax_ID (organism name as extracted from sequence header)
+organisms_dict = dict()
+
+# taxonomic_level => dict of sequence_IDs
+seq_by_tax_level_dict = {
+    'Family': dict(),
+    'Order': dict(),
+    'Class': dict(),
+    'Phylum': dict(),
+    'Kingdom': dict(),
+    'Domain': dict()
+}
+
+taxonomy_names_file = "clans/taxonomy/names.dmp"
+taxonomy_lineage_file = "clans/taxonomy/rankedlineage.dmp"
 
 
 

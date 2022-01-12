@@ -17,10 +17,13 @@ class FastaFormat:
             for record in SeqIO.parse(FH, "fasta"):
                 seq_title = record.description
                 sequence = str(record.seq)
+                organism = ""
+                tax_ID = ""
                 x_coor = self.generate_rand_pos()
                 y_coor = self.generate_rand_pos()
                 z_coor = self.generate_rand_pos()
-                coor_tuple = (seq_title, sequence, x_coor, y_coor, z_coor, -1, False, x_coor, y_coor, z_coor)
+                coor_tuple = (seq_title, sequence, organism, tax_ID, x_coor, y_coor, z_coor, -1, False, x_coor, y_coor,
+                              z_coor)
                 self.sequences_list.append(coor_tuple)
 
     def fill_values(self):

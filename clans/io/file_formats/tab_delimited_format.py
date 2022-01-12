@@ -79,7 +79,10 @@ class DelimitedFormat:
                     pos_y = seq.generate_rand_pos()
                     pos_z = seq.generate_rand_pos()
 
-                    seq_tuple = (id1, "", pos_x, pos_y, pos_z, -1, False, pos_x, pos_y, pos_z)
+                    seq_title = ""
+                    organism = ""
+
+                    seq_tuple = (id1, seq_title, organism, pos_x, pos_y, pos_z, -1, False, pos_x, pos_y, pos_z)
                     self.sequences_list.append(seq_tuple)
 
                     seq_index += 1
@@ -93,7 +96,11 @@ class DelimitedFormat:
                     pos_y = seq.generate_rand_pos()
                     pos_z = seq.generate_rand_pos()
 
-                    seq_tuple = (id2, "", pos_x, pos_y, pos_z, -1, False, pos_x, pos_y, pos_z)
+                    seq_title = ""
+                    organism = ""
+                    tax_ID = ""
+
+                    seq_tuple = (id2, seq_title, organism, tax_ID, pos_x, pos_y, pos_z, -1, False, pos_x, pos_y, pos_z)
                     self.sequences_list.append(seq_tuple)
 
                     seq_index += 1

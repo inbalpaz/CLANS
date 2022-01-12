@@ -4,6 +4,7 @@ import clans.io.file_formats.clans_format as clans
 import clans.io.file_formats.clans_minimal_format as clans_mini
 import clans.io.file_formats.tab_delimited_format as tab
 import clans.data.sequence_pairs as sp
+import clans.taxonomy.taxonomy as tax
 import time
 
 
@@ -71,6 +72,59 @@ class ReadInputWorker(QRunnable):
             print("Reading the file took " + str(duration) + " seconds")
 
         self.load_complete()
+
+
+class TaxonomySignals(QObject):
+    finished = pyqtSignal()
+
+
+class TaxonomyWorker(QRunnable):
+    def __init__(self):
+        super().__init__()
+
+        self.signals = TaxonomySignals()
+
+        self.before = None
+        self.after = None
+
+    def get_hierarchy(self):
+
+        self.before = time.time()
+        tax.get_taxonomy_hierarchy()
+
+        if cfg.run_params['is_debug_mode']:
+            self.after = time.time()
+            duration = (self.after - self.before)
+            print("Getting the taxonomy hierarchy took " + str(duration) + " seconds")
+            if cfg.run_params['is_taxonomy_available']:
+                print("Successfully found hierarchy for " + str(len(cfg.taxonomy_dict)) + " taxa")
+            else:
+                print("No organism was found in the taxonomy file - feature is not available")
+
+        self.before = time.time()
+        tax.assign_sequences_to_tax_level()
+
+        if cfg.run_params['is_debug_mode']:
+            self.after = time.time()
+            duration = (self.after - self.before)
+            print("Assigning sequences to taxonomic ranks took " + str(duration) + " seconds")
+
+        cfg.run_params['finished_taxonomy_search'] = True
+        self.signals.finished.emit()
+
+    @pyqtSlot()
+    def run(self):
+
+        # Search for organisms in the sequence headers and init the taxonomy dict
+        tax.init_taxonomy_dict()
+        if cfg.run_params['is_debug_mode']:
+            print("Init the taxonomy dictionary")
+            if not cfg.run_params['is_taxonomy_available']:
+                print("No organism name found in sequences headers")
+
+        # Get the taxonomy hierarchy for all the organisms in the input file
+        if cfg.run_params['is_taxonomy_available']:
+            self.get_hierarchy()
 
 
 class FileHandler:
