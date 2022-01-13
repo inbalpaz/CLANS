@@ -22,6 +22,9 @@ def find_organism_in_title(seq_title):
 
 
 def init_taxonomy_dict():
+
+    error = ""
+
     for seq_index in range(cfg.run_params['total_sequences_num']):
         seq_title = cfg.sequences_array['seq_title'][seq_index]
 
@@ -42,22 +45,43 @@ def init_taxonomy_dict():
     if len(cfg.organisms_dict) > 0:
         cfg.run_params['is_taxonomy_available'] = True
 
+    else:
+        error = "Cannot extract organism names from sequence headers"
+        if cfg.run_params['is_debug_mode']:
+            print(error)
+
+    return error
+
 
 def get_taxonomy_hierarchy():
+
+    error = ""
 
     # Verify that the lineage file exists
     if not os.path.isfile(cfg.taxonomy_lineage_file):
         cfg.run_params['is_taxonomy_available'] = False
+        error = "The file " + cfg.taxonomy_lineage_file + "does not exist in the specified path\n. " \
+                                                          "In order to use the \'Group by taxonomy\' feature, " \
+                                                          "you should download the files \'rankedlineage.dmp\' and " \
+                                                          "\'names.dmp\' from: " \
+                                                          "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/ " \
+                                                          "and place them in the clans/taxonomy/ folder."
         if cfg.run_params['is_debug_mode']:
             print("Cannot find the taxonomy lineage file " + cfg.taxonomy_lineage_file)
-        return
+        return error
 
     # Verify that the names file exists
     if not os.path.isfile(cfg.taxonomy_names_file):
         cfg.run_params['is_taxonomy_available'] = False
+        error = "The file " + cfg.taxonomy_lineage_file + "does not exist in the specified path\n. " \
+                                                          "In order to use the \'Group by taxonomy\' feature, " \
+                                                          "you should download the files \'rankedlineage.dmp\' and " \
+                                                          "\'names.dmp\' from: " \
+                                                          "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/ " \
+                                                          "and place them in the clans/taxonomy/ folder."
         if cfg.run_params['is_debug_mode']:
             print("Cannot find the taxonimy names file " + cfg.taxonomy_names_file)
-        return
+        return error
 
     # Open and read the NCBI taxonomy names dump file
     with open(cfg.taxonomy_names_file) as names_infile:
@@ -88,26 +112,15 @@ def get_taxonomy_hierarchy():
     # No organism from the dict was found in the taxonomy file -> disable the taxonomy feature
     if found_org == 0:
         cfg.run_params['is_taxonomy_available'] = False
+        error = "No organism from the input file was found in the taxonomy names file"
         if cfg.run_params['is_debug_mode']:
-            print("No organism from the input file was found in the taxonomy names file")
-        return
+            print(error)
+        return error
 
     elif found_org < total_org_num:
         if cfg.run_params['is_debug_mode']:
             print("Found " + str(found_org) + " organisms in the taxonomy names file out of " + str(total_org_num) +
                   " that were extracted from sequences headers ")
-
-        # For debugging purposes
-        #orgs_not_found = {}
-
-        #for org in cfg.organisms_dict:
-            #if cfg.organisms_dict[org] == 0:
-                #orgs_not_found[org] = 1
-
-        #print("Organisms which were not found:")
-        #for org in orgs_not_found:
-            #print(org)
-        #print(cfg.organisms_dict)
 
     # Open and read the NCBI taxonomy lineage dump file
     with open(cfg.taxonomy_lineage_file) as lineage_infile:
@@ -139,8 +152,6 @@ def get_taxonomy_hierarchy():
             # All the organisms in the dict were found in the dump file -> stop
             else:
                 break
-
-    #print(cfg.taxonomy_dict)
 
 
 def assign_sequences_to_tax_level():
@@ -252,12 +263,5 @@ def assign_sequences_to_tax_level():
             cfg.seq_by_tax_level_dict['Phylum']['Unassigned'][seq_index] = 1
             cfg.seq_by_tax_level_dict['Kingdom']['Unassigned'][seq_index] = 1
             cfg.seq_by_tax_level_dict['Domain']['Unassigned'][seq_index] = 1
-
-    print("Found " + str(len(cfg.seq_by_tax_level_dict['Family'])) + " family groups")
-    print("Found " + str(len(cfg.seq_by_tax_level_dict['Order'])) + " order groups")
-    print("Found " + str(len(cfg.seq_by_tax_level_dict['Class'])) + " class groups")
-    print("Found " + str(len(cfg.seq_by_tax_level_dict['Phylum'])) + " phyla groups")
-    print("Found " + str(len(cfg.seq_by_tax_level_dict['Kingdom'])) + " kingdom groups")
-    print("Found " + str(len(cfg.seq_by_tax_level_dict['Domain'])) + " domain groups")
 
 

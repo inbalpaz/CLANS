@@ -75,7 +75,7 @@ class ReadInputWorker(QRunnable):
 
 
 class TaxonomySignals(QObject):
-    finished = pyqtSignal()
+    finished = pyqtSignal(str)
 
 
 class TaxonomyWorker(QRunnable):
@@ -89,8 +89,18 @@ class TaxonomyWorker(QRunnable):
 
     def get_hierarchy(self):
 
+        # Search for organisms in the sequence headers and init the taxonomy dict
+        error = tax.init_taxonomy_dict()
+        if not cfg.run_params['is_taxonomy_available']:
+            cfg.run_params['finished_taxonomy_search'] = True
+            self.signals.finished.emit(error)
+
+        # Get the taxonomic hierarchy for all the organism names that were found in the input file
         self.before = time.time()
-        tax.get_taxonomy_hierarchy()
+        error = tax.get_taxonomy_hierarchy()
+        if not cfg.run_params['is_taxonomy_available']:
+            cfg.run_params['finished_taxonomy_search'] = True
+            self.signals.finished.emit(error)
 
         if cfg.run_params['is_debug_mode']:
             self.after = time.time()
@@ -110,21 +120,11 @@ class TaxonomyWorker(QRunnable):
             print("Assigning sequences to taxonomic ranks took " + str(duration) + " seconds")
 
         cfg.run_params['finished_taxonomy_search'] = True
-        self.signals.finished.emit()
+        self.signals.finished.emit(error)
 
     @pyqtSlot()
     def run(self):
-
-        # Search for organisms in the sequence headers and init the taxonomy dict
-        tax.init_taxonomy_dict()
-        if cfg.run_params['is_debug_mode']:
-            print("Init the taxonomy dictionary")
-            if not cfg.run_params['is_taxonomy_available']:
-                print("No organism name found in sequences headers")
-
-        # Get the taxonomy hierarchy for all the organisms in the input file
-        if cfg.run_params['is_taxonomy_available']:
-            self.get_hierarchy()
+        self.get_hierarchy()
 
 
 class FileHandler:

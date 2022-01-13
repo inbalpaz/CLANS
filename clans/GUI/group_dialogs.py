@@ -789,21 +789,44 @@ class GroupByTaxDialog(QDialog):
             self.italic_label.hide()
             self.italic_checkbox.hide()
 
-        # The taxonomy information already exists
+        # The taxonomic search was already done
         else:
-            text = "Taxonomic hierarchy for " + str(len(cfg.taxonomy_dict)) + " taxa is available"
-            self.message_label.setText(text)
-            self.message_label.setStyleSheet("color: maroon; font-size: 14px;")
 
-            # Add the OK/Cancel standard buttons
-            self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-            self.button_box.accepted.connect(self.accept)
-            self.button_box.rejected.connect(self.reject)
-            self.main_layout.addWidget(self.button_box)
+            # Taxonomic information exists
+            if cfg.run_params['is_taxonomy_available']:
+                text = "Taxonomic hierarchy for " + str(len(cfg.taxonomy_dict)) + " taxa is available"
+                self.message_label.setText(text)
+                self.message_label.setStyleSheet("color: maroon; font-size: 14px;")
+
+                # Add the OK/Cancel standard buttons
+                self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+                self.button_box.accepted.connect(self.accept)
+                self.button_box.rejected.connect(self.reject)
+                self.main_layout.addWidget(self.button_box)
+
+            # The taxonomy search was done but no information was found
+            else:
+                text = "Cannot group by taxonomy, as taxonomic information could not be extracted"
+                self.message_label.setText(text)
+                self.message_label.setStyleSheet("color: maroon; font-size: 14px;")
+
+                # Hide all the widgets
+                self.tax_level_label.hide()
+                self.tax_level_combo.hide()
+                self.space_label.hide()
+                self.group_params_label.hide()
+                self.points_size_label.hide()
+                self.points_size_combo.hide()
+                self.group_name_size_label.hide()
+                self.group_name_size.hide()
+                self.bold_label.hide()
+                self.bold_checkbox.hide()
+                self.italic_label.hide()
+                self.italic_checkbox.hide()
 
         self.setLayout(self.main_layout)
 
-    def finished_tax_search(self):
+    def finished_tax_search(self, error):
 
         if cfg.run_params['is_taxonomy_available']:
             text_message = "Found taxonomic hierarchy for " + str(len(cfg.taxonomy_dict)) + " taxa"
@@ -833,14 +856,7 @@ class GroupByTaxDialog(QDialog):
             self.main_layout.addWidget(self.button_box)
 
         else:
-
-            if len(cfg.organisms_dict) == 0:
-                text_message = "Could not extract organism names from sequence headers"
-
-            else:
-                text_message = "Could not find taxonomic hierarchy for organisms in input file"
-
-            self.message_label.setText(text_message)
+            self.message_label.setText(error)
             self.message_label.setStyleSheet("color: maroon; font-size: 12px")
 
             self.loading_gif.stop()
