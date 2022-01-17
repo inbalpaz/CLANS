@@ -47,6 +47,7 @@ def init_taxonomy_dict():
 
     else:
         error = "Cannot extract organism names from sequence headers"
+        cfg.run_params['is_taxonomy_available'] = False
         if cfg.run_params['is_debug_mode']:
             print(error)
 
@@ -60,10 +61,10 @@ def get_taxonomy_hierarchy():
     # Verify that the lineage file exists
     if not os.path.isfile(cfg.taxonomy_lineage_file):
         cfg.run_params['is_taxonomy_available'] = False
-        error = "The file " + cfg.taxonomy_lineage_file + "does not exist in the specified path\n. " \
+        error = "The file " + cfg.taxonomy_lineage_file + " does not exist in the specified path.\n" \
                                                           "In order to use the \'Group by taxonomy\' feature, " \
                                                           "you should download the files \'rankedlineage.dmp\' and " \
-                                                          "\'names.dmp\' from: " \
+                                                          "\'names.dmp\' from:\n" \
                                                           "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/ " \
                                                           "and place them in the clans/taxonomy/ folder."
         if cfg.run_params['is_debug_mode']:
@@ -73,7 +74,7 @@ def get_taxonomy_hierarchy():
     # Verify that the names file exists
     if not os.path.isfile(cfg.taxonomy_names_file):
         cfg.run_params['is_taxonomy_available'] = False
-        error = "The file " + cfg.taxonomy_lineage_file + "does not exist in the specified path\n. " \
+        error = "The file " + cfg.taxonomy_lineage_file + " does not exist in the specified path.\n" \
                                                           "In order to use the \'Group by taxonomy\' feature, " \
                                                           "you should download the files \'rankedlineage.dmp\' and " \
                                                           "\'names.dmp\' from: " \
@@ -153,16 +154,18 @@ def get_taxonomy_hierarchy():
             else:
                 break
 
+    return error
+
 
 def assign_sequences_to_tax_level():
 
-    # Create 'Unassigned' group in all taxonomic levels
-    cfg.seq_by_tax_level_dict['Family']['Unassigned'] = dict()
-    cfg.seq_by_tax_level_dict['Order']['Unassigned'] = dict()
-    cfg.seq_by_tax_level_dict['Class']['Unassigned'] = dict()
-    cfg.seq_by_tax_level_dict['Phylum']['Unassigned'] = dict()
-    cfg.seq_by_tax_level_dict['Kingdom']['Unassigned'] = dict()
-    cfg.seq_by_tax_level_dict['Domain']['Unassigned'] = dict()
+    # Create 'Not assigned' group in all taxonomic levels
+    cfg.seq_by_tax_level_dict['Family']['Not assigned'] = dict()
+    cfg.seq_by_tax_level_dict['Order']['Not assigned'] = dict()
+    cfg.seq_by_tax_level_dict['Class']['Not assigned'] = dict()
+    cfg.seq_by_tax_level_dict['Phylum']['Not assigned'] = dict()
+    cfg.seq_by_tax_level_dict['Kingdom']['Not assigned'] = dict()
+    cfg.seq_by_tax_level_dict['Domain']['Not assigned'] = dict()
 
     for seq_index in range(cfg.run_params['total_sequences_num']):
 
@@ -192,7 +195,7 @@ def assign_sequences_to_tax_level():
                         cfg.seq_by_tax_level_dict['Family'][seq_family][seq_index] = 1
                     # No family for this tax_ID
                     else:
-                        cfg.seq_by_tax_level_dict['Family']['Unassigned'][seq_index] = 1
+                        cfg.seq_by_tax_level_dict['Family']['Not assigned'][seq_index] = 1
                 else:
                     cfg.seq_by_tax_level_dict['Family'][seq_family][seq_index] = 1
 
@@ -202,7 +205,7 @@ def assign_sequences_to_tax_level():
                         cfg.seq_by_tax_level_dict['Order'][seq_order][seq_index] = 1
                     # No order for this tax_ID
                     else:
-                        cfg.seq_by_tax_level_dict['Order']['Unassigned'][seq_index] = 1
+                        cfg.seq_by_tax_level_dict['Order']['Not assigned'][seq_index] = 1
                 else:
                     cfg.seq_by_tax_level_dict['Order'][seq_order][seq_index] = 1
 
@@ -212,7 +215,7 @@ def assign_sequences_to_tax_level():
                         cfg.seq_by_tax_level_dict['Class'][seq_class][seq_index] = 1
                     # No class for this tax_ID
                     else:
-                        cfg.seq_by_tax_level_dict['Class']['Unassigned'][seq_index] = 1
+                        cfg.seq_by_tax_level_dict['Class']['Not assigned'][seq_index] = 1
                 else:
                     cfg.seq_by_tax_level_dict['Class'][seq_class][seq_index] = 1
 
@@ -222,7 +225,7 @@ def assign_sequences_to_tax_level():
                         cfg.seq_by_tax_level_dict['Phylum'][seq_phylum][seq_index] = 1
                     # No phylum for this tax_ID
                     else:
-                        cfg.seq_by_tax_level_dict['Phylum']['Unassigned'][seq_index] = 1
+                        cfg.seq_by_tax_level_dict['Phylum']['Not assigned'][seq_index] = 1
                 else:
                     cfg.seq_by_tax_level_dict['Phylum'][seq_phylum][seq_index] = 1
 
@@ -232,7 +235,7 @@ def assign_sequences_to_tax_level():
                         cfg.seq_by_tax_level_dict['Kingdom'][seq_kingdom][seq_index] = 1
                     # No kingdom for this tax_ID
                     else:
-                        cfg.seq_by_tax_level_dict['Kingdom']['Unassigned'][seq_index] = 1
+                        cfg.seq_by_tax_level_dict['Kingdom']['Not assigned'][seq_index] = 1
                 else:
                     cfg.seq_by_tax_level_dict['Kingdom'][seq_kingdom][seq_index] = 1
 
@@ -242,26 +245,26 @@ def assign_sequences_to_tax_level():
                         cfg.seq_by_tax_level_dict['Domain'][seq_domain][seq_index] = 1
                     # No domain for this tax_ID
                     else:
-                        cfg.seq_by_tax_level_dict['Domain']['Unassigned'][seq_index] = 1
+                        cfg.seq_by_tax_level_dict['Domain']['Not assigned'][seq_index] = 1
                 else:
                     cfg.seq_by_tax_level_dict['Domain'][seq_domain][seq_index] = 1
 
-            # No tax_id is found -> assign sequence to 'Unassigned' group
+            # No tax_id is found -> assign sequence to 'Not assigned' group
             else:
-                cfg.seq_by_tax_level_dict['Family']['Unassigned'][seq_index] = 1
-                cfg.seq_by_tax_level_dict['Order']['Unassigned'][seq_index] = 1
-                cfg.seq_by_tax_level_dict['Class']['Unassigned'][seq_index] = 1
-                cfg.seq_by_tax_level_dict['Phylum']['Unassigned'][seq_index] = 1
-                cfg.seq_by_tax_level_dict['Kingdom']['Unassigned'][seq_index] = 1
-                cfg.seq_by_tax_level_dict['Domain']['Unassigned'][seq_index] = 1
+                cfg.seq_by_tax_level_dict['Family']['Not assigned'][seq_index] = 1
+                cfg.seq_by_tax_level_dict['Order']['Not assigned'][seq_index] = 1
+                cfg.seq_by_tax_level_dict['Class']['Not assigned'][seq_index] = 1
+                cfg.seq_by_tax_level_dict['Phylum']['Not assigned'][seq_index] = 1
+                cfg.seq_by_tax_level_dict['Kingdom']['Not assigned'][seq_index] = 1
+                cfg.seq_by_tax_level_dict['Domain']['Not assigned'][seq_index] = 1
 
-        # No organism is found -> assign sequence to 'Unassigned' group
+        # No organism is found -> assign sequence to 'Not assigned' group
         else:
-            cfg.seq_by_tax_level_dict['Family']['Unassigned'][seq_index] = 1
-            cfg.seq_by_tax_level_dict['Order']['Unassigned'][seq_index] = 1
-            cfg.seq_by_tax_level_dict['Class']['Unassigned'][seq_index] = 1
-            cfg.seq_by_tax_level_dict['Phylum']['Unassigned'][seq_index] = 1
-            cfg.seq_by_tax_level_dict['Kingdom']['Unassigned'][seq_index] = 1
-            cfg.seq_by_tax_level_dict['Domain']['Unassigned'][seq_index] = 1
+            cfg.seq_by_tax_level_dict['Family']['Not assigned'][seq_index] = 1
+            cfg.seq_by_tax_level_dict['Order']['Not assigned'][seq_index] = 1
+            cfg.seq_by_tax_level_dict['Class']['Not assigned'][seq_index] = 1
+            cfg.seq_by_tax_level_dict['Phylum']['Not assigned'][seq_index] = 1
+            cfg.seq_by_tax_level_dict['Kingdom']['Not assigned'][seq_index] = 1
+            cfg.seq_by_tax_level_dict['Domain']['Not assigned'][seq_index] = 1
 
 

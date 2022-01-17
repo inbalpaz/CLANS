@@ -1586,15 +1586,15 @@ class MainWindow(QMainWindow):
             color_map = colors.generate_distinct_colors(len(cfg.seq_by_tax_level_dict[tax_level])-1)
             color_index = 0
 
-            # Sort the groups alphabetically and move the 'Unassigned' group to the end
+            # Sort the groups alphabetically and move the 'Not assigned' group to the end
             tax_groups = sorted(cfg.seq_by_tax_level_dict[tax_level])
-            tax_groups.append(tax_groups.pop(tax_groups.index('Unassigned')))
+            tax_groups.append(tax_groups.pop(tax_groups.index('Not assigned')))
 
             # A loop over the groups in the chosen taxonomic level
             #for tax_group in cfg.seq_by_tax_level_dict[tax_level]:
             for tax_group in tax_groups:
 
-                if tax_group != "Unassigned":
+                if tax_group != "Not assigned":
 
                     color = color_map[color_index].RGBA[0]
                     r = color[0]

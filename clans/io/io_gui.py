@@ -93,7 +93,9 @@ class TaxonomyWorker(QRunnable):
         error = tax.init_taxonomy_dict()
         if not cfg.run_params['is_taxonomy_available']:
             cfg.run_params['finished_taxonomy_search'] = True
+            time.sleep(0.01)
             self.signals.finished.emit(error)
+            return
 
         # Get the taxonomic hierarchy for all the organism names that were found in the input file
         self.before = time.time()
@@ -101,6 +103,7 @@ class TaxonomyWorker(QRunnable):
         if not cfg.run_params['is_taxonomy_available']:
             cfg.run_params['finished_taxonomy_search'] = True
             self.signals.finished.emit(error)
+            return
 
         if cfg.run_params['is_debug_mode']:
             self.after = time.time()

@@ -143,7 +143,7 @@ class CreateGroupDialog(QDialog):
         self.group_size = QComboBox()
 
         i = 0
-        for size in range(5, 21):
+        for size in range(4, 21):
             self.group_size.addItem(str(size))
             if size == default_size:
                 default_index = i
@@ -488,7 +488,7 @@ class EditGroupDialog(QDialog):
         self.group_size = QComboBox()
 
         i = 0
-        for size in range(5, 21):
+        for size in range(4, 21):
             self.group_size.addItem(str(size))
             if size == int(default_size):
                 default_index = i
@@ -713,7 +713,7 @@ class GroupByTaxDialog(QDialog):
         self.points_size_combo = QComboBox()
 
         i = 0
-        for size in range(5, 21):
+        for size in range(4, 21):
             self.points_size_combo.addItem(str(size))
             if size == default_size:
                 default_index = i
