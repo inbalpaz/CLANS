@@ -1,5 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from vispy.color import ColorArray
 import clans.config as cfg
 import clans.data.groups as gr
 
@@ -198,13 +200,14 @@ class CreateGroupDialog(QDialog):
 
 class ManageGroupsDialog(QDialog):
 
-    def __init__(self, net_plot_object, view, dim_num, z_index_mode):
+    def __init__(self, net_plot_object, view, dim_num, z_index_mode, color_by):
         super().__init__()
 
         self.network_plot = net_plot_object
         self.view = view
         self.dim_num = dim_num
         self.z_index_mode = z_index_mode
+        self.color_by = color_by
         self.changed_order_flag = 0
 
         self.setWindowTitle("Manage groups")
@@ -293,10 +296,11 @@ class ManageGroupsDialog(QDialog):
 
             # Update the plot with the removed sequences
             if len(removed_dict) > 0:
-                self.network_plot.remove_from_group(removed_dict, self.dim_num, self.view, self.z_index_mode)
+                self.network_plot.remove_from_group(removed_dict, self.dim_num, self.view, self.z_index_mode,
+                                                    self.color_by)
 
             # Update the plot with the new group parameters
-            self.network_plot.edit_group_parameters(group_ID, self.view, self.dim_num, self.z_index_mode)
+            self.network_plot.edit_group_parameters(group_ID, self.view, self.dim_num, self.z_index_mode, self.color_by)
 
     def get_group_info(self, edit_group_dlg, group_ID):
 
@@ -339,7 +343,7 @@ class ManageGroupsDialog(QDialog):
         gr.remove_from_group(seq_dict)
 
         # 2. Remove the group from the plot
-        self.network_plot.delete_group(group_ID, seq_dict, self.view, self.dim_num, self.z_index_mode)
+        self.network_plot.delete_group(group_ID, seq_dict, self.view, self.dim_num, self.z_index_mode, self.color_by)
 
         # 3. Delete the group from the main groups dictionary
         gr.delete_group(group_ID)
@@ -871,5 +875,92 @@ class GroupByTaxDialog(QDialog):
         is_italic = self.italic_checkbox.isChecked()
 
         return tax_level, points_size, group_names_size, is_bold, is_italic
+
+
+class ColorByLengthDialog(QDialog):
+
+    def __init__(self, short_color, long_color):
+        super().__init__()
+
+        self.setWindowTitle("Configure color by seq. length")
+
+        self.main_layout = QVBoxLayout()
+        self.layout = QGridLayout()
+
+        self.title = QLabel("Define the color range:")
+        self.layout.addWidget(self.title, 0, 0, 1, 3)
+
+        self.row_space = QLabel(" ")
+        self.row_space.setFixedSize(150, 15)
+        self.layout.addWidget(self.row_space, 1, 0, 1, 2)
+
+        self.short_label = QLabel("Short")
+        self.long_label = QLabel("Long")
+
+        self.layout.addWidget(self.short_label, 2, 0)
+        self.layout.addWidget(self.long_label, 2, 2)
+
+        self.short_color = short_color
+        self.short_color_button = QPushButton("Change")
+        self.short_color_button.setFixedSize(65, 28)
+        self.short_color_button.setStyleSheet("background-color: " + self.short_color.hex[0])
+        self.short_color_button.pressed.connect(self.change_short_color)
+
+        self.long_color = long_color
+        self.long_color_button = QPushButton("Change")
+        self.long_color_button.setFixedSize(65, 28)
+        self.long_color_button.setStyleSheet("background-color: " + self.long_color.hex[0])
+        self.long_color_button.pressed.connect(self.change_long_color)
+
+        self.switch_button = QPushButton()
+        self.switch_button.setIcon(QIcon("clans/GUI/icons/switch_icon_trans.png"))
+        self.switch_button.pressed.connect(self.switch_colors)
+
+        self.layout.addWidget(self.short_color_button, 3, 0)
+        self.layout.addWidget(self.switch_button, 3, 1)
+        self.layout.addWidget(self.long_color_button, 3, 2)
+
+        self.main_layout.addLayout(self.layout)
+
+        # Add the OK/Cancel standard buttons
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        self.main_layout.addWidget(self.button_box)
+
+        self.setLayout(self.main_layout)
+
+    def change_short_color(self):
+        dialog = QColorDialog()
+        if dialog.exec_():
+            color = dialog.currentColor()
+            hex_color = color.name()
+
+            self.short_color = ColorArray(hex_color)
+            self.short_color_button.setStyleSheet("background-color: " + hex_color)
+
+    def change_long_color(self):
+        dialog = QColorDialog()
+        if dialog.exec_():
+            color = dialog.currentColor()
+            hex_color = color.name()
+
+            self.long_color = ColorArray(hex_color)
+            self.long_color_button.setStyleSheet("background-color: " + hex_color)
+
+    def switch_colors(self):
+        short_color = self.short_color
+        long_color = self.long_color
+
+        self.short_color = long_color
+        self.long_color = short_color
+
+        self.short_color_button.setStyleSheet("background-color: " + self.short_color.hex[0])
+        self.long_color_button.setStyleSheet("background-color: " + self.long_color.hex[0])
+
+    def get_colors(self):
+        return self.short_color, self.long_color
+
+
 
 

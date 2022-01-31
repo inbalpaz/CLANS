@@ -19,37 +19,15 @@ def generate_distinct_colors(colors_num):
 
         hsv_color = (h, s, v)
         colors.append(color.ColorArray(color=hsv_color, color_space='hsv'))
-        #print(colors[i].hsv)
-        #print(colors[i].rgb)
 
         h += interval
 
     return colors
 
 
-def try_generate_colors():
+def generate_colormap_gradient_2_colors(color1, color2):
+    colormap = color.Colormap([color1, color2])
+    return colormap
 
-    colors = []
-
-    colors.append(color.ColorArray(color='red'))
-    colors.append(color.ColorArray(color='blue'))
-    colors.append(color.ColorArray(color='green'))
-    colors.append(color.ColorArray(color='purple'))
-
-    print("red")
-    print(colors[0].hsv)
-    print(colors[0].rgb)
-
-    print("blue")
-    print(colors[1].hsv)
-    print(colors[1].rgb)
-
-    print("green")
-    print(colors[2].hsv)
-    print(colors[2].rgb)
-
-    print("purple")
-    print(colors[3].hsv)
-    print(colors[3].rgb)
 
 

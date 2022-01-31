@@ -23,7 +23,23 @@ def add_in_group_column(in_group_array):
     #print("add_in_group_column: Sequences_array=\n" + str(cfg.sequences_array))
 
 
-#@profile
+def add_seq_length_param():
+    cfg.sequences_param['seq_length'] = np.char.str_len(cfg.sequences_array['sequence'])
+
+    min_seq_length = np.amin(cfg.sequences_param['seq_length'])
+    max_seq_length = np.amax(cfg.sequences_param['seq_length'])
+
+    if min_seq_length != max_seq_length:
+        cfg.sequences_param['norm_seq_length'] = (cfg.sequences_param['seq_length'] - min_seq_length) / \
+                                                 (max_seq_length - min_seq_length)
+
+    else:
+        if min_seq_length == 0:
+            cfg.sequences_param['norm_seq_length'] = np.zeros(cfg.run_params['total_sequences_num'])
+        else:
+            cfg.sequences_param['norm_seq_length'] = np.full(cfg.run_params['total_sequences_num'], 0.5)
+
+
 # Mode: full / subset
 def update_positions(xyz_coor, mode):
 

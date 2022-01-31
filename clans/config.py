@@ -65,7 +65,10 @@ seq_dt = np.dtype([('seq_title', 'U300'), ('sequence', 'U3000'), ('organism', 'U
                    ('z_coor_subset', 'float32')])
 sequences_array = np.empty(run_params['total_sequences_num'], dtype=seq_dt)
 
-# a list of dictionaries (the keys are unique 'Group_ID') holding the following info for each group:
+# A dictionary of lists containing different parameters (for example: 'sequence length') for each sequence
+sequences_param = dict()
+
+# a dictionary of dictionaries (the keys are unique 'Group_ID') holding the following info for each group:
 # 'name', 'size', 'name_size', 'seqIDs', 'order', 'color', 'color_rgb', 'color_array', 'is_bold', 'is_italic'
 # 'seqIDs' is a dictionary holding the indices of the sequences belonging to each group
 # 'order' (starting from -1) determines which group is displayed in front of the other (-1 = the most front)

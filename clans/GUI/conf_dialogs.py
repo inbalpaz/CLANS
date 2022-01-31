@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import *
 import re
+from vispy.color import ColorArray
 import clans.config as cfg
 
 
@@ -123,6 +124,71 @@ class FruchtermanReingoldConfig(QDialog):
             cooling = cfg.run_params['cooling']
 
         return att_val, att_exp, rep_val, rep_exp, gravity, dampening, maxmove, cooling
+
+
+class NodesConfig(QDialog):
+
+    def __init__(self, current_nodes_size, current_nodes_color):
+        super().__init__()
+
+        self.setWindowTitle("Configure data-points")
+
+        self.main_layout = QVBoxLayout()
+        self.layout = QGridLayout()
+
+        self.nodes_sizes_label = QLabel("Default size:")
+        self.nodes_size_combo = QComboBox()
+
+        i = 0
+        for size in range(4, 21):
+            self.nodes_size_combo.addItem(str(size))
+            if size == current_nodes_size:
+                default_index = i
+            i += 1
+        self.nodes_size_combo.setCurrentIndex(default_index)
+
+        self.layout.addWidget(self.nodes_sizes_label, 0, 0)
+        self.layout.addWidget(self.nodes_size_combo, 0, 1)
+
+        self.nodes_color_label = QLabel("Default color:")
+
+        self.nodes_color = ColorArray(current_nodes_color)
+        self.nodes_color_box = QLabel(" ")
+        self.nodes_color_box.setStyleSheet("background-color: " + self.nodes_color.hex[0])
+        self.nodes_color_button = QPushButton("Change color")
+        self.nodes_color_button.pressed.connect(self.change_color)
+
+        self.layout.addWidget(self.nodes_color_label, 1, 0)
+        self.layout.addWidget(self.nodes_color_box, 1, 1)
+        self.layout.addWidget(self.nodes_color_button, 1, 2)
+
+        # Add the OK/Cancel standard buttons
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+        self.main_layout.addLayout(self.layout)
+        self.main_layout.addWidget(self.button_box)
+
+        self.setLayout(self.main_layout)
+
+    def change_color(self):
+
+        dialog = QColorDialog()
+
+        if dialog.exec_():
+            color = dialog.currentColor()
+            hex_color = color.name()
+
+            self.nodes_color = ColorArray(hex_color)
+            self.nodes_color_box.setStyleSheet("background-color: " + hex_color)
+
+    def get_parameters(self):
+
+        size = self.nodes_size_combo.currentText()
+        color = self.nodes_color.rgba[0]
+
+        return size, color
 
 
 

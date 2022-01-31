@@ -13,11 +13,14 @@ class Network3D:
         self.app = app.use_app('pyqt5')
 
         self.nodes_colors_array = []
+        self.nodes_colors_array_by_param = []
         self.nodes_size_array = []
+        self.is_in_group_array = []
         self.selected_nodes_colors_array = []
+        self.selected_nodes_colors_array_by_param = []
         self.selected_nodes_size_array = []
         self.nodes_outline_color_array = []
-        self.nodes_outline_width = 1.0
+        self.nodes_outline_width = 0.5
         self.nodes_size_large = 10
         self.nodes_size_medium = 8
         self.nodes_size_small = 6
@@ -31,7 +34,7 @@ class Network3D:
         self.highlighted_nodes_size = self.selected_nodes_size + 5
         self.nodes_symbol = 'disc'
         self.nodes_default_color = [0.0, 0.0, 0.0, 1.0]
-        self.nodes_highlight_color = [0.0, 1.0, 1.0, 1.0] # Tourquise
+        self.nodes_highlight_color = [0.0, 1.0, 1.0, 1.0]  # Turquoise
         self.nodes_outline_default_color = [0.0, 0.0, 0.0, 1.0]
         self.selected_outline_color = [1.0, 0.0, 1.0, 1.0]
         self.highlighted_outline_color = [1.0, 0.0, 1.0, 1.0]
@@ -163,6 +166,7 @@ class Network3D:
         self.nodes_colors_array[:, 3] = 1.0  # Set the alpha to 1 (opaque)
         self.nodes_outline_color_array = np.zeros((cfg.run_params['total_sequences_num'], 4), dtype=np.float32)
         self.nodes_size_array = np.zeros((cfg.run_params['total_sequences_num']), dtype=np.float32)
+        self.is_in_group_array = np.zeros((cfg.run_params['total_sequences_num']), dtype=bool)
 
         # Define the size of the dots according to the data size
         if cfg.run_params['total_sequences_num'] <= 1000:
@@ -188,6 +192,7 @@ class Network3D:
                     self.nodes_colors_array[seq_index] = cfg.groups_dict[group_ID]['color_array']
                     # Assign the node-size that is defined in the group
                     self.nodes_size_array[seq_index] = cfg.groups_dict[group_ID]['size']
+                    self.is_in_group_array[seq_index] = 1
 
         # Set the view-range of coordinates according to the data
         if cfg.run_params['dimensions_num_for_clustering'] == 2:
@@ -248,8 +253,11 @@ class Network3D:
         self.selected_affine_mtx = []
         self.selected_inverse_affine_mtx = []
         self.nodes_colors_array = []
+        self.nodes_colors_array_by_param = []
         self.nodes_size_array = []
+        self.is_in_group_array = []
         self.selected_nodes_colors_array = []
+        self.selected_nodes_colors_array_by_param = []
         self.selected_nodes_size_array = []
         self.nodes_outline_color_array = []
         self.selected_points = {}
@@ -263,9 +271,21 @@ class Network3D:
         self.pos_array_by_groups = {}
         self.size_array_by_groups = {}
         self.nodes_outline_color_array_by_groups = {}
+        self.nodes_default_color = [0.0, 0.0, 0.0, 1.0]
+
+    def set_defaults(self, nodes_size, nodes_color, dim_num, color_by):
+        self.nodes_size = int(nodes_size)
+        self.nodes_default_color = nodes_color
+
+        for seq_index in range(cfg.run_params['total_sequences_num']):
+            if not self.is_in_group_array[seq_index]:
+                self.nodes_colors_array[seq_index] = self.nodes_default_color
+                self.nodes_size_array[seq_index] = self.nodes_size
+
+        self.update_view(dim_num, color_by)
 
     # Update the nodes positions after calculation update or initialization
-    def update_data(self, view, dim_num_view, fr_object, set_range):
+    def update_data(self, view, dim_num_view, fr_object, set_range, color_by):
 
         # Full-data mode
         if self.is_subset_mode == 0:
@@ -282,8 +302,13 @@ class Network3D:
                 # Zero the Z coordinate
                 pos_array[:, 2] = 0
 
+            if color_by == 'groups':
+                nodes_color_array = self.nodes_colors_array
+            else:
+                nodes_color_array = self.nodes_colors_array_by_param
+
             # Update the scatter-plot
-            self.scatter_plot.set_data(pos=pos_array, face_color=self.nodes_colors_array,
+            self.scatter_plot.set_data(pos=pos_array, face_color=nodes_color_array,
                                        size=self.nodes_size_array, edge_width=self.nodes_outline_width,
                                        edge_color=self.nodes_outline_color_array, symbol=self.nodes_symbol)
 
@@ -311,8 +336,13 @@ class Network3D:
                 # Zero the Z coordinate
                 selected_pos_array[:, 2] = 0
 
+            if color_by == 'groups':
+                selected_nodes_color_array = self.selected_nodes_colors_array
+            else:
+                selected_nodes_color_array = self.selected_nodes_colors_array_by_param
+
             # Display the scatter-plot for the subset
-            self.scatter_plot.set_data(pos=selected_pos_array, face_color=self.selected_nodes_colors_array,
+            self.scatter_plot.set_data(pos=selected_pos_array, face_color=selected_nodes_color_array,
                                        size=self.selected_nodes_size_array, edge_width=self.nodes_outline_width,
                                        edge_color=self.nodes_outline_default_color, symbol=self.nodes_symbol)
 
@@ -336,7 +366,7 @@ class Network3D:
             self.update_sequences_names(3)
             self.update_sequences_numbers(3)
 
-    def update_view(self, dim_num_view):
+    def update_view(self, dim_num_view, color_by):
 
         # Full-data mode
         if self.is_subset_mode == 0:
@@ -347,8 +377,13 @@ class Network3D:
                 pos_array = self.rotated_pos_array.copy()
                 pos_array[:, 2] = 0  # Zero the Z-axis
 
+            if color_by == 'groups':
+                nodes_color_array = self.nodes_colors_array
+            else:
+                nodes_color_array = self.nodes_colors_array_by_param
+
             # Update the nodes with the updated rotation
-            self.scatter_plot.set_data(pos=pos_array, face_color=self.nodes_colors_array,
+            self.scatter_plot.set_data(pos=pos_array, face_color=nodes_color_array,
                                        size=self.nodes_size_array, edge_width=self.nodes_outline_width,
                                        edge_color=self.nodes_outline_color_array, symbol=self.nodes_symbol)
 
@@ -368,8 +403,13 @@ class Network3D:
                 pos_array = self.selected_rotated_pos_array.copy()
                 pos_array[:, 2] = 0  # Zero the Z-axis
 
+            if color_by == 'groups':
+                selected_nodes_color_array = self.selected_nodes_colors_array
+            else:
+                selected_nodes_color_array = self.selected_nodes_colors_array_by_param
+
             # Display the scatter-plot for the subset
-            self.scatter_plot.set_data(pos=pos_array, face_color=self.selected_nodes_colors_array,
+            self.scatter_plot.set_data(pos=pos_array, face_color=selected_nodes_color_array,
                                        size=self.selected_nodes_size_array, edge_width=self.nodes_outline_width,
                                        edge_color=self.nodes_outline_default_color, symbol=self.nodes_symbol)
 
@@ -385,11 +425,11 @@ class Network3D:
         self.update_sequences_numbers(dim_num_view)
 
     # Set a 3 dimensional view
-    def set_3d_view(self, view, fr_object):
+    def set_3d_view(self, view, fr_object, color_by):
         print("Moved to 3D view")
 
         # Save the rotated coordinates as the normal ones from now on
-        self.save_rotated_coordinates(3, fr_object)
+        self.save_rotated_coordinates(3, fr_object, color_by)
 
         # Hide the XYZ axis
         self.axis.parent = None
@@ -400,13 +440,18 @@ class Network3D:
         #print("Camera parameters:")
         #print(view.camera.get_state())
 
-    def update_3d_view(self):
+    def update_3d_view(self, color_by):
 
         # Full-data mode
         if self.is_subset_mode == 0:
 
+            if color_by == 'groups':
+                nodes_color_array = self.nodes_colors_array
+            else:
+                nodes_color_array = self.nodes_colors_array_by_param
+
             # Update the nodes with the updated rotation
-            self.scatter_plot.set_data(pos=self.pos_array, face_color=self.nodes_colors_array,
+            self.scatter_plot.set_data(pos=self.pos_array, face_color=nodes_color_array,
                                        size=self.nodes_size_array, edge_width=self.nodes_outline_width,
                                        edge_color=self.nodes_outline_color_array, symbol=self.nodes_symbol)
 
@@ -418,8 +463,14 @@ class Network3D:
                                        connect=self.connections_by_bins[i])
         # Subset mode
         else:
+
+            if color_by == 'groups':
+                selected_nodes_color_array = self.selected_nodes_colors_array
+            else:
+                selected_nodes_color_array = self.selected_nodes_colors_array_by_param
+
             # Display the scatter-plot for the subset
-            self.scatter_plot.set_data(pos=self.selected_pos_array, face_color=self.selected_nodes_colors_array,
+            self.scatter_plot.set_data(pos=self.selected_pos_array, face_color=selected_nodes_color_array,
                                        size=self.selected_nodes_size_array, edge_width=self.nodes_outline_width,
                                        edge_color=self.nodes_outline_default_color, symbol=self.nodes_symbol)
 
@@ -434,7 +485,7 @@ class Network3D:
         self.update_sequences_names(3)
         self.update_sequences_numbers(3)
 
-    def set_2d_view(self, view, z_index_mode, fr_object):
+    def set_2d_view(self, view, z_index_mode, fr_object, color_by):
 
         print("Moved to 2D view")
 
@@ -445,28 +496,33 @@ class Network3D:
         # In case the clustering is done with 2D, save the rotated coordinates permanently in the sequences
         # main array (to continue the layout calculation from the same rotated angle)
         if cfg.run_params['dimensions_num_for_clustering'] == 2:
-            self.save_rotated_coordinates(2, fr_object)
+            self.save_rotated_coordinates(2, fr_object, color_by)
 
         # Show the XYZ axis to make sure the connecting-lines are displayed properly (a workaround for bug)
         self.axis.parent = view.scene
 
-        self.update_2d_view(view, z_index_mode)
+        self.update_2d_view(view, z_index_mode, color_by)
         self.reset_group_names_positions(view)
 
         #print("Camera parameters:")
         #print(view.camera.get_state())
 
-    def update_2d_view(self, view, z_index_mode):
+    def update_2d_view(self, view, z_index_mode, color_by):
 
         # Full-data mode
         if self.is_subset_mode == 0:
             pos_array = self.rotated_pos_array.copy()
             pos_array[:, 2] = 0  # Zero the Z-axis
 
+            if color_by == 'groups':
+                nodes_color_array = self.nodes_colors_array
+            else:
+                nodes_color_array = self.nodes_colors_array_by_param
+
             # Update the nodes with the updated rotation
             # One scatter-plot visual - no control of the Z-indexing
             if z_index_mode == "auto":
-                self.scatter_plot.set_data(pos=pos_array, face_color=self.nodes_colors_array,
+                self.scatter_plot.set_data(pos=pos_array, face_color=nodes_color_array,
                                            size=self.nodes_size_array, edge_width=self.nodes_outline_width,
                                            edge_color=self.nodes_outline_color_array, symbol=self.nodes_symbol)
                 self.hide_scatter_by_groups()
@@ -507,8 +563,13 @@ class Network3D:
             pos_array = self.selected_rotated_pos_array.copy()
             pos_array[:, 2] = 0  # Zero the Z-axis
 
+            if color_by == 'groups':
+                selected_nodes_color_array = self.selected_nodes_colors_array
+            else:
+                selected_nodes_color_array = self.selected_nodes_colors_array_by_param
+
             # Display the scatter-plot for the subset
-            self.scatter_plot.set_data(pos=pos_array, face_color=self.selected_nodes_colors_array,
+            self.scatter_plot.set_data(pos=pos_array, face_color=selected_nodes_color_array,
                                        size=self.selected_nodes_size_array, edge_width=self.nodes_outline_width,
                                        edge_color=self.nodes_outline_default_color, symbol=self.nodes_symbol)
             self.hide_scatter_by_groups()
@@ -530,7 +591,7 @@ class Network3D:
         self.update_sequences_names(2)
         self.update_sequences_numbers(2)
 
-    def set_subset_view(self, dim_num):
+    def set_subset_view(self, dim_num, color_by):
         self.is_subset_mode = 1
 
         subset_size = len(self.selected_points)
@@ -539,6 +600,7 @@ class Network3D:
         self.selected_pos_array = np.zeros((subset_size, 3), dtype=np.float32)
         self.selected_rotated_pos_array = np.zeros((subset_size, 3), dtype=np.float32)
         self.selected_nodes_colors_array = np.zeros((subset_size, 4), dtype=np.float32)
+        self.selected_nodes_colors_array_by_param = np.zeros((subset_size, 4), dtype=np.float32)
         self.selected_nodes_size_array = np.zeros(subset_size, dtype=np.float32)
 
         i = 0
@@ -546,6 +608,8 @@ class Network3D:
             self.selected_pos_array[i] = self.pos_array[seq_index]
             self.selected_rotated_pos_array[i] = self.rotated_pos_array[seq_index]
             self.selected_nodes_colors_array[i] = self.nodes_colors_array[seq_index]
+            if color_by == 'param':
+                self.selected_nodes_colors_array_by_param[i] = self.nodes_colors_array_by_param[seq_index]
             self.selected_nodes_size_array[i] = self.nodes_size_array[seq_index] - 5
             i += 1
 
@@ -558,16 +622,16 @@ class Network3D:
         if dim_num == 3:
             self.calculate_initial_angles()
 
-        self.update_view(dim_num)
+        self.update_view(dim_num, color_by)
 
-    def set_full_view(self, view, dim_num):
+    def set_full_view(self, view, dim_num, color_by):
         self.is_subset_mode = 0
 
         self.set_range_turntable_camera(view, dim_num)
 
-        self.update_view(dim_num)
+        self.update_view(dim_num, color_by)
 
-    def save_rotated_coordinates(self, dim_num, fr_object):
+    def save_rotated_coordinates(self, dim_num, fr_object, color_by):
 
         # Full data mode
         if self.is_subset_mode == 0:
@@ -587,14 +651,14 @@ class Network3D:
 
             self.selected_pos_array = self.selected_rotated_pos_array.copy()
 
-        self.update_view(dim_num)
+        self.update_view(dim_num, color_by)
         self.calculate_initial_angles()
 
-    def set_selection_mode(self, view, dim_num_view, z_index_mode, fr_object):
+    def set_selection_mode(self, view, dim_num_view, z_index_mode, fr_object, color_by):
 
         if dim_num_view == 2 and cfg.run_params['dimensions_num_for_clustering'] == 3:
             # Save the rotated coordinates as the normal ones from now on
-            self.save_rotated_coordinates(2, fr_object)
+            self.save_rotated_coordinates(2, fr_object, color_by)
 
         # Rotate the coordinates and bring the camera back to its initial position
         self.calculate_rotation(view)
@@ -604,13 +668,13 @@ class Network3D:
         # Display the XYZ axis to make sure the connecting-lines are displayed properly (a workaround for bug)
         #self.axis.parent = view.scene
 
-        self.update_2d_view(view, z_index_mode)
+        self.update_2d_view(view, z_index_mode, color_by)
 
-    def set_interactive_mode(self, view, dim_num_view, fr_object):
+    def set_interactive_mode(self, view, dim_num_view, fr_object, color_by):
         if dim_num_view == 3:
-            self.set_3d_view(view, fr_object)
+            self.set_3d_view(view, fr_object, color_by)
         else:
-            self.save_rotated_coordinates(2, fr_object)
+            self.save_rotated_coordinates(2, fr_object, color_by)
 
     def calculate_initial_angles(self):
 
@@ -795,6 +859,22 @@ class Network3D:
             connections = cfg.connected_sequences_list_subset[edges_bins_array == (i + 1)]
             self.selected_connections_by_bins.append(connections)
 
+    def color_by_param(self, colors_list, dim_num, view, z_index_mode, color_by):
+
+        self.nodes_colors_array_by_param = colors_list
+
+        if dim_num == 3:
+            self.update_3d_view(color_by)
+        else:
+            self.update_2d_view(view, z_index_mode, color_by)
+
+    def color_by_groups(self, dim_num, view, z_index_mode, color_by):
+
+        if dim_num == 3:
+            self.update_3d_view(color_by)
+        else:
+            self.update_2d_view(view, z_index_mode, color_by)
+
     def build_scatter_by_groups(self):
 
         order = -1
@@ -859,7 +939,7 @@ class Network3D:
                 members_array.append(seqID)
         self.members_array_by_groups['none'] = members_array.copy()
 
-    def remove_from_scatter_by_groups(self, group_ID, view, dim_num, z_index_mode):
+    def remove_from_scatter_by_groups(self, group_ID, view, dim_num, z_index_mode, color_by):
 
         self.scatter_by_groups[group_ID].parent = None
 
@@ -878,9 +958,9 @@ class Network3D:
             del self.scatter_by_groups[group_ID]
 
         if dim_num == 3:
-            self.update_3d_view()
+            self.update_3d_view(color_by)
         else:
-            self.update_2d_view(view, z_index_mode)
+            self.update_2d_view(view, z_index_mode, color_by)
 
     def show_scatter_by_groups(self, view):
 
@@ -1117,13 +1197,13 @@ class Network3D:
         # Add the group to the scatter-plot visual
         self.add_to_scatter_by_groups(group_ID)
 
-    def delete_group(self, group_ID, seq_dict, view, dim_num, z_index_mode):
+    def delete_group(self, group_ID, seq_dict, view, dim_num, z_index_mode, color_by):
 
         # 1. Empty the group from its members
         self.remove_from_group(seq_dict, dim_num, view, z_index_mode)
 
         # 2. Remove the group from the scatter-plot visual
-        self.remove_from_scatter_by_groups(group_ID, view, dim_num, z_index_mode)
+        self.remove_from_scatter_by_groups(group_ID, view, dim_num, z_index_mode, color_by)
 
         # 3. Remove the group from the groups_to_show dict and from the ordered_groups_to_show list
         if group_ID in self.groups_to_show:
@@ -1133,10 +1213,10 @@ class Network3D:
         # 4. Update the group_names_visual
         self.remove_from_group_names_visual(group_ID, view)
 
-    def delete_empty_group(self, group_ID, view, dim_num, z_index_mode):
+    def delete_empty_group(self, group_ID, view, dim_num, z_index_mode, color_by):
 
         # 1. Remove the group from the scatter-plot visual
-        self.remove_from_scatter_by_groups(group_ID, view, dim_num, z_index_mode)
+        self.remove_from_scatter_by_groups(group_ID, view, dim_num, z_index_mode, color_by)
 
         # 2. Remove the group from the groups_to_show dict and from the ordered_groups_to_show list
         if group_ID in self.groups_to_show:
@@ -1146,7 +1226,7 @@ class Network3D:
         # 3. Update the group_names_visual
         self.remove_from_group_names_visual(group_ID, view)
 
-    def edit_group_parameters(self, group_ID, view, dim_num, z_index_mode):
+    def edit_group_parameters(self, group_ID, view, dim_num, z_index_mode, color_by):
 
         # The group is not empty
         if len(cfg.groups_dict[group_ID]['seqIDs']) > 0:
@@ -1164,11 +1244,11 @@ class Network3D:
             self.remove_from_group_names_visual(group_ID, view)
 
         if dim_num == 3:
-            self.update_3d_view()
+            self.update_3d_view(color_by)
         else:
-            self.update_2d_view(view, z_index_mode)
+            self.update_2d_view(view, z_index_mode, color_by)
 
-    def update_groups_order(self, dim_num, view, z_index_mode):
+    def update_groups_order(self, dim_num, view, z_index_mode, color_by):
 
         # Update the order in groups_to_show dict
         for group_ID in self.groups_to_show:
@@ -1187,34 +1267,36 @@ class Network3D:
         self.scatter_by_groups['none'].order = i
 
         if dim_num == 2 and z_index_mode == 'groups':
-            self.update_2d_view(view, z_index_mode)
+            self.update_2d_view(view, z_index_mode, color_by)
 
-    def add_to_group(self, points_dict, group_ID, dim_num, view, z_index_mode):
+    def add_to_group(self, points_dict, group_ID, dim_num, view, z_index_mode, color_by):
 
         if group_ID in self.groups_to_show:
             for seq_index in points_dict:
                 self.nodes_colors_array[seq_index] = cfg.groups_dict[group_ID]['color_array']
+                self.is_in_group_array[seq_index] = 1
                 #self.nodes_size_array[seq_index] = cfg.groups_dict[group_ID]['size']
 
         self.update_members_by_groups()
 
         if dim_num == 3:
-            self.update_3d_view()
+            self.update_3d_view(color_by)
         else:
-            self.update_2d_view(view, z_index_mode)
+            self.update_2d_view(view, z_index_mode, color_by)
 
-    def remove_from_group(self, points_dict, dim_num, view, z_index_mode):
+    def remove_from_group(self, points_dict, dim_num, view, z_index_mode, color_by):
         for seq_index in points_dict:
             self.nodes_colors_array[seq_index] = self.nodes_default_color
+            self.is_in_group_array[seq_index] = 0
 
         self.update_members_by_groups()
 
         if dim_num == 3:
-            self.update_3d_view()
+            self.update_3d_view(color_by)
         else:
-            self.update_2d_view(view, z_index_mode)
+            self.update_2d_view(view, z_index_mode, color_by)
 
-    def find_selected_point(self, view, selection_type, clicked_screen_coor, z_index_mode):
+    def find_selected_point(self, view, selection_type, clicked_screen_coor, z_index_mode, color_by):
 
         # An array to hold the indices of the data points that are close enough to the clicked point
         points_in_radius = []
@@ -1283,11 +1365,11 @@ class Network3D:
                             if group_ID in self.selected_groups:
                                 del self.selected_groups[group_ID]
                                 # Unmark the sequences from the selected group
-                                self.unmark_selected_points(points_in_radius, view, 2, z_index_mode)
+                                self.unmark_selected_points(points_in_radius, view, 2, z_index_mode, color_by)
                             # Select the group
                             else:
                                 self.selected_groups[group_ID] = 1
-                                self.mark_selected_points(points_in_radius, view, z_index_mode)
+                                self.mark_selected_points(points_in_radius, view, z_index_mode, color_by)
 
                             groups_in_radius[group_ID] = 1
 
@@ -1297,16 +1379,17 @@ class Network3D:
 
             # Points should be cleared from selection
             if deselect == 1:
-                self.unmark_selected_points(points_in_radius, view, 2, z_index_mode)
+                self.unmark_selected_points(points_in_radius, view, 2, z_index_mode, color_by)
 
             # Points should be added to selection
             else:
-                self.mark_selected_points(points_in_radius, view, z_index_mode)
+                self.mark_selected_points(points_in_radius, view, z_index_mode, color_by)
 
             self.update_sequences_names(2)
             self.update_sequences_numbers(2)
 
-    def find_selected_area(self, view, selection_type, drag_start_screen_coor, drag_end_screen_coor, z_index_mode):
+    def find_selected_area(self, view, selection_type, drag_start_screen_coor, drag_end_screen_coor, z_index_mode,
+                           color_by):
 
         points_in_area = []
         groups_in_area = {}
@@ -1352,12 +1435,12 @@ class Network3D:
         if len(points_in_area) > 0:
             #print("Point(s) in area indices:")
             #print(points_in_area)
-            self.mark_selected_points(points_in_area, view, z_index_mode)
+            self.mark_selected_points(points_in_area, view, z_index_mode, color_by)
 
             self.update_sequences_names(2)
             self.update_sequences_numbers(2)
 
-    def remove_from_selected(self, selected_dict, view, dim_num, z_index_mode):
+    def remove_from_selected(self, selected_dict, view, dim_num, z_index_mode, color_by):
 
         points_array = []
 
@@ -1368,28 +1451,28 @@ class Network3D:
                 del self.selected_points[seq_index]
                 cfg.sequences_array[seq_index]['in_subset'] = False
 
-        self.unmark_selected_points(points_array, view, dim_num, z_index_mode)
+        self.unmark_selected_points(points_array, view, dim_num, z_index_mode, color_by)
 
-    def mark_selected_points(self, selected_array, view, z_index_mode):
+    def mark_selected_points(self, selected_array, view, z_index_mode, color_by):
 
         for i in range(len(selected_array)):
                 self.nodes_outline_color_array[selected_array[i]] = self.selected_outline_color
                 self.nodes_size_array[selected_array[i]] = self.selected_nodes_size
 
-        self.update_2d_view(view, z_index_mode)
+        self.update_2d_view(view, z_index_mode, color_by)
 
-    def unmark_selected_points(self, selected_array, view, dim_num, z_index_mode):
+    def unmark_selected_points(self, selected_array, view, dim_num, z_index_mode, color_by):
 
         for i in range(len(selected_array)):
             self.nodes_outline_color_array[selected_array[i]] = self.nodes_outline_default_color
             self.nodes_size_array[selected_array[i]] = self.nodes_size
 
         if dim_num == 2:
-            self.update_2d_view(view, z_index_mode)
+            self.update_2d_view(view, z_index_mode, color_by)
         else:
-            self.update_3d_view()
+            self.update_3d_view(color_by)
 
-    def select_all(self, view, selection_type, dim_num, z_index_mode):
+    def select_all(self, view, selection_type, dim_num, z_index_mode, color_by):
 
         for seq_index in range(self.pos_array.shape[0]):
             self.selected_points[seq_index] = 1
@@ -1402,14 +1485,14 @@ class Network3D:
                 self.selected_groups[group_index] = 1
 
         if dim_num == 3:
-            self.update_3d_view()
+            self.update_3d_view(color_by)
         else:
-            self.update_2d_view(view, z_index_mode)
+            self.update_2d_view(view, z_index_mode, color_by)
 
         self.update_sequences_names(dim_num)
         self.update_sequences_numbers(dim_num)
 
-    def select_subset(self, selected_dict, view, dim_num, z_index_mode):
+    def select_subset(self, selected_dict, view, dim_num, z_index_mode, color_by):
 
         for seq_index in selected_dict:
             if seq_index not in self.selected_points:
@@ -1419,11 +1502,11 @@ class Network3D:
                 self.nodes_size_array[seq_index] = self.selected_nodes_size
 
         if dim_num == 3:
-            self.update_3d_view()
+            self.update_3d_view(color_by)
         else:
-            self.update_2d_view(view, z_index_mode)
+            self.update_2d_view(view, z_index_mode, color_by)
 
-    def reset_selection(self, view, dim_num_view, z_index_mode):
+    def reset_selection(self, view, dim_num_view, z_index_mode, color_by):
 
         for seq_index in self.selected_points:
             cfg.sequences_array[seq_index]['in_subset'] = False
@@ -1446,11 +1529,11 @@ class Network3D:
         self.hide_sequences_names()
 
         if dim_num_view == 3:
-            self.update_3d_view()
+            self.update_3d_view(color_by)
         else:
-            self.update_2d_view(view, z_index_mode)
+            self.update_2d_view(view, z_index_mode, color_by)
 
-    def highlight_selected_points(self, selected_dict, view, dim_num, z_index_mode):
+    def highlight_selected_points(self, selected_dict, view, dim_num, z_index_mode, color_by):
 
         for seq_index in selected_dict:
             self.nodes_colors_array[seq_index] = self.nodes_highlight_color
@@ -1458,11 +1541,11 @@ class Network3D:
             self.nodes_size_array[seq_index] = self.highlighted_nodes_size
 
             if dim_num == 3:
-                self.update_3d_view()
+                self.update_3d_view(color_by)
             else:
-                self.update_2d_view(view, z_index_mode)
+                self.update_2d_view(view, z_index_mode, color_by)
 
-    def unhighlight_selected_points(self, selected_dict, view, dim_num, z_index_mode):
+    def unhighlight_selected_points(self, selected_dict, view, dim_num, z_index_mode, color_by):
 
         for seq_index in selected_dict:
 
@@ -1481,9 +1564,9 @@ class Network3D:
                 self.nodes_outline_color_array[seq_index] = self.nodes_outline_default_color
 
             if dim_num == 3:
-                self.update_3d_view()
+                self.update_3d_view(color_by)
             else:
-                self.update_2d_view(view, z_index_mode)
+                self.update_2d_view(view, z_index_mode, color_by)
 
     def start_dragging_rectangle(self, view, drag_start_screen_coor):
         trans = view.scene.transform
@@ -1518,7 +1601,7 @@ class Network3D:
     def remove_dragging_rectangle(self):
         self.drag_rectangle.parent = None
 
-    def move_selected_points(self, view, dim_num, start_move_screen_coor, end_move_screen_coor, z_index_mode):
+    def move_selected_points(self, view, dim_num, start_move_screen_coor, end_move_screen_coor, z_index_mode, color_by):
         trans = view.scene.transform
         start_move_data_coor = trans.imap(start_move_screen_coor)
         end_move_data_coor = trans.imap(end_move_screen_coor)
@@ -1532,11 +1615,11 @@ class Network3D:
         if dim_num == 3:
             for index in self.selected_points:
                 self.pos_array[index, :] += distance_vec_data_coor[:3]
-            self.update_3d_view()
+            self.update_3d_view(color_by)
         else:
             for index in self.selected_points:
                 self.rotated_pos_array[index, :] += distance_vec_data_coor[:3]
-            self.update_2d_view(view, z_index_mode)
+            self.update_2d_view(view, z_index_mode, color_by)
         #print("rotated_pos_array:")
         #print(self.rotated_pos_array)
 
@@ -1577,7 +1660,7 @@ class Network3D:
             print("Found point(s) to move:")
             print(self.points_to_move)
 
-    def move_points(self, view, start_move_screen_coor, end_move_screen_coor, z_index_mode):
+    def move_points(self, view, start_move_screen_coor, end_move_screen_coor, z_index_mode, color_by):
 
         trans = view.scene.transform
         start_move_data_coor = trans.imap(start_move_screen_coor)
@@ -1591,7 +1674,7 @@ class Network3D:
 
         for index in self.points_to_move:
             self.rotated_pos_array[index, :] += distance_vec_data_coor[:3]
-        self.update_2d_view(view, z_index_mode)
+        self.update_2d_view(view, z_index_mode, color_by)
 
     def finish_points_move(self, dim_num, fr_object):
 
