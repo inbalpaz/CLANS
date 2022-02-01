@@ -1147,7 +1147,7 @@ class MainWindow(QMainWindow):
 
             # The view was already in 2D -> update the rotated positions
             if self.view_in_dimensions_num == 2:
-                self.network_plot.save_rotated_coordinates(2, self.fr_object)
+                self.network_plot.save_rotated_coordinates(2, self.fr_object, self.color_by)
 
             # Set 2D view
             else:
