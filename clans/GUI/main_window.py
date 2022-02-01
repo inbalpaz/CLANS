@@ -58,6 +58,7 @@ class MainWindow(QMainWindow):
         self.rounds_done = 0
         self.rounds_done_subset = 0
         self.view_in_dimensions_num = cfg.run_params['dimensions_num_for_clustering']
+        self.dim_num = self.view_in_dimensions_num  # The effective view (set by the user / selection mode / move data mode)
         self.mode = "interactive"  # Modes of interaction: 'interactive' (rotate/pan) / 'selection'
         self.selection_type = "sequences"  # switch between 'sequences' and 'groups' modes
         self.color_by = "groups"  # Color the nodes according to: 'groups' / 'param'
@@ -265,7 +266,7 @@ class MainWindow(QMainWindow):
         # Add a button to change the Z-indexing of nodes in 2D presentation
         self.z_index_mode_combo = QComboBox()
         self.z_index_mode_combo.addItems(["Auto Z-index", "By groups order"])
-        if self.view_in_dimensions_num == 3:
+        if self.dim_num == 3 or len(cfg.groups_dict) < 2:
             self.z_index_mode_combo.setEnabled(False)
         self.z_index_mode_combo.currentIndexChanged.connect(self.manage_z_indexing)
 
@@ -557,6 +558,7 @@ class MainWindow(QMainWindow):
         self.rounds_done = 0
         self.rounds_done_subset = 0
         self.view_in_dimensions_num = cfg.run_params['dimensions_num_for_clustering']
+        self.dim_num = self.view_in_dimensions_num
         self.mode = "interactive"  # Modes of interaction: 'interactive' (rotate/pan) / 'selection'
         self.selection_type = "sequences"  # switch between 'sequences' and 'groups' modes
         self.is_subset_mode = 0  # In subset mode, only the selected data-points are displayed
@@ -861,7 +863,8 @@ class MainWindow(QMainWindow):
                 self.show_groups_combo.setEnabled(True)
             self.edit_groups_button.setEnabled(True)
 
-            if self.is_subset_mode == 0 and self.view_in_dimensions_num == 2:
+            if self.is_subset_mode == 0 and self.view_in_dimensions_num == 2 and self.color_by == 'groups' and \
+                    len(cfg.groups_dict) > 1:
                 self.z_index_mode_combo.setEnabled(True)
 
         # Enable selection-related buttons only in full data mode
@@ -1079,18 +1082,14 @@ class MainWindow(QMainWindow):
         if conf_nodes_dlg.exec_():
             default_size, default_color = conf_nodes_dlg.get_parameters()
 
-            if self.view_in_dimensions_num == 2 or self.mode == "selection":
-                dim_num = 2
-            else:
-                dim_num = 3
-
-            self.network_plot.set_defaults(default_size, default_color, dim_num, self.color_by)
+            self.network_plot.set_defaults(default_size, default_color, self.dim_num, self.color_by)
 
     def change_dimensions_view(self):
 
         # 3D view
         if self.dimensions_view_combo.currentIndex() == 0:
             self.view_in_dimensions_num = 3
+            self.dim_num = self.view_in_dimensions_num
 
             # Update the window title
             self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View of " + self.file_name)
@@ -1104,15 +1103,14 @@ class MainWindow(QMainWindow):
         # 2D view
         else:
             self.view_in_dimensions_num = 2
+            self.dim_num = self.view_in_dimensions_num
 
             # Update the window title
             self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View of " + self.file_name)
 
-            if len(cfg.groups_dict) != 0:
-
-                # Only in full data mode
-                if self.is_subset_mode == 0:
-                    self.z_index_mode_combo.setEnabled(True)
+            # Only in full data and color-by groups modes
+            if self.is_subset_mode == 0 and len(cfg.groups_dict) > 1 and self.color_by == 'groups':
+                self.z_index_mode_combo.setEnabled(True)
 
             # Not in init file mode
             if self.is_init == 0:
@@ -1172,6 +1170,8 @@ class MainWindow(QMainWindow):
         if self.mode_combo.currentIndex() == 0:
             self.mode = "interactive"
 
+            self.dim_num = self.view_in_dimensions_num
+
             if cfg.run_params['is_debug_mode']:
                 print("Interactive mode")
 
@@ -1199,6 +1199,8 @@ class MainWindow(QMainWindow):
 
         else:
 
+            self.dim_num = 2
+
             # Selection mode
             if self.mode_combo.currentIndex() == 1:
                 self.mode = "selection"
@@ -1222,7 +1224,9 @@ class MainWindow(QMainWindow):
             self.dimensions_clustering_combo.setEnabled(False)
             self.pval_widget.setEnabled(False)
             self.dimensions_view_combo.setEnabled(False)
-            self.z_index_mode_combo.setEnabled(True)
+
+            if len(cfg.groups_dict) > 1 and self.color_by == 'groups':
+                self.z_index_mode_combo.setEnabled(True)
 
             if len(cfg.groups_dict) > 0:
                 self.selection_type_combo.setEnabled(True)
@@ -1235,12 +1239,7 @@ class MainWindow(QMainWindow):
 
     def color_by_groups(self):
 
-        if self.view_in_dimensions_num == 2 or self.mode == "selection":
-            dim_num = 2
-        else:
-            dim_num = 3
-
-        self.network_plot.color_by_groups(dim_num, self.view, self.z_indexing_mode, self.color_by)
+        self.network_plot.color_by_groups(self.dim_num, self.view, self.z_indexing_mode, self.color_by)
 
     def color_by_seq_length(self):
 
@@ -1253,11 +1252,7 @@ class MainWindow(QMainWindow):
         else:
             colors_list = self.gradient_colormap.map(cfg.sequences_param['norm_seq_length'])
 
-            if self.view_in_dimensions_num == 2 or self.mode == "selection":
-                dim_num = 2
-            else:
-                dim_num = 3
-            self.network_plot.color_by_param(colors_list, dim_num, self.view, self.z_indexing_mode, self.color_by)
+            self.network_plot.color_by_param(colors_list, self.dim_num, self.view, self.z_indexing_mode, self.color_by)
 
     def open_color_by_length_dialog(self):
 
@@ -1278,7 +1273,7 @@ class MainWindow(QMainWindow):
 
             if self.is_init == 0:
 
-                if self.view_in_dimensions_num == 2:
+                if self.dim_num == 2 and len(cfg.groups_dict) > 1:
                     self.z_index_mode_combo.setEnabled(True)
 
                 self.color_by_groups()
@@ -1288,12 +1283,13 @@ class MainWindow(QMainWindow):
             self.color_by = "param"
 
             if self.is_init == 0:
-
-                if self.view_in_dimensions_num == 2 and self.z_indexing_mode == 'groups':
-                    self.z_index_mode_combo.setCurrentIndex(0)
-                    self.z_index_mode_combo.setEnabled(False)
-
                 self.color_by_seq_length()
+
+            if self.dim_num == 2:
+                if self.z_indexing_mode == 'groups':
+                    self.z_index_mode_combo.setCurrentIndex(0)
+
+                self.z_index_mode_combo.setEnabled(False)
 
     def change_selection_type(self):
 
@@ -1306,11 +1302,8 @@ class MainWindow(QMainWindow):
             self.selection_type = "groups"
 
     def select_all(self):
-        if self.view_in_dimensions_num == 2 or self.mode == "selection":
-            dim_num = 2
-        else:
-            dim_num = 3
-        self.network_plot.select_all(self.view, self.selection_type, dim_num, self.z_indexing_mode, self.color_by)
+
+        self.network_plot.select_all(self.view, self.selection_type, self.dim_num, self.z_indexing_mode, self.color_by)
 
         # Update the selected sequences window
         self.selected_seq_window.update_sequences()
@@ -1325,11 +1318,8 @@ class MainWindow(QMainWindow):
         self.data_mode_combo.setEnabled(False)
 
     def clear_selection(self):
-        if self.view_in_dimensions_num == 2 or self.mode == "selection":
-            dim_num = 2
-        else:
-            dim_num = 3
-        self.network_plot.reset_selection(self.view, dim_num, self.z_indexing_mode, self.color_by)
+
+        self.network_plot.reset_selection(self.view, self.dim_num, self.z_indexing_mode, self.color_by)
 
         # Update the selected sequences window
         self.selected_seq_window.update_sequences()
@@ -1414,7 +1404,7 @@ class MainWindow(QMainWindow):
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
 
-            if self.view_in_dimensions_num == 2 and len(cfg.groups_dict) != 0:
+            if self.view_in_dimensions_num == 2 and len(cfg.groups_dict) > 1:
                 self.z_index_mode_combo.setEnabled(True)
 
             # Update the coordinates in the fruchterman-reingold object
@@ -1483,18 +1473,13 @@ class MainWindow(QMainWindow):
 
     def edit_groups(self):
 
-        if self.view_in_dimensions_num == 2 or self.mode != "interactive":
-            dim_num = 2
-        else:
-            dim_num = 3
-
-        dlg = gd.ManageGroupsDialog(self.network_plot, self.view, dim_num, self.z_indexing_mode, self.color_by)
+        dlg = gd.ManageGroupsDialog(self.network_plot, self.view, self.dim_num, self.z_indexing_mode, self.color_by)
 
         if dlg.exec_():
 
             # The order of the groups has changed
             if dlg.changed_order_flag:
-                self.network_plot.update_groups_order(dim_num, self.view, self.z_indexing_mode, self.color_by)
+                self.network_plot.update_groups_order(self.dim_num, self.view, self.z_indexing_mode, self.color_by)
 
     def open_add_to_group_dialog(self):
 
@@ -1519,11 +1504,7 @@ class MainWindow(QMainWindow):
         groups.add_to_group(self.network_plot.selected_points, group_ID)
 
         # Update the look of the selected data-points according to the new group definitions
-        if self.view_in_dimensions_num == 2 or self.mode == "selection":
-            dim_num = 2
-        else:
-            dim_num = 3
-        self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, dim_num, self.view,
+        self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, self.dim_num, self.view,
                                        self.z_indexing_mode, self.color_by)
 
     def create_group_from_selected(self):
@@ -1554,12 +1535,10 @@ class MainWindow(QMainWindow):
             self.network_plot.add_group(group_ID, self.view)
 
             # Update the look of the selected data-points according to the new group definitions
-            if self.view_in_dimensions_num == 2 or self.mode == "selection":
-                dim_num = 2
+            if self.dim_num == 2 and len(cfg.groups_dict) > 1:
                 self.z_index_mode_combo.setEnabled(True)
-            else:
-                dim_num = 3
-            self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, dim_num, self.view,
+
+            self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, self.dim_num, self.view,
                                            self.z_indexing_mode, self.color_by)
 
             self.edit_groups_button.setEnabled(True)
@@ -1576,11 +1555,7 @@ class MainWindow(QMainWindow):
         groups_with_deleted_members = groups.remove_from_group(self.network_plot.selected_points.copy())
 
         # Update the look of the selected data-points to the default look (without group assignment)
-        if self.view_in_dimensions_num == 2 or self.mode == "selection":
-            dim_num = 2
-        else:
-            dim_num = 3
-        self.network_plot.remove_from_group(self.network_plot.selected_points, dim_num, self.view, self.z_indexing_mode,
+        self.network_plot.remove_from_group(self.network_plot.selected_points, self.dim_num, self.view, self.z_indexing_mode,
                                             self.color_by)
 
         # Check if there is an empty group among the groups with removed members
@@ -1588,7 +1563,7 @@ class MainWindow(QMainWindow):
             if len(cfg.groups_dict[group_ID]['seqIDs']) == 0:
 
                 # 1. Delete it from the group_names visual and other graph-related data-structures
-                self.network_plot.delete_empty_group(group_ID, self.view, dim_num, self.z_indexing_mode,self.color_by)
+                self.network_plot.delete_empty_group(group_ID, self.view, self.dim_num, self.z_indexing_mode,self.color_by)
 
                 # 2. Delete the group
                 groups.delete_group(group_ID)
@@ -1604,11 +1579,6 @@ class MainWindow(QMainWindow):
             self.edit_groups_button.setEnabled(False)
 
     def group_by_taxonomy(self):
-
-        if self.view_in_dimensions_num == 2 or self.mode != "interactive":
-            dim_num = 2
-        else:
-            dim_num = 3
 
         # Open the 'Group by taxonomy' dialog
         dlg = gd.GroupByTaxDialog(self.network_plot)
@@ -1633,7 +1603,7 @@ class MainWindow(QMainWindow):
                     groups.remove_from_group(seq_dict)
 
                     # 2. Remove the group from the plot
-                    self.network_plot.delete_group(group_ID, seq_dict, self.view, dim_num, self.z_indexing_mode,
+                    self.network_plot.delete_group(group_ID, seq_dict, self.view, self.dim_num, self.z_indexing_mode,
                                                    self.color_by)
 
                     # 3. Delete the group from the main groups dictionary
@@ -1651,7 +1621,6 @@ class MainWindow(QMainWindow):
             tax_groups.append(tax_groups.pop(tax_groups.index('Not assigned')))
 
             # A loop over the groups in the chosen taxonomic level
-            #for tax_group in cfg.seq_by_tax_level_dict[tax_level]:
             for tax_group in tax_groups:
 
                 if tax_group != "Not assigned":
@@ -1689,7 +1658,7 @@ class MainWindow(QMainWindow):
                 self.network_plot.add_group(group_ID, self.view)
 
                 # Update the look of the selected data-points according to the new group definitions
-                self.network_plot.add_to_group(cfg.seq_by_tax_level_dict[tax_level][tax_group], group_ID, dim_num,
+                self.network_plot.add_to_group(cfg.seq_by_tax_level_dict[tax_level][tax_group], group_ID, self.dim_num,
                                                self.view, self.z_indexing_mode, self.color_by)
 
                 self.edit_groups_button.setEnabled(True)
