@@ -141,10 +141,6 @@ class Network3D:
         # Create a dict of text visuals that the user can add to the scene
         #self.general_text_visual = {}
 
-        # The XYZ axis is a workaround for a bug, causing the connecting-lines to be displayed wrong in 2D view
-        self.axis = scene.visuals.XYZAxis()
-        self.axis.order = 7
-
     # Set the plot data for the first time
     def init_data(self, view, fr_object):
 
@@ -226,7 +222,6 @@ class Network3D:
 
         # Remove al the visuals from the scene
         self.scatter_plot.parent = None
-        self.axis.parent = None
         self.seq_text_visual.parent = None
         self.seq_number_visual.parent = None
         self.hide_scatter_by_groups()
@@ -312,6 +307,10 @@ class Network3D:
                                        size=self.nodes_size_array, edge_width=self.nodes_outline_width,
                                        edge_color=self.nodes_outline_color_array, symbol=self.nodes_symbol)
 
+            # In 2D view, put the lines at the back of the scatter plot (since the ordering is not enough)
+            if dim_num_view == 2:
+                pos_array[:, 2] = -1
+
             # Update the connecting lines
             for i in range(5):
                 line_color = self.edges_color_scale[i + 1]
@@ -346,7 +345,11 @@ class Network3D:
                                        size=self.selected_nodes_size_array, edge_width=self.nodes_outline_width,
                                        edge_color=self.nodes_outline_default_color, symbol=self.nodes_symbol)
 
-            # Set the data for the connecting lines (without displaying them) -
+            # In 2D view, put the lines at the back of the scatter plot (since the ordering is not enough)
+            if dim_num_view == 2:
+                selected_pos_array[:, 2] = -1
+
+            # Update the connecting lines
             for i in range(5):
                 line_color = self.edges_color_scale[i + 1]
                 line_width = self.edges_width_scale[i + 1]
@@ -387,6 +390,10 @@ class Network3D:
                                        size=self.nodes_size_array, edge_width=self.nodes_outline_width,
                                        edge_color=self.nodes_outline_color_array, symbol=self.nodes_symbol)
 
+            # In 2D view, put the lines at the back of the scatter plot (since the ordering is not enough)
+            if dim_num_view == 2:
+                pos_array[:, 2] = -1
+
             # Update the lines with the updated rotation
             for i in range(5):
                 line_color = self.edges_color_scale[i + 1]
@@ -413,7 +420,11 @@ class Network3D:
                                        size=self.selected_nodes_size_array, edge_width=self.nodes_outline_width,
                                        edge_color=self.nodes_outline_default_color, symbol=self.nodes_symbol)
 
-            # Set the data for the connecting lines (without displaying them) -
+            # In 2D view, put the lines at the back of the scatter plot (since the ordering is not enough)
+            if dim_num_view == 2:
+                pos_array[:, 2] = -1
+
+            # Update the connecting lines
             for i in range(5):
                 line_color = self.edges_color_scale[i + 1]
                 line_width = self.edges_width_scale[i + 1]
@@ -430,9 +441,6 @@ class Network3D:
 
         # Save the rotated coordinates as the normal ones from now on
         self.save_rotated_coordinates(3, fr_object, color_by)
-
-        # Hide the XYZ axis
-        self.axis.parent = None
 
         self.hide_scatter_by_groups()
         self.scatter_plot.parent = view.scene
@@ -498,9 +506,6 @@ class Network3D:
         if cfg.run_params['dimensions_num_for_clustering'] == 2:
             self.save_rotated_coordinates(2, fr_object, color_by)
 
-        # Show the XYZ axis to make sure the connecting-lines are displayed properly (a workaround for bug)
-        self.axis.parent = view.scene
-
         self.update_2d_view(view, z_index_mode, color_by)
         self.reset_group_names_positions(view)
 
@@ -529,6 +534,7 @@ class Network3D:
                 self.scatter_plot.parent = view.scene
 
                 # Update the lines with the updated rotation. Set the correct order
+                pos_array[:, 2] = -1  # Put the lines at the back of the scatter plot (since the ordering is not enough)
                 order = 6
                 for i in range(5):
                     line_color = self.edges_color_scale[i + 1]
@@ -547,6 +553,7 @@ class Network3D:
                 self.show_scatter_by_groups(view)
 
                 # Update the lines with the updated rotation. Set the correct order
+                pos_array[:, 2] = -1  # Put the lines at the back of the scatter plot (since the ordering is not enough)
                 order = len(self.groups_to_show) + 6
                 for i in range(5):
                     line_color = self.edges_color_scale[i + 1]
@@ -576,6 +583,7 @@ class Network3D:
             self.scatter_plot.parent = view.scene
 
             # Update the connecting lines
+            pos_array[:, 2] = -1  # Put the lines at the back of the scatter plot (since the ordering is not enough)
             order = 6
             for i in range(5):
                 line_color = self.edges_color_scale[i + 1]
@@ -664,9 +672,6 @@ class Network3D:
         self.calculate_rotation(view)
         self.reset_rotation(view)
         self.set_rotated_center(view)
-
-        # Display the XYZ axis to make sure the connecting-lines are displayed properly (a workaround for bug)
-        #self.axis.parent = view.scene
 
         self.update_2d_view(view, z_index_mode, color_by)
 
@@ -811,8 +816,10 @@ class Network3D:
         # Full data mode
         if self.is_subset_mode == 0:
             pos_array = self.pos_array.copy()
+
+            # Put the lines at the back of the scatter plot (since the ordering is not enough)
             if dim_num == 2:
-                pos_array[:, 2] = 0
+                pos_array[:, 2] = -1
 
             for i in range(5):
                 line_color = self.edges_color_scale[i+1]
@@ -822,8 +829,10 @@ class Network3D:
         # Subset mode
         else:
             selected_pos_array = self.selected_pos_array.copy()
+
+            # Put the lines at the back of the scatter plot (since the ordering is not enough)
             if dim_num == 2:
-                selected_pos_array[:, 2] = 0
+                selected_pos_array[:, 2] = -1
 
             for i in range(5):
                 line_color = self.edges_color_scale[i + 1]
