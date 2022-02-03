@@ -1171,8 +1171,8 @@ class Network3D:
 
     def reset_group_names_positions(self, view):
 
-        x_init = 40
-        y_init = 30
+        x_init = 20
+        y_init = 20
         y_interval = 15
 
         trans = view.scene.transform
