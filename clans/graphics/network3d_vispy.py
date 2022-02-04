@@ -1209,7 +1209,7 @@ class Network3D:
     def delete_group(self, group_ID, seq_dict, view, dim_num, z_index_mode, color_by):
 
         # 1. Empty the group from its members
-        self.remove_from_group(seq_dict, dim_num, view, z_index_mode)
+        self.remove_from_group(seq_dict, dim_num, view, z_index_mode, color_by)
 
         # 2. Remove the group from the scatter-plot visual
         self.remove_from_scatter_by_groups(group_ID, view, dim_num, z_index_mode, color_by)
