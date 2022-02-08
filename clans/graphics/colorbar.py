@@ -2,7 +2,7 @@ import numpy as np
 from vispy import app, scene
 
 
-class Legend:
+class Colorbar:
 
     def __init__(self, view):
         self.app = app.use_app('pyqt5')

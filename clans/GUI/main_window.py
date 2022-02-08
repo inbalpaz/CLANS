@@ -11,7 +11,7 @@ import clans.io.io_gui as io
 import clans.layouts.layout_gui as lg
 import clans.layouts.fruchterman_reingold_class as fr_class
 import clans.graphics.network3d as net
-import clans.graphics.legend as legend
+import clans.graphics.colorbar as colorbar
 import clans.data.sequences as seq
 import clans.data.sequence_pairs as sp
 import clans.data.groups as groups
@@ -188,7 +188,7 @@ class MainWindow(QMainWindow):
         # Add a grid for two view-boxes
         self.grid = self.canvas.central_widget.add_grid()
         self.view = self.grid.add_view(0, 0, col_span=4)  # Add the graph area viewbox
-        self.legend_view = self.grid.add_view(0, 4)  # Add a viewbox for a colorbar legend
+        self.colorbar_view = self.grid.add_view(0, 4)  # Add a viewbox for a colorbar legend
 
         self.error_label = QLabel("")
         self.error_label.setStyleSheet("color: red;")
@@ -443,8 +443,8 @@ class MainWindow(QMainWindow):
         # Create the graph object
         self.network_plot = net.Network3D(self.view)
 
-        # Create the legend object
-        self.legend_plot = legend.Legend(self.legend_view)
+        # Create the colorbar object
+        self.colorbar_plot = colorbar.Colorbar(self.colorbar_view)
 
         # Create a window for the selected sequences (without showing it)
         self.selected_seq_window = windows.SelectedSeqWindow(self, self.network_plot)
@@ -508,7 +508,7 @@ class MainWindow(QMainWindow):
 
         self.color_by_combo.setCurrentIndex(0)
         self.color_by_combo.setEnabled(False)
-        self.legend_plot.hide_colorbar()
+        self.colorbar_plot.hide_colorbar()
 
         # Reset the list of sequences in the 'selected sequences' window
         self.selected_seq_window.clear_list()
@@ -1248,7 +1248,7 @@ class MainWindow(QMainWindow):
 
         self.network_plot.color_by_groups(self.dim_num, self.z_indexing_mode, self.color_by)
 
-        self.legend_plot.hide_colorbar()
+        self.colorbar_plot.hide_colorbar()
 
     def color_by_seq_length(self):
 
@@ -1262,7 +1262,7 @@ class MainWindow(QMainWindow):
             self.network_plot.color_by_param(self.gradient_colormap, cfg.sequences_param['norm_seq_length'],
                                              self.dim_num, self.z_indexing_mode, self.color_by)
 
-            self.legend_plot.show_colorbar(self.gradient_colormap, cfg.sequences_param['seq_length'])
+            self.colorbar_plot.show_colorbar(self.gradient_colormap, cfg.sequences_param['seq_length'])
 
     def open_color_by_length_dialog(self):
 
