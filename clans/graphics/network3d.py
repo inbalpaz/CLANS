@@ -1028,7 +1028,7 @@ class Network3D:
                 pos_array[:, 2] = 0
 
             for key in self.selected_points:
-                text_list.append('  ' + cfg.sequences_array['seq_title'][key])
+                text_list.append('  ' + cfg.sequences_array['seq_ID'][key])
                 pos_list.append(tuple(pos_array[key]))
 
         # Subset mode
@@ -1041,7 +1041,7 @@ class Network3D:
 
             i = 0
             for seq_index in sorted(self.selected_points):
-                text_list.append('  ' + cfg.sequences_array['seq_title'][seq_index])
+                text_list.append('  ' + cfg.sequences_array['seq_ID'][seq_index])
                 pos_list.append(tuple(pos_array[i]))
                 i += 1
 

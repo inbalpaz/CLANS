@@ -8,7 +8,8 @@ def parse_arguments():
     parser.add_argument("-load", metavar="input_file_path",
                         help="Load a network file containing at least pairs of sequences and similarity-scores",
                         type=str)
-    parser.add_argument("-format", metavar="input_file_format", help="Input file format (default is CLANS format)",
+    parser.add_argument("-format", metavar="input_file_format",
+                        help="Input file format (clans/mini-clans/delimited. Default is 'clans' format)",
                         type=str, choices=['clans', 'mini-clans', 'delimited'], default=cfg.input_format)
 
     ## Clustering parameters

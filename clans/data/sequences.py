@@ -24,20 +24,71 @@ def add_in_group_column(in_group_array):
 
 
 def add_seq_length_param():
-    cfg.sequences_param['seq_length'] = np.char.str_len(cfg.sequences_array['sequence'])
 
-    min_seq_length = np.amin(cfg.sequences_param['seq_length'])
-    max_seq_length = np.amax(cfg.sequences_param['seq_length'])
+    cfg.sequences_array['seq_length'] = np.char.str_len(cfg.sequences_array['sequence'])
+
+    min_seq_length = np.amin(cfg.sequences_array['seq_length'])
+    max_seq_length = np.amax(cfg.sequences_array['seq_length'])
 
     if min_seq_length != max_seq_length:
-        cfg.sequences_param['norm_seq_length'] = (cfg.sequences_param['seq_length'] - min_seq_length) / \
+        cfg.sequences_array['norm_seq_length'] = (cfg.sequences_array['seq_length'] - min_seq_length) / \
                                                  (max_seq_length - min_seq_length)
 
     else:
         if min_seq_length == 0:
-            cfg.sequences_param['norm_seq_length'] = np.zeros(cfg.run_params['total_sequences_num'])
+            cfg.sequences_array['norm_seq_length'] = np.zeros(cfg.run_params['total_sequences_num'])
         else:
-            cfg.sequences_param['norm_seq_length'] = np.full(cfg.run_params['total_sequences_num'], 0.5)
+            cfg.sequences_array['norm_seq_length'] = np.full(cfg.run_params['total_sequences_num'], 0.5)
+
+
+def add_numeric_params(params_dict):
+
+    added_params = []
+
+    for param_name in params_dict:
+
+        # Check whether the provided sequence_ID is the serial number - in this case it is already sorted
+        keys = list(params_dict[param_name].keys())
+        if keys[0] == '0' and keys[1] == '1' and keys[2] == '2':
+            values_list = list(params_dict[param_name].values())
+
+        else:
+            items_list = sorted(params_dict[param_name].items(), key=lambda item: cfg.sequences_ID_to_index[item[0]])
+            values_list = []
+            for item in items_list:
+                values_list.append(item[1])
+
+        # If parameter already exists: add a serial number to it
+        if param_name in cfg.sequences_numeric_params:
+            param_name = param_name + "_1"
+
+        cfg.sequences_numeric_params[param_name] = dict()
+
+        cfg.sequences_numeric_params[param_name]['raw'] = np.array(values_list, dtype=float)
+        normalize_numeric_param(param_name)
+
+        cfg.sequences_numeric_params[param_name]['min_color'] = cfg.min_param_color
+        cfg.sequences_numeric_params[param_name]['max_color'] = cfg.max_param_color
+
+        added_params.append(param_name)
+
+    return added_params
+
+
+def normalize_numeric_param(param_name):
+
+    min_val = np.amin(cfg.sequences_numeric_params[param_name]['raw'])
+    max_val = np.amax(cfg.sequences_numeric_params[param_name]['raw'])
+
+    if min_val != max_val:
+        cfg.sequences_numeric_params[param_name]['norm'] = (cfg.sequences_numeric_params[param_name]['raw'] - min_val) / \
+                                                 (max_val - min_val)
+
+    else:
+        if min_val == 0:
+            cfg.sequences_numeric_params[param_name]['norm'] = np.zeros(cfg.run_params['total_sequences_num'])
+        else:
+            cfg.sequences_numeric_params[param_name]['norm'] = np.full(cfg.run_params['total_sequences_num'], 0.5)
 
 
 # Mode: full / subset

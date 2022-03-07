@@ -55,6 +55,7 @@ class ClansMinimalFormat:
                                                   cfg.run_params['total_sequences_num']])
 
             # A loop over the rest of the lines
+            seq_index = 0
             for line in infile:
 
                 if line.strip() == "<pos>":
@@ -66,18 +67,22 @@ class ClansMinimalFormat:
                     else:
                         m = re.search("^(\d+)\s+(\S+)\s+(\S+)\s+(\S+)", line.strip())
                         if m:
-                            index = int(m.group(1))
+                            seq_id = m.group(1)
                             x_coor = m.group(2)
                             y_coor = m.group(3)
                             z_coor = m.group(4)
                             # Create a tuple with the coordinates information + initialization for the 'in_group'
                             # and 'in_subset' fields
-                            seq_title = ""
+                            sequence = ""
+                            seq_length = 0
+                            norm_seq_length = 0.0
                             organism = ""
                             tax_ID = ""
-                            coor_tuple = (index, seq_title, organism, tax_ID, x_coor, y_coor, z_coor, -1, False,
-                                          x_coor, y_coor, z_coor)
+                            coor_tuple = (seq_id, seq_id, sequence, seq_length, norm_seq_length, organism, tax_ID,
+                                          x_coor, y_coor, z_coor, -1, False, x_coor, y_coor, z_coor)
                             self.sequences_list.append(coor_tuple)
+                            cfg.sequences_ID_to_index[seq_id] = seq_index
+                            seq_index += 1
                         else:
                             self.file_is_valid = 0
                             self.error = "The file " + self.file_name + " has invalid minimal-clans format:\n"
@@ -250,9 +255,10 @@ class ClansMinimalFormat:
         output.write('sequences=' + str(cfg.run_params['total_sequences_num']) + '\n')
 
         # Write the coordinates (<pos>) block
-        for seq in range(cfg.run_params['total_sequences_num']):
-            pos_block += str(seq) + ' ' + str(cfg.sequences_array['x_coor'][seq]) + ' ' + \
-                         str(cfg.sequences_array['y_coor'][seq]) + ' ' + str(cfg.sequences_array['z_coor'][seq]) + '\n'
+        for seq_index in range(cfg.run_params['total_sequences_num']):
+            pos_block += cfg.sequences_array['seq_ID'][seq_index] + ' ' + str(cfg.sequences_array['x_coor'][seq_index]) \
+                         + ' ' + str(cfg.sequences_array['y_coor'][seq_index]) + ' ' \
+                         + str(cfg.sequences_array['z_coor'][seq_index]) + '\n'
 
         output.write('<pos>\n')
         output.write(pos_block)

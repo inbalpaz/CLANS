@@ -17,9 +17,11 @@ import clans.data.sequence_pairs as sp
 import clans.data.groups as groups
 import clans.GUI.group_dialogs as gd
 import clans.GUI.windows as windows
+import clans.GUI.metadata_dialogs as md
 #import clans.GUI.text_dialogs as td
 import clans.GUI.conf_dialogs as cd
 import clans.graphics.colors as colors
+import clans.io.try_io as try_io
 
 
 class Button(QPushButton):
@@ -69,10 +71,8 @@ class MainWindow(QMainWindow):
         self.visual_to_move = None
         self.is_init = 0
         self.done_color_by_length = 0
-        self.taxonomy_worker = None
-        self.short_seq_color = ColorArray([1.0, 1.0, 0.0, 1.0])
-        self.long_seq_color = ColorArray([1.0, 0.0, 0.0, 1.0])
-        self.gradient_colormap = colors.generate_colormap_gradient_2_colors(self.short_seq_color, self.long_seq_color)
+        self.added_user_param = 0
+        self.load_file_worker = None
 
         self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
         self.setGeometry(50, 50, 900, 850)
@@ -167,15 +167,35 @@ class MainWindow(QMainWindow):
 
         # Group by taxonomy action
         self.group_by_tax_action = QAction("Taxonomy", self)
+        self.group_by_tax_action.setEnabled(False)
         self.group_by_tax_action.triggered.connect(self.group_by_taxonomy)
 
         self.group_by_submenu.addAction(self.group_by_tax_action)
 
+        # Group-by user-defined param action
+        self.group_by_param_action = QAction("User-defined parameter", self)
+        self.group_by_param_action.triggered.connect(self.open_group_by_param_dialog)
+
+        self.group_by_submenu.addAction(self.group_by_param_action)
+
         # Color by seq_length action
         self.color_by_length_action = QAction("Sequence length", self)
+        self.color_by_length_action.setEnabled(False)
         self.color_by_length_action.triggered.connect(self.open_color_by_length_dialog)
 
         self.color_by_submenu.addAction(self.color_by_length_action)
+
+        # Color-by user-defined param action
+        self.color_by_param_action = QAction("User-defined parameter", self)
+        self.color_by_param_action.triggered.connect(self.open_color_by_param_dialog)
+
+        self.color_by_submenu.addAction(self.color_by_param_action)
+
+        # Upload Metadata file action
+        #self.upload_metadata_action = QAction("Upload Metadata file", self)
+        #self.upload_metadata_action.triggered.connect(self.upload_metadata_file)
+
+        #self.tools_menu.addAction(self.upload_metadata_action)
 
         # Create the canvas (the graph area)
         self.canvas = scene.SceneCanvas(size=(800, 750), keys='interactive', show=True, bgcolor='w')
@@ -323,9 +343,18 @@ class MainWindow(QMainWindow):
         self.show_groups_combo.currentIndexChanged.connect(self.change_group_names_display)
 
         # Add 'reset group names' button
-        self.reset_group_names_button = QPushButton("Reset names positions")
+        self.reset_group_names_button = QPushButton("Reset names")
         self.reset_group_names_button.setEnabled(False)
         self.reset_group_names_button.pressed.connect(self.reset_group_names_positions)
+
+        # Add a combo-box to switch between color-by options
+        self.color_by_label = QLabel("Color by:")
+        self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
+
+        self.color_by_combo = QComboBox()
+        self.color_by_combo.addItem("Groups/Default")
+        self.color_by_combo.setEnabled(False)
+        self.color_by_combo.currentIndexChanged.connect(self.change_coloring)
 
         # Add 'Add text' button
         #self.add_text_button = QPushButton("Add text")
@@ -342,6 +371,10 @@ class MainWindow(QMainWindow):
         self.display_layout.addWidget(self.show_group_names_button)
         self.display_layout.addWidget(self.show_groups_combo)
         self.display_layout.addWidget(self.reset_group_names_button)
+        self.display_layout.addSpacerItem(self.horizontal_spacer_short)
+        self.display_layout.addWidget(self.color_by_label)
+        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.display_layout.addWidget(self.color_by_combo)
         #self.display_layout.addWidget(self.add_text_button)
         self.display_layout.addStretch()
 
@@ -412,14 +445,14 @@ class MainWindow(QMainWindow):
         self.remove_selected_button.released.connect(self.remove_selected_from_group)
         self.remove_selected_button.setEnabled(False)
 
-        # Add a combo-box to switch between color-by options
-        self.color_by_label = QLabel("Color by:")
-        self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
+        # Add a combo-box to switch between group-by options
+        self.group_by_label = QLabel("Group by:")
+        self.group_by_label.setStyleSheet("color: maroon; font-weight: bold;")
 
-        self.color_by_combo = QComboBox()
-        self.color_by_combo.addItems(["Groups/Default", "Seq. length"])
-        self.color_by_combo.setEnabled(False)
-        self.color_by_combo.currentIndexChanged.connect(self.change_coloring)
+        self.group_by_combo = QComboBox()
+        self.group_by_combo.addItem("Manual definition")
+        self.group_by_combo.setEnabled(False)
+        self.group_by_combo.currentIndexChanged.connect(self.change_grouping)
 
         self.groups_layout.addWidget(self.groups_label)
         self.groups_layout.addSpacerItem(self.horizontal_spacer_short)
@@ -427,9 +460,9 @@ class MainWindow(QMainWindow):
         self.groups_layout.addWidget(self.add_to_group_button)
         self.groups_layout.addWidget(self.remove_selected_button)
         self.groups_layout.addSpacerItem(self.horizontal_spacer_long)
-        self.groups_layout.addWidget(self.color_by_label)
+        self.groups_layout.addWidget(self.group_by_label)
         self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.groups_layout.addWidget(self.color_by_combo)
+        self.groups_layout.addWidget(self.group_by_combo)
         self.groups_layout.addStretch()
 
         self.main_layout.addLayout(self.groups_layout)
@@ -459,7 +492,6 @@ class MainWindow(QMainWindow):
         # Create a text visual to display an error message when any
         self.file_error_label = scene.widgets.Label("", bold=True, font_size=12, color='red')
 
-
         # The file to load has been given in the command-line -> load and display it
         if cfg.run_params['input_file'] is not None:
             # Define a runner for loading the file that will be executed in a different thread
@@ -474,6 +506,9 @@ class MainWindow(QMainWindow):
         self.file_error_label.text = ""
         self.file_error_label.parent = None
         self.error_label.setText("")
+
+        self.color_by_length_action.setEnabled(False)
+        self.group_by_tax_action.setEnabled(False)
 
         self.start_button.setText("Start")
         self.dimensions_clustering_combo.setCurrentIndex(0)
@@ -506,7 +541,12 @@ class MainWindow(QMainWindow):
         self.show_groups_combo.setCurrentIndex(0)
         self.show_groups_combo.setEnabled(False)
 
-        self.color_by_combo.setCurrentIndex(0)
+        # Remove all the color-by options except 'groups' (the default)
+        #items_num = self.color_by_combo.count()
+        #for i in range(1, items_num):
+            #self.color_by_combo.removeItem(i)
+        self.color_by_combo.clear()
+        self.color_by_combo.addItem("Groups/Default")
         self.color_by_combo.setEnabled(False)
         self.colorbar_plot.hide_colorbar()
 
@@ -523,6 +563,9 @@ class MainWindow(QMainWindow):
         cfg.groups_dict = {}
         cfg.taxonomy_dict = {}
         cfg.organisms_dict = {}
+        cfg.sequences_ID_to_index = {}
+        cfg.sequences_numeric_params = {}
+        cfg.sequences_discrete_params = {}
         cfg.seq_by_tax_level_dict['Family'] = {}
         cfg.seq_by_tax_level_dict['Order'] = {}
         cfg.seq_by_tax_level_dict['Class'] = {}
@@ -556,6 +599,10 @@ class MainWindow(QMainWindow):
         cfg.run_params['rep_exp'] = cfg.layouts['FR']['params']['rep_exp']
         cfg.run_params['dampening'] = cfg.layouts['FR']['params']['dampening']
         cfg.run_params['gravity'] = cfg.layouts['FR']['params']['gravity']
+        cfg.min_param_color = ColorArray([1.0, 1.0, 0.0, 1.0])
+        cfg.max_param_color = ColorArray([1.0, 0.0, 0.0, 1.0])
+        cfg.short_color = ColorArray([1.0, 1.0, 0.0, 1.0])
+        cfg.long_color = ColorArray([1.0, 0.0, 0.0, 1.0])
 
         # Reset MainWindow class variables
         self.is_running_calc = 0
@@ -572,6 +619,7 @@ class MainWindow(QMainWindow):
         self.z_indexing_mode = "auto"  # Switch between 'auto' and 'groups' modes
         self.ctrl_key_pressed = 0
         self.done_color_by_length = 0
+        self.added_user_param = 0
         self.color_by = 'groups'
 
     def load_input_file(self):
@@ -657,8 +705,14 @@ class MainWindow(QMainWindow):
                 #self.dimensions_view_combo.setCurrentIndex(1)
                 #self.dimensions_view_combo.setEnabled(False)
 
-            # Calculate the sequence length parameter for this dataset
-            seq.add_seq_length_param()
+            # Calculate the sequence length parameter for this dataset (if input contains sequences)
+            if cfg.run_params['input_format'] == 'clans':
+                self.color_by_length_action.setEnabled(True)
+                self.group_by_tax_action.setEnabled(True)
+
+            ## Debug
+            #try_io.create_artificial_metadata_file_with_seq_name(self.file_name)
+            #try_io.create_artificial_metadata_file_with_seq_index(self.file_name)
 
         else:
             # Remove the 'loading file' message from the scene and put an error message instead
@@ -672,9 +726,6 @@ class MainWindow(QMainWindow):
 
         if opened_file:
             print("Loading " + opened_file)
-            cfg.run_params['input_file'] = opened_file
-            cfg.run_params['input_file_format'] = 'clans'
-            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
 
             # Bring the controls to their initial state
             self.reset_window()
@@ -685,8 +736,12 @@ class MainWindow(QMainWindow):
             # Initialize all the global data-structures
             self.reset_variables()
 
+            cfg.run_params['input_file'] = opened_file
+            cfg.run_params['input_format'] = 'clans'
+            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
+
             # Define a runner for loading the file that will be executed in a different thread
-            self.load_file_worker = io.ReadInputWorker(cfg.run_params['input_file_format'])
+            self.load_file_worker = io.ReadInputWorker(cfg.run_params['input_format'])
             self.load_input_file()
 
     def load_mini_clans_file(self):
@@ -695,9 +750,6 @@ class MainWindow(QMainWindow):
 
         if opened_file:
             print("Loading " + opened_file)
-            cfg.run_params['input_file'] = opened_file
-            cfg.run_params['input_file_format'] = 'mini_clans'
-            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
 
             # Bring the controls to their initial state
             self.reset_window()
@@ -708,20 +760,20 @@ class MainWindow(QMainWindow):
             # Initialize all the global data-structures
             self.reset_variables()
 
+            cfg.run_params['input_file'] = opened_file
+            cfg.run_params['input_format'] = 'mini_clans'
+            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
+
             # Define a runner for loading the file that will be executed in a different thread
-            self.load_file_worker = io.ReadInputWorker(cfg.run_params['input_file_format'])
+            self.load_file_worker = io.ReadInputWorker(cfg.run_params['input_format'])
             self.load_input_file()
 
     def load_delimited_file(self):
 
-        #opened_file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "Text files (*.txt);;" "All files (*.*)",)
         opened_file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "All files (*.*)")
 
         if opened_file:
             print("Loading " + opened_file)
-            cfg.run_params['input_file'] = opened_file
-            cfg.run_params['input_file_format'] = 'delimited'
-            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
 
             # Bring the controls to their initial state
             self.reset_window()
@@ -732,9 +784,23 @@ class MainWindow(QMainWindow):
             # Initialize all the global data-structures
             self.reset_variables()
 
+            cfg.run_params['input_file'] = opened_file
+            cfg.run_params['input_format'] = 'delimited'
+            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
+
             # Define a runner for loading the file that will be executed in a different thread
-            self.load_file_worker = io.ReadInputWorker(cfg.run_params['input_file_format'])
+            self.load_file_worker = io.ReadInputWorker(cfg.run_params['input_format'])
             self.load_input_file()
+
+    def upload_metadata_file(self):
+
+        opened_file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "All files (*.*)")
+
+        if opened_file:
+            print("Loading Metadata file " + opened_file)
+            metadata_worker = io.ReadMetadataWorker(opened_file)
+            self.threadpool.start(metadata_worker)
+            metadata_worker.signals.finished.connect()
 
     def run_calc(self):
 
@@ -891,7 +957,7 @@ class MainWindow(QMainWindow):
                 self.data_mode_combo.setEnabled(True)
 
         # Enable the 'color by' combo box if the color-by-param was already done once
-        if self.done_color_by_length:
+        if self.done_color_by_length or self.added_user_param:
             self.color_by_combo.setEnabled(True)
 
         # Whole data calculation mode
@@ -1255,25 +1321,25 @@ class MainWindow(QMainWindow):
         # First time per data-det
         if self.done_color_by_length == 0:
             self.done_color_by_length = 1
-            self.color_by_combo.setCurrentIndex(1)
+            self.color_by_combo.addItem('Seq. length')
+            self.color_by_combo.setCurrentText('Seq. length')
             self.color_by_combo.setEnabled(True)
 
         else:
-            self.network_plot.color_by_param(self.gradient_colormap, cfg.sequences_param['norm_seq_length'],
+            gradient_colormap = colors.generate_colormap_gradient_2_colors(cfg.short_color, cfg.long_color)
+
+            self.network_plot.color_by_param(gradient_colormap, cfg.sequences_array['norm_seq_length'],
                                              self.dim_num, self.z_indexing_mode, self.color_by)
 
-            self.colorbar_plot.show_colorbar(self.gradient_colormap, cfg.sequences_param['seq_length'])
+            self.colorbar_plot.show_colorbar(gradient_colormap, cfg.sequences_array['seq_length'], 'Sequences length')
 
     def open_color_by_length_dialog(self):
 
-        dlg = gd.ColorByLengthDialog(self.short_seq_color, self.long_seq_color)
+        dlg = md.ColorByLengthDialog()
 
         if dlg.exec_():
-            self.short_seq_color, self.long_seq_color = dlg.get_colors()
+            cfg.short_color, cfg.long_color = dlg.get_colors()
 
-            # Generate a new gradient colormap
-            self.gradient_colormap = colors.generate_colormap_gradient_2_colors(self.short_seq_color,
-                                                                                self.long_seq_color)
             self.color_by_seq_length()
 
     def change_coloring(self):
@@ -1294,13 +1360,58 @@ class MainWindow(QMainWindow):
             self.color_by = "param"
 
             if self.is_init == 0:
-                self.color_by_seq_length()
+                if self.color_by_combo.currentText() == 'Seq. length':
+                    self.color_by_seq_length()
+                else:
+                    self.color_by_user_param(self.color_by_combo.currentText())
 
             if self.dim_num == 2:
                 if self.z_indexing_mode == 'groups':
                     self.z_index_mode_combo.setCurrentIndex(0)
 
                 self.z_index_mode_combo.setEnabled(False)
+
+    def open_group_by_param_dialog(self):
+        pass
+
+    def color_by_user_param(self, param):
+
+        min_param_color = cfg.sequences_numeric_params[param]['min_color']
+        max_param_color = cfg.sequences_numeric_params[param]['max_color']
+        gradient_colormap = colors.generate_colormap_gradient_2_colors(min_param_color, max_param_color)
+
+        self.network_plot.color_by_param(gradient_colormap, cfg.sequences_numeric_params[param]['norm'],
+                                         self.dim_num, self.z_indexing_mode, self.color_by)
+
+        self.colorbar_plot.show_colorbar(gradient_colormap, cfg.sequences_numeric_params[param]['raw'], param)
+
+    def open_color_by_param_dialog(self):
+
+        dlg = md.ColorByParamDialog()
+
+        if dlg.exec_():
+            selected_param, added_params_list, min_param_color, max_param_color = dlg.get_param()
+
+            if selected_param:
+
+                # At least one new parameter was added
+                if len(added_params_list) > 0:
+                    self.added_user_param = 1
+
+                    for param_name in added_params_list:
+                        self.color_by_combo.addItem(param_name)
+
+                self.color_by_combo.setCurrentText(selected_param)
+                self.color_by_combo.setEnabled(True)
+
+                # Update the colors of the selected parameter
+                cfg.sequences_numeric_params[selected_param]['min_color'] = min_param_color
+                cfg.sequences_numeric_params[selected_param]['max_color'] = max_param_color
+
+                self.color_by_user_param(selected_param)
+
+    def change_grouping(self):
+        pass
 
     def change_selection_type(self):
 
@@ -1592,14 +1703,14 @@ class MainWindow(QMainWindow):
     def group_by_taxonomy(self):
 
         # Open the 'Group by taxonomy' dialog
-        dlg = gd.GroupByTaxDialog(self.network_plot)
+        dlg = md.GroupByTaxDialog(self.network_plot)
 
         # Create and execute the taxonomy worker to get the organism names and their taxonomy hierarchy
         # (only the first time)
         if not cfg.run_params['finished_taxonomy_search']:
-            self.taxonomy_worker = io.TaxonomyWorker()
-            self.threadpool.start(self.taxonomy_worker)
-            self.taxonomy_worker.signals.finished.connect(dlg.finished_tax_search)
+            taxonomy_worker = io.TaxonomyWorker()
+            self.threadpool.start(taxonomy_worker)
+            taxonomy_worker.signals.finished.connect(dlg.finished_tax_search)
 
         if dlg.exec_():
             tax_level, points_size, group_names_size, is_bold, is_italic = dlg.get_tax_level()

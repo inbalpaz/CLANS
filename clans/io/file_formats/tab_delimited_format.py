@@ -79,12 +79,16 @@ class DelimitedFormat:
                     pos_y = seq.generate_rand_pos()
                     pos_z = seq.generate_rand_pos()
 
-                    seq_title = ""
+                    sequence = ""
+                    seq_length = 0
+                    norm_seq_length = 0.0
                     organism = ""
                     tax_ID = ""
 
-                    seq_tuple = (id1, seq_title, organism, tax_ID, pos_x, pos_y, pos_z, -1, False, pos_x, pos_y, pos_z)
+                    seq_tuple = (id1, id1, sequence, seq_length, norm_seq_length, organism, tax_ID, pos_x, pos_y,
+                                 pos_z, -1, False, pos_x, pos_y, pos_z)
                     self.sequences_list.append(seq_tuple)
+                    cfg.sequences_ID_to_index[id1] = seq_index
 
                     seq_index += 1
 
@@ -97,12 +101,16 @@ class DelimitedFormat:
                     pos_y = seq.generate_rand_pos()
                     pos_z = seq.generate_rand_pos()
 
-                    seq_title = ""
+                    sequence = ""
+                    seq_length = 0
+                    norm_seq_length = 0.0
                     organism = ""
                     tax_ID = ""
 
-                    seq_tuple = (id2, seq_title, organism, tax_ID, pos_x, pos_y, pos_z, -1, False, pos_x, pos_y, pos_z)
+                    seq_tuple = (id2, id2, sequence, seq_length, norm_seq_length, organism, tax_ID, pos_x, pos_y,
+                                 pos_z, -1, False, pos_x, pos_y, pos_z)
                     self.sequences_list.append(seq_tuple)
+                    cfg.sequences_ID_to_index[id2] = seq_index
 
                     seq_index += 1
 
@@ -177,17 +185,66 @@ class DelimitedFormat:
             index2 = cfg.similarity_values_list[i][1]
             score = cfg.similarity_values_list[i][2]
 
-            if cfg.run_params['input_format'] == 'delimited':
-                pair_str = cfg.sequences_array[int(index1)]['seq_title'] + "\t" + \
-                           cfg.sequences_array[int(index2)]['seq_title'] + \
-                           "\t" + score + "\t" + cfg.run_params['type_of_values'] + "\n"
-            else:
-                pair_str = str(index1) + "\t" + str(index2) + "\t" + str(score) + "\t" + cfg.run_params['type_of_values'] + "\n"
-
+            pair_str = cfg.sequences_array[int(index1)]['seq_ID'] + "\t" + cfg.sequences_array[int(index2)]['seq_ID'] \
+                       + "\t" + score + "\t" + cfg.run_params['type_of_values'] + "\n"
             output.write(pair_str)
 
         output.close()
 
+    def read_metadata(self, file_path):
+
+        param_name = ""
+        error = ""
+        sequences_params_dict = dict()
+        params = []
+
+        # Open and read the delimited text file
+        with open(file_path) as infile:
+            reader = csv.reader(infile, delimiter='\t')
+
+            header = next(reader)
+            if header is None:
+                error = "The file is invalid.\nPlease upload a tab-delimited file containing at least two columns: " \
+                        "sequenceID, parameter_1.\nThe file should contain a header line with the parameter names\n" \
+                        "and may contain more than one parameter column."
+                return param_name, error
+
+            fields_num = len(header)
+
+            if fields_num < 2:
+                error = "The file is not valid."
+                return sequences_params_dict, error
+
+            col_num = len(header)
+            for i in range(1, col_num):
+                param_name = header[i]
+
+                # Verify that there is indeed a header
+                if re.search("^\d+\.?\d?$", param_name):
+                    error = "It seems that the file contains no header line.\n" \
+                            "Please upload a tab-delimited file containing at least two columns: " \
+                            "sequenceID, parameter_1.\n" \
+                            "The file should contain a header line with the parameter names\n" \
+                            "and may contain more than one parameter column."
+                    return sequences_params_dict, error
+
+                params.append(param_name)
+                sequences_params_dict[param_name] = dict()
+
+            for row in reader:
+                seq_ID = row[0]
+
+                for i in range(1, col_num):
+                    value = row[i]
+                    sequences_params_dict[params[i-1]][seq_ID] = value
+
+        # Verify that the provided number of sequences equals the dataset
+        if len(sequences_params_dict[params[0]]) != cfg.run_params['total_sequences_num']:
+            error = "The number of sequences in the metadata file does not match the number of sequences in the dataset."
+            return sequences_params_dict, error
+
+        # The file is valid, no error
+        return sequences_params_dict, error
 
 
 

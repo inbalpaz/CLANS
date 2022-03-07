@@ -59,6 +59,7 @@ class ClansFormat:
                                                   cfg.run_params['total_sequences_num']])
 
             # A loop over the rest of the lines
+            seq_index = 0
             for line in infile:
                 if line.strip() == "<param>":
                     in_param_block = 1
@@ -83,12 +84,20 @@ class ClansFormat:
                         if m:
                             title = m.group(1)
                             title.strip()
+
+                            # Extract the sequence_ID from the title (trim it at space character)
+                            n = re.search("^(\S+)", title)
+                            seq_id = n.group(1)
                         else:
                             sequence = line.strip()
+                            seq_length = 0
+                            norm_seq_length = 0.0
                             organism = ""
                             tax_ID = ""
-                            t = (title, sequence, organism, tax_ID)
+                            t = (seq_id, title, sequence, seq_length, norm_seq_length, organism, tax_ID)
                             self.sequences_list.append(t)
+                            cfg.sequences_ID_to_index[seq_id] = seq_index
+                            seq_index += 1
 
                 elif line.strip() == "<seqgroups>":
                     in_seqgroups_block = 1
@@ -264,7 +273,7 @@ class ClansFormat:
         # Create the structured NumPy array of sequences
         seq.create_sequences_array(self.sequences_list)
 
-        # If there sre groups - add the information to the sequences_list
+        # If there sre groups - add the information to the sequences array
         if self.is_groups:
             in_groups_array = np.full(cfg.run_params['total_sequences_num'], -1)
             for group_ID in cfg.groups_dict:
@@ -273,6 +282,9 @@ class ClansFormat:
                         seq_index = int(seq_num)
                         in_groups_array[seq_index] = group_ID
             seq.add_in_group_column(in_groups_array)
+
+        # calculate the sequence_length column
+        seq.add_seq_length_param()
 
         # If parameters were defined in the file - save them in the 'run_params' dict
         if 'rounds_done' in self.params:

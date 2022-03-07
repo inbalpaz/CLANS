@@ -1,4 +1,5 @@
 import numpy as np
+from vispy.color import ColorArray
 
 ## Defaults
 # i/o related parameters
@@ -13,6 +14,12 @@ BLAST_scoring_matrix = 'BLOSUM62'
 # Clustering parameters defaults
 similarity_cutoff = 1e-4
 num_of_dimensions = 3
+
+# Colors
+min_param_color = ColorArray([1.0, 1.0, 0.0, 1.0])
+max_param_color = ColorArray([1.0, 0.0, 0.0, 1.0])
+short_color = ColorArray([1.0, 1.0, 0.0, 1.0])
+long_color = ColorArray([1.0, 0.0, 0.0, 1.0])
 
 # Layout-related default parameters
 layouts = {'FR':
@@ -33,6 +40,7 @@ run_params = {  # a dict to hold all the running parameters (given by the user /
     'error': None,
     'total_sequences_num': 1,
     'input_format': input_format,
+    'input_file': None,
     'output_format': output_format,
     'type_of_values': type_of_values,
     'is_debug_mode': False,
@@ -59,14 +67,21 @@ run_params = {  # a dict to hold all the running parameters (given by the user /
 # 'in_subset' is a boolean flag, stating whether the index is found in the selected subset or not (False by default)
 # the subset coordinates are used to save the subset new coordinates in case it was clustered separately.
 # They are initialized with the whole dataset coordinates at the beginning and whenever the view returns to full dataset.
-seq_dt = np.dtype([('seq_title', 'U300'), ('sequence', 'U3000'), ('organism', 'U100'), ('tax_ID', 'U20'),
+seq_dt = np.dtype([('seq_ID', 'U300'), ('seq_title', 'U300'), ('sequence', 'U3000'), ('seq_length', 'int16'),
+                   ('norm_seq_length', 'float32'), ('organism', 'U100'), ('tax_ID', 'U20'),
                    ('x_coor', 'float32'), ('y_coor', 'float32'), ('z_coor', 'float32'), ('in_group', 'int16'),
                    ('in_subset', 'bool'), ('x_coor_subset', 'float32'), ('y_coor_subset', 'float32'),
                    ('z_coor_subset', 'float32')])
 sequences_array = np.empty(run_params['total_sequences_num'], dtype=seq_dt)
 
-# A dictionary of lists containing different parameters (for example: 'sequence length') for each sequence
-sequences_param = dict()
+# A dictionary for connecting each sequence_ID (unique name) ith its index (by order)
+sequences_ID_to_index = dict()
+
+# A dictionary of lists containing numeric parameters (for example: 'sequence length') for each sequence
+sequences_numeric_params = dict()
+
+# A dictionary of lists containing user-defined discrete parameters for each sequence (to be used as group-by)
+sequences_discrete_params = dict()
 
 # a dictionary of dictionaries (the keys are unique 'Group_ID') holding the following info for each group:
 # 'name', 'size', 'name_size', 'seqIDs', 'order', 'color', 'color_rgb', 'color_array', 'is_bold', 'is_italic'

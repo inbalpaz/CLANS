@@ -74,6 +74,29 @@ class ReadInputWorker(QRunnable):
         self.load_complete()
 
 
+class ReadMetadataSignals(QObject):
+    finished = pyqtSignal(dict, str)
+
+
+class ReadMetadataWorker(QRunnable):
+    def __init__(self, file):
+        super().__init__()
+
+        self.signals = ReadMetadataSignals()
+        self.file = file
+
+    def get_metadata(self):
+
+        format_obj = tab.DelimitedFormat()
+        params_dict, error = format_obj.read_metadata(self.file)
+
+        self.signals.finished.emit(params_dict, error)
+
+    @pyqtSlot()
+    def run(self):
+        self.get_metadata()
+
+
 class TaxonomySignals(QObject):
     finished = pyqtSignal(str)
 
