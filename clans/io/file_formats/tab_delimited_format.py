@@ -86,7 +86,7 @@ class DelimitedFormat:
                     tax_ID = ""
 
                     seq_tuple = (id1, id1, sequence, seq_length, norm_seq_length, organism, tax_ID, pos_x, pos_y,
-                                 pos_z, -1, False, pos_x, pos_y, pos_z)
+                                 pos_z, False, pos_x, pos_y, pos_z)
                     self.sequences_list.append(seq_tuple)
                     cfg.sequences_ID_to_index[id1] = seq_index
 
@@ -108,7 +108,7 @@ class DelimitedFormat:
                     tax_ID = ""
 
                     seq_tuple = (id2, id2, sequence, seq_length, norm_seq_length, organism, tax_ID, pos_x, pos_y,
-                                 pos_z, -1, False, pos_x, pos_y, pos_z)
+                                 pos_z, False, pos_x, pos_y, pos_z)
                     self.sequences_list.append(seq_tuple)
                     cfg.sequences_ID_to_index[id2] = seq_index
 
@@ -159,6 +159,7 @@ class DelimitedFormat:
     def fill_values(self):
         # Create the structured NumPy array of sequences
         seq.create_sequences_array(self.sequences_list)
+        seq.init_seuences_in_groups()
 
         # Apply the similarity cutoff
         if self.type_of_values == "hsp":
@@ -174,7 +175,7 @@ class DelimitedFormat:
                 cfg.run_params['similarity_cutoff'] = 0.1
             sp.define_connected_sequences('att')
 
-    def write_file(self, file_path, is_param):
+    def write_file(self, file_path):
 
         output = open(file_path, "w")
 

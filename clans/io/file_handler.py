@@ -28,7 +28,7 @@ def read_input_file(file_path, file_format):
         cfg.run_params['error'] = format_object.error
 
 
-def write_file(file_path, file_format):
+def write_file(file_path, file_format, group_type):
 
     is_param_block = False
 
@@ -39,14 +39,19 @@ def write_file(file_path, file_format):
         if cfg.run_params['rounds_done'] > 0:
             is_param_block = True
 
+        format_object.write_file(file_path, is_param_block, group_type)
+
     # Mini-clans
     elif file_format == 'mini-clans':
         format_object = mini_clans.ClansMinimalFormat()
+
+        format_object.write_file(file_path, group_type)
 
     # tab-delimited format
     else:
         format_object = tab.DelimitedFormat()
 
+        format_object.write_file(file_path)
 
-    # Write CLANS file without <params> block
-    format_object.write_file(file_path, is_param_block)
+
+

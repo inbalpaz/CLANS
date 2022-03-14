@@ -1,13 +1,12 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from vispy.color import ColorArray
 import clans.config as cfg
 import clans.data.groups as gr
 
 
 class AddToGroupDialog(QDialog):
 
-    def __init__(self):
+    def __init__(self, group_by):
         super().__init__()
 
         self.setWindowTitle("Add selected sequences")
@@ -20,16 +19,17 @@ class AddToGroupDialog(QDialog):
         self.new_group_button.setChecked(True)
 
         self.existing_group_button = QRadioButton("Choose an existing group")
-        if len(cfg.groups_dict) == 0:
+        if len(cfg.groups_dict[group_by]) == 0:
             self.existing_group_button.setEnabled(False)
 
         self.groups_combo = QComboBox()
         self.groups_combo.addItem("Select group")
-        self.group_IDs_list = sorted(cfg.groups_dict.keys(), key=lambda k: cfg.groups_dict[k]['order'])
+        self.group_IDs_list = sorted(cfg.groups_dict[group_by].keys(),
+                                     key=lambda k: cfg.groups_dict[group_by][k]['order'])
 
         for i in range(len(self.group_IDs_list)):
             group_ID = self.group_IDs_list[i]
-            self.groups_combo.addItem(cfg.groups_dict[group_ID]['name'])
+            self.groups_combo.addItem(cfg.groups_dict[group_by][group_ID]['name'])
         self.groups_combo.setEnabled(False)
 
         self.new_group_button.toggled.connect(self.on_radio_button_change)
@@ -64,7 +64,7 @@ class AddToGroupDialog(QDialog):
 
 class CreateGroupDialog(QDialog):
 
-    def __init__(self, net_plot_object):
+    def __init__(self, net_plot_object, group_by):
         super().__init__()
 
         self.setWindowTitle("Create group from selected")
@@ -76,10 +76,10 @@ class CreateGroupDialog(QDialog):
         self.name_label = QLabel("Group name:")
         self.name_widget = QLineEdit()
 
-        if len(cfg.groups_dict) == 0:
+        if len(cfg.groups_dict[group_by]) == 0:
             group_num = 1
         else:
-            group_num = max(cfg.groups_dict.keys()) + 1
+            group_num = max(cfg.groups_dict[group_by].keys()) + 1
         self.default_group_name = "Group_" + str(group_num)
         self.name_widget.setPlaceholderText(self.default_group_name)
 
@@ -199,7 +199,7 @@ class CreateGroupDialog(QDialog):
 
 class ManageGroupsDialog(QDialog):
 
-    def __init__(self, net_plot_object, view, dim_num, z_index_mode, color_by):
+    def __init__(self, net_plot_object, view, dim_num, z_index_mode, color_by, group_by):
         super().__init__()
 
         self.network_plot = net_plot_object
@@ -207,6 +207,7 @@ class ManageGroupsDialog(QDialog):
         self.dim_num = dim_num
         self.z_index_mode = z_index_mode
         self.color_by = color_by
+        self.group_by = group_by
         self.changed_order_flag = 0
 
         self.setWindowTitle("Manage groups")
@@ -216,15 +217,17 @@ class ManageGroupsDialog(QDialog):
         # Add a list widget of all the groups
         self.groups_list = QListWidget()
 
-        self.group_IDs_list = sorted(cfg.groups_dict.keys(), key=lambda k: cfg.groups_dict[k]['order'])
+        self.group_IDs_list = sorted(cfg.groups_dict[self.group_by].keys(),
+                                     key=lambda k: cfg.groups_dict[self.group_by][k]['order'])
 
         for i in range(len(self.group_IDs_list)):
             group_ID = self.group_IDs_list[i]
-            name_str = cfg.groups_dict[group_ID]['name'] + " (" + str(len(cfg.groups_dict[group_ID]['seqIDs'])) + ")"
+            name_str = cfg.groups_dict[self.group_by][group_ID]['name'] + " (" + \
+                       str(len(cfg.groups_dict[self.group_by][group_ID]['seqIDs'])) + ")"
             item = QListWidgetItem(name_str)
-            item_color = QColor(cfg.groups_dict[group_ID]['color_array'][0]*255,
-                                cfg.groups_dict[group_ID]['color_array'][1]*255,
-                                cfg.groups_dict[group_ID]['color_array'][2]*255)
+            item_color = QColor(cfg.groups_dict[self.group_by][group_ID]['color_array'][0]*255,
+                                cfg.groups_dict[self.group_by][group_ID]['color_array'][1]*255,
+                                cfg.groups_dict[self.group_by][group_ID]['color_array'][2]*255)
             item.setForeground(item_color)
             self.groups_list.insertItem(i, item)
 
@@ -266,46 +269,49 @@ class ManageGroupsDialog(QDialog):
         group_index = self.groups_list.currentRow()
         group_ID = self.group_IDs_list[group_index]
 
-        edit_group_dlg = EditGroupDialog(group_ID, self.network_plot)
+        edit_group_dlg = EditGroupDialog(self.group_by, group_ID, self.network_plot)
 
         if edit_group_dlg.exec_():
             group_name, group_size, group_name_size, clans_color, rgb_color, color_array, is_bold, is_italic, \
             removed_dict = self.get_group_info(edit_group_dlg, group_ID)
 
             # Update the group information in the main dict
-            cfg.groups_dict[group_ID]['name'] = group_name
-            cfg.groups_dict[group_ID]['size'] = group_size
-            cfg.groups_dict[group_ID]['name_size'] = group_name_size
-            cfg.groups_dict[group_ID]['color'] = clans_color
-            cfg.groups_dict[group_ID]['color_rgb'] = rgb_color
-            cfg.groups_dict[group_ID]['color_array'] = color_array
-            cfg.groups_dict[group_ID]['is_bold'] = is_bold
-            cfg.groups_dict[group_ID]['is_italic'] = is_italic
+            cfg.groups_dict[self.group_by][group_ID]['name'] = group_name
+            cfg.groups_dict[self.group_by][group_ID]['size'] = group_size
+            cfg.groups_dict[self.group_by][group_ID]['name_size'] = group_name_size
+            cfg.groups_dict[self.group_by][group_ID]['color'] = clans_color
+            cfg.groups_dict[self.group_by][group_ID]['color_rgb'] = rgb_color
+            cfg.groups_dict[self.group_by][group_ID]['color_array'] = color_array
+            cfg.groups_dict[self.group_by][group_ID]['is_bold'] = is_bold
+            cfg.groups_dict[self.group_by][group_ID]['is_italic'] = is_italic
 
             # Update the removed sequences in the main dict
             for seq_index in removed_dict:
-                if seq_index in cfg.groups_dict[group_ID]['seqIDs']:
-                    del cfg.groups_dict[group_ID]['seqIDs'][seq_index]
+                if seq_index in cfg.groups_dict[self.group_by][group_ID]['seqIDs']:
+                    del cfg.groups_dict[self.group_by][group_ID]['seqIDs'][seq_index]
 
             # Update the name and color of the list-item
-            name_str = cfg.groups_dict[group_ID]['name'] + " (" + str(len(cfg.groups_dict[group_ID]['seqIDs'])) + ")"
+            name_str = cfg.groups_dict[self.group_by][group_ID]['name'] + " (" + \
+                       str(len(cfg.groups_dict[self.group_by][group_ID]['seqIDs'])) + ")"
             item = self.groups_list.currentItem()
             item.setText(name_str)
             item.setForeground(edit_group_dlg.color)
 
             # Update the plot with the removed sequences
             if len(removed_dict) > 0:
-                self.network_plot.remove_from_group(removed_dict, self.dim_num, self.z_index_mode, self.color_by)
+                self.network_plot.remove_from_group(removed_dict, self.dim_num, self.z_index_mode, self.color_by,
+                                                    self.group_by)
 
             # Update the plot with the new group parameters
-            self.network_plot.edit_group_parameters(group_ID, self.dim_num, self.z_index_mode, self.color_by)
+            self.network_plot.edit_group_parameters(group_ID, self.dim_num, self.z_index_mode, self.color_by,
+                                                    self.group_by)
 
     def get_group_info(self, edit_group_dlg, group_ID):
 
         # Get the group name
         if edit_group_dlg.name_widget.text() == "":
             # Add an error popup
-            group_name = cfg.groups_dict[group_ID]['name']
+            group_name = cfg.groups_dict[self.group_by][group_ID]['name']
         else:
             group_name = edit_group_dlg.name_widget.text()
 
@@ -335,22 +341,23 @@ class ManageGroupsDialog(QDialog):
 
         group_index = self.groups_list.currentRow()
         group_ID = self.group_IDs_list[group_index]
-        seq_dict = cfg.groups_dict[group_ID]['seqIDs'].copy()
+        seq_dict = cfg.groups_dict[self.group_by][group_ID]['seqIDs'].copy()
 
         # 1. Remove the sequences assigned to this group (they get '-1' assignment)
         gr.remove_from_group(seq_dict)
 
         # 2. Remove the group from the plot
-        self.network_plot.delete_group(group_ID, seq_dict, self.dim_num, self.z_index_mode, self.color_by)
+        self.network_plot.delete_group(group_ID, seq_dict, self.dim_num, self.z_index_mode, self.color_by, self.group_by)
 
         # 3. Delete the group from the main groups dictionary
-        gr.delete_group(group_ID)
+        gr.delete_group(self.group_by, group_ID)
 
         # Remove the group from the presented list
         self.groups_list.takeItem(group_index)
 
         # Update the group_IDs list after the deletion
-        self.group_IDs_list = sorted(cfg.groups_dict.keys(), key=lambda k: cfg.groups_dict[k]['order'])
+        self.group_IDs_list = sorted(cfg.groups_dict[self.group_by].keys(),
+                                     key=lambda k: cfg.groups_dict[self.group_by][k]['order'])
 
     def move_up_group(self):
 
@@ -373,8 +380,8 @@ class ManageGroupsDialog(QDialog):
         self.groups_list.setCurrentItem(current_item)
 
         # Update the order of the groups in the main groups dict
-        cfg.groups_dict[group_ID]['order'] -= 1
-        cfg.groups_dict[second_group_ID]['order'] += 1
+        cfg.groups_dict[self.group_by][group_ID]['order'] -= 1
+        cfg.groups_dict[self.group_by][second_group_ID]['order'] += 1
 
         self.changed_order_flag = 1
 
@@ -398,15 +405,15 @@ class ManageGroupsDialog(QDialog):
         self.groups_list.setCurrentItem(current_item)
 
         # Update the order of the groups in the main groups dict
-        cfg.groups_dict[group_ID]['order'] += 1
-        cfg.groups_dict[second_group_ID]['order'] -= 1
+        cfg.groups_dict[self.group_by][group_ID]['order'] += 1
+        cfg.groups_dict[self.group_by][second_group_ID]['order'] -= 1
 
         self.changed_order_flag = 1
 
 
 class EditGroupDialog(QDialog):
 
-    def __init__(self, group_ID, net_plot_object):
+    def __init__(self, group_by, group_ID, net_plot_object):
         super().__init__()
 
         self.setWindowTitle("Edit group")
@@ -422,15 +429,15 @@ class EditGroupDialog(QDialog):
         # Edit the group name
         self.name_label = QLabel("Group name:")
         self.name_widget = QLineEdit()
-        self.name_widget.setPlaceholderText(cfg.groups_dict[group_ID]['name'])
+        self.name_widget.setPlaceholderText(cfg.groups_dict[group_by][group_ID]['name'])
 
         self.grid_layout.addWidget(self.name_label, 0, 0)
         self.grid_layout.addWidget(self.name_widget, 0, 1, 1, 2)
 
         # Set the size of the group names
         self.group_name_size_label = QLabel("Group name text size:")
-        if cfg.groups_dict[group_ID]['name_size'] != "":
-            default_size = cfg.groups_dict[group_ID]['name_size']
+        if cfg.groups_dict[group_by][group_ID]['name_size'] != "":
+            default_size = cfg.groups_dict[group_by][group_ID]['name_size']
         else:
             default_size = net_plot_object.text_size
         self.group_name_size = QComboBox()
@@ -471,9 +478,9 @@ class EditGroupDialog(QDialog):
         # Set the color of the group's nodes and names
         self.color_label = QLabel("Group color:")
         self.color_box = QLabel(" ")
-        self.color = QColor(cfg.groups_dict[group_ID]['color_array'][0] * 255,
-                            cfg.groups_dict[group_ID]['color_array'][1] * 255,
-                            cfg.groups_dict[group_ID]['color_array'][2] * 255)
+        self.color = QColor(cfg.groups_dict[group_by][group_ID]['color_array'][0] * 255,
+                            cfg.groups_dict[group_by][group_ID]['color_array'][1] * 255,
+                            cfg.groups_dict[group_by][group_ID]['color_array'][2] * 255)
 
         self.color_box.setStyleSheet("background-color: " + self.color.name())
 
@@ -486,7 +493,7 @@ class EditGroupDialog(QDialog):
 
         # Set the size of the group nodes
         self.size_label = QLabel("Data points size:")
-        default_size = cfg.groups_dict[group_ID]['size']
+        default_size = cfg.groups_dict[group_by][group_ID]['size']
         self.group_size = QComboBox()
 
         i = 0
@@ -511,7 +518,7 @@ class EditGroupDialog(QDialog):
         self.members_label = QLabel("Group members:")
         self.members_list = QListWidget()
 
-        self.sorted_seq_list = sorted(cfg.groups_dict[group_ID]['seqIDs'])
+        self.sorted_seq_list = sorted(cfg.groups_dict[group_by][group_ID]['seqIDs'])
 
         for i in range(len(self.sorted_seq_list)):
             name_str = str(self.sorted_seq_list[i]) + "  " + cfg.sequences_array['seq_title'][self.sorted_seq_list[i]][1:]
@@ -558,10 +565,11 @@ class EditGroupDialog(QDialog):
 
 class EditGroupNameDialog(QDialog):
 
-    def __init__(self, group_ID, net_plot_object):
+    def __init__(self, group_by, group_ID, net_plot_object):
         super().__init__()
 
         self.group_ID = group_ID
+        self.group_by = group_by
 
         self.setWindowTitle("Edit group name")
 
@@ -573,15 +581,15 @@ class EditGroupNameDialog(QDialog):
         # Edit the group name
         self.name_label = QLabel("Group name:")
         self.name_widget = QLineEdit()
-        self.name_widget.setPlaceholderText(cfg.groups_dict[group_ID]['name'])
+        self.name_widget.setPlaceholderText(cfg.groups_dict[self.group_by][group_ID]['name'])
 
         self.grid_layout.addWidget(self.name_label, 0, 0)
         self.grid_layout.addWidget(self.name_widget, 0, 1, 1, 2)
 
         # Set the size of the group names
         self.group_name_size_label = QLabel("Text size:")
-        if cfg.groups_dict[group_ID]['name_size'] != "":
-            default_size = cfg.groups_dict[group_ID]['name_size']
+        if cfg.groups_dict[self.group_by][group_ID]['name_size'] != "":
+            default_size = cfg.groups_dict[self.group_by][group_ID]['name_size']
         else:
             default_size = net_plot_object.text_size
         self.group_name_size = QComboBox()
@@ -600,9 +608,9 @@ class EditGroupNameDialog(QDialog):
         # Set the color of the group's nodes
         self.color_label = QLabel("Color:")
         self.color_box = QLabel(" ")
-        self.color = QColor(cfg.groups_dict[group_ID]['color_array'][0]*255,
-                            cfg.groups_dict[group_ID]['color_array'][1]*255,
-                            cfg.groups_dict[group_ID]['color_array'][2]*255)
+        self.color = QColor(cfg.groups_dict[self.group_by][group_ID]['color_array'][0]*255,
+                            cfg.groups_dict[self.group_by][group_ID]['color_array'][1]*255,
+                            cfg.groups_dict[self.group_by][group_ID]['color_array'][2]*255)
 
         self.color_box.setStyleSheet("background-color: " + self.color.name())
 
@@ -656,7 +664,7 @@ class EditGroupNameDialog(QDialog):
         # Get the group name
         if self.name_widget.text() == "":
             # Add an error popup
-            group_name = cfg.groups_dict[self.group_ID]['name']
+            group_name = cfg.groups_dict[self.group_by][self.group_ID]['name']
         else:
             group_name = self.name_widget.text()
 

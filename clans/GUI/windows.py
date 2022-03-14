@@ -144,21 +144,23 @@ class SelectedSeqWindow(QWidget):
             if self.highlight_button.isChecked():
 
                 # Highlight the selected points
-                self.net_plot_object.highlight_selected_points(selected_indices, self.main_window_object.view, dim_num,
+                self.net_plot_object.highlight_selected_points(selected_indices, dim_num,
                                                                self.main_window_object.z_indexing_mode,
-                                                               self.main_window_object.color_by)
+                                                               self.main_window_object.color_by,
+                                                               self.main_window_object.group_by)
 
                 # Turn off all the rest (not selected)
-                self.net_plot_object.unhighlight_selected_points(not_selected_indices,
-                                                                 self.main_window_object.view, dim_num,
+                self.net_plot_object.unhighlight_selected_points(not_selected_indices, dim_num,
                                                                  self.main_window_object.z_indexing_mode,
-                                                                 self.main_window_object.color_by)
+                                                                 self.main_window_object.color_by,
+                                                                 self.main_window_object.group_by)
 
             # Turn off highlighting of all selected sequences (back to normal selected presentation)
             else:
-                self.net_plot_object.unhighlight_selected_points(self.sorted_seq_indices, self.main_window_object.view,
-                                                                 dim_num, self.main_window_object.z_indexing_mode,
-                                                                 self.main_window_object.color_by)
+                self.net_plot_object.unhighlight_selected_points(self.sorted_seq_indices, dim_num,
+                                                                 self.main_window_object.z_indexing_mode,
+                                                                 self.main_window_object.color_by,
+                                                                 self.main_window_object.group_by)
 
     def keep_selected(self):
 
@@ -180,9 +182,10 @@ class SelectedSeqWindow(QWidget):
             else:
                 dim_num = 3
 
-            self.net_plot_object.remove_from_selected(not_selected_indices, self.main_window_object.view, dim_num,
+            self.net_plot_object.remove_from_selected(not_selected_indices, dim_num,
                                                       self.main_window_object.z_indexing_mode,
-                                                      self.main_window_object.color_by)
+                                                      self.main_window_object.color_by,
+                                                      self.main_window_object.group_by)
 
             self.update_sequences()
 
@@ -207,9 +210,10 @@ class SelectedSeqWindow(QWidget):
             else:
                 dim_num = 3
 
-            self.net_plot_object.remove_from_selected(selected_indices, self.main_window_object.view, dim_num,
+            self.net_plot_object.remove_from_selected(selected_indices, dim_num,
                                                       self.main_window_object.z_indexing_mode,
-                                                      self.main_window_object.color_by)
+                                                      self.main_window_object.color_by,
+                                                      self.main_window_object.group_by)
 
             # Delete the selected rows from the list (in reverse order, to prevent problems with the row-indices)
             for row_index in reversed(selected_rows):
@@ -450,9 +454,8 @@ class SearchResultsWindow(QWidget):
                 dim_num = 3
 
             # Set the selected sequences as the selected subset
-            self.net_plot_object.select_subset(selected_indices, self.main_window_object.view, dim_num,
-                                               self.main_window_object.z_indexing_mode,
-                                               self.main_window_object.color_by)
+            self.net_plot_object.select_subset(selected_indices, dim_num, self.main_window_object.z_indexing_mode,
+                                               self.main_window_object.color_by, self.main_window_object.group_by)
 
             # Update the selected sequences window
             self.main_window_object.selected_seq_window.update_sequences()
@@ -481,13 +484,12 @@ class SearchResultsWindow(QWidget):
                 dim_num = 3
 
             # Clear the current selection
-            self.net_plot_object.reset_selection(self.main_window_object.view, dim_num,
-                                                 self.main_window_object.z_indexing_mode)
+            self.net_plot_object.reset_selection(dim_num, self.main_window_object.z_indexing_mode,
+                                                 self.main_window_object.color_by, self.main_window_object.group_by)
 
             # Set the selected sequences as the selected subset
-            self.net_plot_object.select_subset(selected_indices, self.main_window_object.view, dim_num,
-                                               self.main_window_object.z_indexing_mode,
-                                               self.main_window_object.color_by)
+            self.net_plot_object.select_subset(selected_indices, dim_num, self.main_window_object.z_indexing_mode,
+                                               self.main_window_object.color_by, self.main_window_object.group_by)
 
             # Update the selected sequences window
             self.main_window_object.selected_seq_window.update_sequences()

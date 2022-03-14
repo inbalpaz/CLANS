@@ -153,26 +153,5 @@ class TaxonomyWorker(QRunnable):
         self.get_hierarchy()
 
 
-class FileHandler:
-    def __init__(self, file_format):
-        self.file_format = file_format
-        self.file_path = ""
-        self.format_object = ""
-
-        if self.file_format == 'clans':
-            self.format_object = clans.ClansFormat()
-        elif self.file_format == 'mini_clans':
-            self.format_object = clans_mini.ClansMinimalFormat()
-        else:
-            self.format_object = tab.DelimitedFormat()
-
-    def write_file(self, file_path, is_param):
-        self.file_path = file_path
-        self.format_object.write_file(file_path, is_param)
-
-        if self.format_object.error == "":
-            print("Successfully saved to: " + str(self.file_path))
-
-
 
 

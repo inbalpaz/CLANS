@@ -16,11 +16,8 @@ def create_sequences_array(sequences_list):
     #print("create_sequences_array: Sequences_array=\n" + str(cfg.sequences_array))
 
 
-def add_in_group_column(in_group_array):
-    # Fill the 'in_group' field for each sequence - to which group it belongs (group index)
-    # In case there is no group assignment - fill -1
-    cfg.sequences_array['in_group'] = in_group_array
-    #print("add_in_group_column: Sequences_array=\n" + str(cfg.sequences_array))
+def init_seuences_in_groups():
+    cfg.sequences_in_groups['manual'] = np.full(cfg.run_params['total_sequences_num'], -1)
 
 
 def add_seq_length_param():

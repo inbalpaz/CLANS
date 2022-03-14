@@ -121,7 +121,7 @@ class ClansFormat:
                                     if num != '':
                                         d['seqIDs'][int(num)] = 1
                                 # Add the dictionary with the current group's info to the groups dictionary
-                                cfg.groups_dict[group_ID] = d.copy()
+                                cfg.groups_dict['input_file'][group_ID] = d.copy()
                                 group_ID += 1
                                 order += 1
                             elif k == 'color':
@@ -166,7 +166,7 @@ class ClansFormat:
                             z_coor = m.group(4)
                             # Create a tuple with the coordinates information + initialization for the 'in_group'
                             # and 'in_subset' fields
-                            coor_tuple = (x_coor, y_coor, z_coor, -1, False, x_coor, y_coor, z_coor)
+                            coor_tuple = (x_coor, y_coor, z_coor, False, x_coor, y_coor, z_coor)
                             self.sequences_list[index] += coor_tuple
                         else:
                             self.file_is_valid = 0
@@ -272,16 +272,15 @@ class ClansFormat:
     def fill_values(self):
         # Create the structured NumPy array of sequences
         seq.create_sequences_array(self.sequences_list)
+        seq.init_seuences_in_groups()
 
         # If there sre groups - add the information to the sequences array
         if self.is_groups:
-            in_groups_array = np.full(cfg.run_params['total_sequences_num'], -1)
-            for group_ID in cfg.groups_dict:
-                if cfg.groups_dict[group_ID]['color'] != "0;0;0;255":
-                    for seq_num in cfg.groups_dict[group_ID]['seqIDs']:
-                        seq_index = int(seq_num)
-                        in_groups_array[seq_index] = group_ID
-            seq.add_in_group_column(in_groups_array)
+            cfg.sequences_in_groups['input_file'] = np.full(cfg.run_params['total_sequences_num'], -1)
+            for group_ID in cfg.groups_dict['input_file']:
+                for seq_num in cfg.groups_dict['input_file'][group_ID]['seqIDs']:
+                    seq_index = int(seq_num)
+                    cfg.sequences_in_groups['input_file'][seq_index] = group_ID
 
         # calculate the sequence_length column
         seq.add_seq_length_param()
@@ -329,7 +328,7 @@ class ClansFormat:
                 cfg.run_params['similarity_cutoff'] = 0.1
             sp.define_connected_sequences('att')
 
-    def write_file(self, file_path, is_param):
+    def write_file(self, file_path, is_param, group_by):
         seq_block = ""
         pos_block = ""
 
@@ -368,17 +367,17 @@ class ClansFormat:
         output.write('</seq>\n')
 
         # Write the groups block
-        if len(cfg.groups_dict) > 0:
+        if len(cfg.groups_dict[group_by]) > 0:
             groups_block = ""
             output.write('<seqgroups>\n')
-            for group_ID in cfg.groups_dict:
+            for group_ID in cfg.groups_dict[group_by]:
 
                 seq_ids_str = ""
-                for seq_index in cfg.groups_dict[group_ID]['seqIDs']:
+                for seq_index in cfg.groups_dict[group_by][group_ID]['seqIDs']:
                     seq_ids_str += str(seq_index) + ";"
-                groups_block += 'name=' + cfg.groups_dict[group_ID]['name'] + '\n'
-                groups_block += 'size=' + cfg.groups_dict[group_ID]['size'] + '\n'
-                groups_block += 'color=' + cfg.groups_dict[group_ID]['color'] + '\n'
+                groups_block += 'name=' + cfg.groups_dict[group_by][group_ID]['name'] + '\n'
+                groups_block += 'size=' + cfg.groups_dict[group_by][group_ID]['size'] + '\n'
+                groups_block += 'color=' + cfg.groups_dict[group_by][group_ID]['color'] + '\n'
                 groups_block += 'numbers=' + seq_ids_str + '\n'
             output.write(groups_block)
             output.write('</seqgroups>\n')

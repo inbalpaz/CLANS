@@ -69,9 +69,8 @@ run_params = {  # a dict to hold all the running parameters (given by the user /
 # They are initialized with the whole dataset coordinates at the beginning and whenever the view returns to full dataset.
 seq_dt = np.dtype([('seq_ID', 'U300'), ('seq_title', 'U300'), ('sequence', 'U3000'), ('seq_length', 'int16'),
                    ('norm_seq_length', 'float32'), ('organism', 'U100'), ('tax_ID', 'U20'),
-                   ('x_coor', 'float32'), ('y_coor', 'float32'), ('z_coor', 'float32'), ('in_group', 'int16'),
-                   ('in_subset', 'bool'), ('x_coor_subset', 'float32'), ('y_coor_subset', 'float32'),
-                   ('z_coor_subset', 'float32')])
+                   ('x_coor', 'float32'), ('y_coor', 'float32'), ('z_coor', 'float32'), ('in_subset', 'bool'),
+                   ('x_coor_subset', 'float32'), ('y_coor_subset', 'float32'), ('z_coor_subset', 'float32')])
 sequences_array = np.empty(run_params['total_sequences_num'], dtype=seq_dt)
 
 # A dictionary for connecting each sequence_ID (unique name) ith its index (by order)
@@ -83,14 +82,24 @@ sequences_numeric_params = dict()
 # A dictionary of lists containing user-defined discrete parameters for each sequence (to be used as group-by)
 sequences_discrete_params = dict()
 
-# a dictionary of dictionaries (the keys are unique 'Group_ID') holding the following info for each group:
-# 'name', 'size', 'name_size', 'seqIDs', 'order', 'color', 'color_rgb', 'color_array', 'is_bold', 'is_italic'
-# 'seqIDs' is a dictionary holding the indices of the sequences belonging to each group
-# 'order' (starting from -1) determines which group is displayed in front of the other (-1 = the most front)
-# 'color' is the old clans format: 225;32;100;255
-# 'color_rgb' is the new RGB format: 225,32,100
-# 'color_array' is an array of size 4 to be used by Vispy
+# an hierarchic dictionary containing several levels, for holding all the groups information
+# Upper level: grouping type (input_file, manual, taxonomy, user-defined)
+# Second level: Group_ID
+# Inner level (holding the following info for each group):
+# - 'name', 'size', 'name_size', 'seqIDs', 'order', 'color', 'color_rgb', 'color_array', 'is_bold', 'is_italic'
+# - 'seqIDs' is a dictionary holding the indices of the sequences belonging to each group
+# - 'order' (starting from -1) determines which group is displayed in front of the other (-1 = the most front)
+# - 'color' is the old clans format: 225;32;100;255
+# - 'color_rgb' is the new RGB format: 225,32,100
+# - 'color_array' is an array of size 4 to be used by Vispy
 groups_dict = dict()
+groups_dict['input_file'] = dict()
+groups_dict['manual'] = dict()
+
+# A dictionary of lists to hold for each group-type and sequence, the group_ID it belongs to (-1 if belongs to no group)
+sequences_in_groups = dict()
+sequences_in_groups['input_file'] = []
+sequences_in_groups['manual'] = []
 
 similarity_values_list = []  # a list of the non-redundant significant HSPs ('seq1_index', 'seq2_index', 'Evalue')
 similarity_values_mtx = []  # a 2D matrix filled with Evalues for all pairs (redundant). The diagonal and non-significant pairs = 1

@@ -8,6 +8,7 @@ import time
 import re
 import clans.config as cfg
 import clans.io.io_gui as io
+import clans.io.file_formats as ff
 import clans.layouts.layout_gui as lg
 import clans.layouts.fruchterman_reingold_class as fr_class
 import clans.graphics.network3d as net
@@ -65,6 +66,7 @@ class MainWindow(QMainWindow):
         self.mode = "interactive"  # Modes of interaction: 'interactive' (rotate/pan) / 'selection'
         self.selection_type = "sequences"  # switch between 'sequences' and 'groups' modes
         self.color_by = "groups"  # Color the nodes according to: 'groups' / 'param'
+        self.group_by = "manual"  # Determines which grouping methos is active. ('manual', 'input_file', 'taxonomy', etc...)
         self.is_subset_mode = 0  # In subset mode, only the selected data-points are displayed
         self.z_indexing_mode = "auto"  # Switch between 'auto' and 'groups' modes
         self.ctrl_key_pressed = 0
@@ -240,7 +242,7 @@ class MainWindow(QMainWindow):
 
         # Add a button to switch between 3D and 2D clustering
         self.dimensions_clustering_combo = QComboBox()
-        self.dimensions_clustering_combo.addItems(["Cluster in 3D", "Cluster in 2D"])
+        self.dimensions_clustering_combo.addItems(["3D Clustering", "2D Clustering"])
         self.dimensions_clustering_combo.setEnabled(False)
         self.dimensions_clustering_combo.currentIndexChanged.connect(self.change_dimensions_num_for_clustering)
 
@@ -289,7 +291,7 @@ class MainWindow(QMainWindow):
         # Add a button to change the Z-indexing of nodes in 2D presentation
         self.z_index_mode_combo = QComboBox()
         self.z_index_mode_combo.addItems(["Auto Z-index", "By groups order"])
-        if self.dim_num == 3 or len(cfg.groups_dict) < 2:
+        if self.dim_num == 3 or len(cfg.groups_dict[self.group_by]) < 2:
             self.z_index_mode_combo.setEnabled(False)
         self.z_index_mode_combo.currentIndexChanged.connect(self.manage_z_indexing)
 
@@ -332,7 +334,7 @@ class MainWindow(QMainWindow):
         # Add a button to show the group names on screen
         self.show_group_names_button = QPushButton("Group names")
         self.show_group_names_button.setCheckable(True)
-        if len(cfg.groups_dict) == 0:
+        if len(cfg.groups_dict[self.group_by]) == 0:
             self.show_group_names_button.setEnabled(False)
         self.show_group_names_button.released.connect(self.manage_group_names)
 
@@ -343,7 +345,7 @@ class MainWindow(QMainWindow):
         self.show_groups_combo.currentIndexChanged.connect(self.change_group_names_display)
 
         # Add 'reset group names' button
-        self.reset_group_names_button = QPushButton("Reset names")
+        self.reset_group_names_button = QPushButton("Init names")
         self.reset_group_names_button.setEnabled(False)
         self.reset_group_names_button.pressed.connect(self.reset_group_names_positions)
 
@@ -542,13 +544,15 @@ class MainWindow(QMainWindow):
         self.show_groups_combo.setEnabled(False)
 
         # Remove all the color-by options except 'groups' (the default)
-        #items_num = self.color_by_combo.count()
-        #for i in range(1, items_num):
-            #self.color_by_combo.removeItem(i)
         self.color_by_combo.clear()
         self.color_by_combo.addItem("Groups/Default")
         self.color_by_combo.setEnabled(False)
         self.colorbar_plot.hide_colorbar()
+
+        # Remove all the group-by options except 'Manual' (the default)
+        self.group_by_combo.clear()
+        self.group_by_combo.addItem("Manual definition")
+        self.group_by_combo.setEnabled(False)
 
         # Reset the list of sequences in the 'selected sequences' window
         self.selected_seq_window.clear_list()
@@ -560,7 +564,12 @@ class MainWindow(QMainWindow):
     def reset_variables(self):
 
         # Reset global variables
-        cfg.groups_dict = {}
+        cfg.groups_dict = dict()
+        cfg.groups_dict['input_file'] = dict()
+        cfg.groups_dict['manual'] = dict()
+        cfg.sequences_in_groups = dict()
+        cfg.sequences_in_groups['input_file'] = []
+        cfg.sequences_in_groups['manual'] = []
         cfg.taxonomy_dict = {}
         cfg.organisms_dict = {}
         cfg.sequences_ID_to_index = {}
@@ -635,6 +644,8 @@ class MainWindow(QMainWindow):
 
     def receive_load_status(self, status, file_name):
 
+        self.is_init = 1
+
         self.file_name = file_name
 
         # Loaded file is valid
@@ -671,9 +682,14 @@ class MainWindow(QMainWindow):
             self.select_by_name_button.setEnabled(True)
             self.connections_button.setEnabled(True)
             #self.add_text_button.setEnabled(True)
-            if len(cfg.groups_dict) > 0:
+
+            if len(cfg.groups_dict['input_file']) > 0:
                 self.edit_groups_button.setEnabled(True)
                 self.show_group_names_button.setEnabled(True)
+                self.group_by = 'input_file'
+                self.group_by_combo.addItem("Input CLANS file")
+                self.group_by_combo.setCurrentIndex(1)
+                self.group_by_combo.setEnabled(True)
 
             # Update the file name in the selected sequences window
             self.selected_seq_window.update_window_title(self.file_name)
@@ -702,8 +718,6 @@ class MainWindow(QMainWindow):
 
             if cfg.run_params['dimensions_num_for_clustering'] == 2:
                 self.dimensions_clustering_combo.setCurrentIndex(1)
-                #self.dimensions_view_combo.setCurrentIndex(1)
-                #self.dimensions_view_combo.setEnabled(False)
 
             # Calculate the sequence length parameter for this dataset (if input contains sequences)
             if cfg.run_params['input_format'] == 'clans':
@@ -719,6 +733,8 @@ class MainWindow(QMainWindow):
             self.load_file_label.parent = None
             self.file_error_label.text = cfg.run_params['error'] + "\n\nPlease load a new file and select the correct format"
             self.canvas.central_widget.add_widget(self.file_error_label)
+
+        self.is_init = 0
 
     def load_clans_file(self):
 
@@ -880,13 +896,14 @@ class MainWindow(QMainWindow):
             self.remove_selected_button.setEnabled(False)
             self.z_index_mode_combo.setEnabled(False)
             self.color_by_combo.setEnabled(False)
+            self.group_by_combo.setEnabled(False)
 
             # Execute
             self.threadpool.start(self.run_calc_worker)
 
     def update_plot(self):
 
-        self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by)
+        self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by, self.group_by)
 
         # Full data mode
         if self.is_subset_mode == 0:
@@ -930,14 +947,14 @@ class MainWindow(QMainWindow):
         self.connections_button.setEnabled(True)
         #self.add_text_button.setEnabled(True)
 
-        if len(cfg.groups_dict) > 0:
+        if len(cfg.groups_dict[self.group_by]) > 0 and self.color_by == 'groups':
             self.show_group_names_button.setEnabled(True)
             if len(self.network_plot.selected_groups) > 0:
                 self.show_groups_combo.setEnabled(True)
             self.edit_groups_button.setEnabled(True)
 
             if self.is_subset_mode == 0 and self.view_in_dimensions_num == 2 and self.color_by == 'groups' and \
-                    len(cfg.groups_dict) > 1:
+                    len(cfg.groups_dict[self.group_by]) > 1:
                 self.z_index_mode_combo.setEnabled(True)
 
         # Enable selection-related buttons only in full data mode
@@ -960,12 +977,16 @@ class MainWindow(QMainWindow):
         if self.done_color_by_length or self.added_user_param:
             self.color_by_combo.setEnabled(True)
 
+        # Enable the 'group-by' combo box if is more than one grouping option
+        if self.group_by_combo.count() > 1 and self.color_by == 'groups':
+            self.group_by_combo.setEnabled(True)
+
         # Whole data calculation mode
         if self.is_subset_mode == 0:
             # Update the coordinates saved in the sequences_array
             seq.update_positions(self.fr_object.coordinates.T, 'full')
 
-            self.network_plot.reset_group_names_positions()
+            self.network_plot.reset_group_names_positions(self.group_by)
 
         # Subset calculation mode
         else:
@@ -1015,7 +1036,7 @@ class MainWindow(QMainWindow):
                                                 cfg.sequences_array['y_coor'],
                                                 cfg.sequences_array['z_coor'])
 
-            self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by)
+            self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by, self.group_by)
             # Calculate the angles of each point for future use when having rotations
             self.network_plot.calculate_initial_angles()
 
@@ -1028,8 +1049,12 @@ class MainWindow(QMainWindow):
             if cfg.run_params['dimensions_num_for_clustering'] == 3:
                 self.dimensions_view_combo.setCurrentIndex(0)
 
+            else:
+                if self.z_indexing_mode == 'groups':
+                    self.z_index_mode_combo.setCurrentIndex(0)
+
             self.network_plot.reset_rotation()
-            self.network_plot.reset_group_names_positions()
+            self.network_plot.reset_group_names_positions(self.group_by)
 
     def manage_connections(self):
 
@@ -1085,7 +1110,7 @@ class MainWindow(QMainWindow):
                 else:
                     # 3D clustering -> need to present the rotated-coordinates
                     if cfg.run_params['dimensions_num_for_clustering'] == 3:
-                        self.network_plot.update_view(2, self.color_by)
+                        self.network_plot.update_view(2, self.color_by, self.group_by)
                     # 2D clustering
                     else:
                         self.network_plot.update_connections(2)
@@ -1101,24 +1126,24 @@ class MainWindow(QMainWindow):
         saved_file, _ = QFileDialog.getSaveFileName()
 
         if saved_file:
-            file_object = io.FileHandler('clans')
-            file_object.write_file(saved_file, True)
+            file_object = ff.ClansFormat()
+            file_object.write_file(saved_file, True, self.group_by)
 
     # Save a minimal clans file (without the sequences)
     def save_mini_clans_file(self):
         saved_file, _ = QFileDialog.getSaveFileName()
 
         if saved_file:
-            file_object = io.FileHandler('mini_clans')
-            file_object.write_file(saved_file, True)
+            file_object = ff.ClansMinimalFormat()
+            file_object.write_file(saved_file, self.group_by)
 
     def save_delimited_file(self):
 
         saved_file, _ = QFileDialog.getSaveFileName()
 
         if saved_file:
-            file_object = io.FileHandler('delimited')
-            file_object.write_file(saved_file, False)
+            file_object = ff.DelimitedFormat()
+            file_object.write_file(saved_file)
 
     def save_image(self):
 
@@ -1155,7 +1180,7 @@ class MainWindow(QMainWindow):
         if conf_nodes_dlg.exec_():
             default_size, default_color = conf_nodes_dlg.get_parameters()
 
-            self.network_plot.set_defaults(default_size, default_color, self.dim_num, self.color_by)
+            self.network_plot.set_defaults(default_size, default_color, self.dim_num, self.color_by, self.group_by)
 
     def change_dimensions_view(self):
 
@@ -1171,7 +1196,7 @@ class MainWindow(QMainWindow):
 
             # Not in init file mode
             if self.is_init == 0:
-                self.network_plot.set_3d_view(self.fr_object, self.color_by)
+                self.network_plot.set_3d_view(self.fr_object, self.color_by, self.group_by)
 
         # 2D view
         else:
@@ -1182,12 +1207,12 @@ class MainWindow(QMainWindow):
             self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View of " + self.file_name)
 
             # Only in full data and color-by groups modes
-            if self.is_subset_mode == 0 and len(cfg.groups_dict) > 1 and self.color_by == 'groups':
+            if self.is_subset_mode == 0 and len(cfg.groups_dict[self.group_by]) > 1 and self.color_by == 'groups':
                 self.z_index_mode_combo.setEnabled(True)
 
             # Not in init file mode
             if self.is_init == 0:
-                self.network_plot.set_2d_view(self.z_indexing_mode, self.fr_object, self.color_by)
+                self.network_plot.set_2d_view(self.z_indexing_mode, self.fr_object, self.color_by, self.group_by)
 
     def change_dimensions_num_for_clustering(self):
 
@@ -1218,7 +1243,7 @@ class MainWindow(QMainWindow):
 
             # The view was already in 2D -> update the rotated positions
             if self.view_in_dimensions_num == 2:
-                self.network_plot.save_rotated_coordinates(2, self.fr_object, self.color_by)
+                self.network_plot.save_rotated_coordinates(2, self.fr_object, self.color_by, self.group_by)
 
             # Set 2D view
             else:
@@ -1235,7 +1260,7 @@ class MainWindow(QMainWindow):
             self.z_indexing_mode = 'groups'
 
         if self.z_index_mode_combo.isEnabled():
-            self.network_plot.update_2d_view(self.z_indexing_mode, self.color_by)
+            self.network_plot.update_2d_view(self.z_indexing_mode, self.color_by, self.group_by)
 
     def change_mode(self):
 
@@ -1251,7 +1276,7 @@ class MainWindow(QMainWindow):
             # Not in init file mode
             if self.is_init == 0:
                 self.network_plot.set_interactive_mode(self.view_in_dimensions_num, self.fr_object,
-                                                       self.color_by)
+                                                       self.color_by, self.group_by)
 
             self.init_button.setEnabled(True)
             self.start_button.setEnabled(True)
@@ -1289,7 +1314,7 @@ class MainWindow(QMainWindow):
                     print("move_visuals mode")
 
             self.network_plot.set_selection_mode(self.view_in_dimensions_num, self.z_indexing_mode,
-                                                 self.fr_object, self.color_by)
+                                                 self.fr_object, self.color_by, self.group_by)
 
             self.init_button.setEnabled(False)
             self.start_button.setEnabled(False)
@@ -1298,10 +1323,10 @@ class MainWindow(QMainWindow):
             self.pval_widget.setEnabled(False)
             self.dimensions_view_combo.setEnabled(False)
 
-            if len(cfg.groups_dict) > 1 and self.color_by == 'groups':
+            if len(cfg.groups_dict[self.group_by]) > 1 and self.color_by == 'groups':
                 self.z_index_mode_combo.setEnabled(True)
 
-            if len(cfg.groups_dict) > 0:
+            if len(cfg.groups_dict[self.group_by]) > 0:
                 self.selection_type_combo.setEnabled(True)
 
             # Disconnect the default behaviour of the viewbox when the mouse moves
@@ -1312,7 +1337,7 @@ class MainWindow(QMainWindow):
 
     def color_by_groups(self):
 
-        self.network_plot.color_by_groups(self.dim_num, self.z_indexing_mode, self.color_by)
+        self.network_plot.color_by_groups(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
 
         self.colorbar_plot.hide_colorbar()
 
@@ -1329,7 +1354,7 @@ class MainWindow(QMainWindow):
             gradient_colormap = colors.generate_colormap_gradient_2_colors(cfg.short_color, cfg.long_color)
 
             self.network_plot.color_by_param(gradient_colormap, cfg.sequences_array['norm_seq_length'],
-                                             self.dim_num, self.z_indexing_mode, self.color_by)
+                                             self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
 
             self.colorbar_plot.show_colorbar(gradient_colormap, cfg.sequences_array['seq_length'], 'Sequences length')
 
@@ -1350,18 +1375,41 @@ class MainWindow(QMainWindow):
 
             if self.is_init == 0:
 
-                if self.dim_num == 2 and len(cfg.groups_dict) > 1:
+                # Enable all the group-related controls (if there are groups)
+                if len(cfg.groups_dict[self.group_by]) > 0:
+                    self.edit_groups_button.setEnabled(True)
+                    self.show_group_names_button.setEnabled(True)
+                    self.selection_type_combo.setEnabled(True)
+
+                if self.dim_num == 2 and len(cfg.groups_dict[self.group_by]) > 1:
                     self.z_index_mode_combo.setEnabled(True)
+
+                # Enable the 'group-by' combo box if is more than one grouping option
+                if self.group_by_combo.count() > 1:
+                    self.group_by_combo.setEnabled(True)
 
                 self.color_by_groups()
 
-        # Color the data by sequence length
+        # Color the data by some numeric parameter
         else:
             self.color_by = "param"
 
+            # Disable all the group-related controls and hide the group names
+            self.edit_groups_button.setEnabled(False)
+            self.show_group_names_button.setChecked(False)
+            self.network_plot.hide_group_names()
+            self.reset_group_names_button.setEnabled(False)
+            self.is_show_group_names = 0
+            self.show_group_names_button.setEnabled(False)
+            self.selection_type_combo.setEnabled(False)
+            self.group_by_combo.setEnabled(False)
+
             if self.is_init == 0:
+                # Color the data by sequence length
                 if self.color_by_combo.currentText() == 'Seq. length':
                     self.color_by_seq_length()
+
+                # Color the data by other parameter
                 else:
                     self.color_by_user_param(self.color_by_combo.currentText())
 
@@ -1381,7 +1429,7 @@ class MainWindow(QMainWindow):
         gradient_colormap = colors.generate_colormap_gradient_2_colors(min_param_color, max_param_color)
 
         self.network_plot.color_by_param(gradient_colormap, cfg.sequences_numeric_params[param]['norm'],
-                                         self.dim_num, self.z_indexing_mode, self.color_by)
+                                         self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
 
         self.colorbar_plot.show_colorbar(gradient_colormap, cfg.sequences_numeric_params[param]['raw'], param)
 
@@ -1411,7 +1459,53 @@ class MainWindow(QMainWindow):
                 self.color_by_user_param(selected_param)
 
     def change_grouping(self):
-        pass
+
+        # Group the data by manual definition (by selection)
+        if self.group_by_combo.currentText() == 'Manual definition':
+            self.group_by = "manual"
+
+        # Group the data according to the <Seqgoups> section in the input file
+        elif self.group_by_combo.currentText() == 'Input CLANS file':
+            self.group_by = "input_file"
+
+        # Group the data by some user-defined parameter
+        else:
+            self.group_by = self.group_by_combo.currentText()
+
+        if not self.is_init:
+
+            if self.dim_num == 2:
+                self.z_index_mode_combo.setCurrentIndex(0)
+                if len(cfg.groups_dict[self.group_by]) > 1:
+                    self.z_index_mode_combo.setEnabled(True)
+                else:
+                    self.z_index_mode_combo.setEnabled(False)
+
+            if len(self.network_plot.selected_groups) > 0:
+                self.clear_selection()
+
+            self.network_plot.hide_group_names()
+
+            self.network_plot.update_group_by(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+
+            # Enable all groups-related controls (in case there are groups)
+            if len(cfg.groups_dict[self.group_by]) > 0:
+                self.edit_groups_button.setEnabled(True)
+                self.show_group_names_button.setEnabled(True)
+                self.selection_type_combo.setEnabled(True)
+
+                # The group names are displayed -> update them including the new group
+                if self.is_show_group_names:
+                    self.network_plot.show_group_names('all')
+
+            # If there are no group (in 'manual' group-by, for example)
+            else:
+                self.edit_groups_button.setEnabled(False)
+                self.show_group_names_button.setChecked(False)
+                self.reset_group_names_button.setEnabled(False)
+                self.is_show_group_names = 0
+                self.show_group_names_button.setEnabled(False)
+                self.selection_type_combo.setEnabled(False)
 
     def change_selection_type(self):
 
@@ -1425,7 +1519,8 @@ class MainWindow(QMainWindow):
 
     def select_all(self):
 
-        self.network_plot.select_all(self.selection_type, self.dim_num, self.z_indexing_mode, self.color_by)
+        self.network_plot.select_all(self.selection_type, self.dim_num, self.z_indexing_mode, self.color_by,
+                                     self.group_by)
 
         # Update the selected sequences window
         self.selected_seq_window.update_sequences()
@@ -1441,7 +1536,7 @@ class MainWindow(QMainWindow):
 
     def clear_selection(self):
 
-        self.network_plot.reset_selection(self.dim_num, self.z_indexing_mode, self.color_by)
+        self.network_plot.reset_selection(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
 
         # Update the selected sequences window
         self.selected_seq_window.update_sequences()
@@ -1504,7 +1599,7 @@ class MainWindow(QMainWindow):
             self.z_index_mode_combo.setCurrentIndex(0)
             self.z_index_mode_combo.setEnabled(False)
 
-            self.network_plot.set_subset_view(self.view_in_dimensions_num, self.color_by)
+            self.network_plot.set_subset_view(self.view_in_dimensions_num, self.color_by, self.group_by)
 
             if self.is_show_group_names:
                 self.network_plot.show_group_names('selected')
@@ -1526,7 +1621,7 @@ class MainWindow(QMainWindow):
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
 
-            if self.view_in_dimensions_num == 2 and len(cfg.groups_dict) > 1:
+            if self.view_in_dimensions_num == 2 and len(cfg.groups_dict[self.group_by]) > 1:
                 self.z_index_mode_combo.setEnabled(True)
 
             # Update the coordinates in the fruchterman-reingold object
@@ -1534,7 +1629,7 @@ class MainWindow(QMainWindow):
                                             cfg.sequences_array['y_coor'],
                                             cfg.sequences_array['z_coor'])
 
-            self.network_plot.set_full_view(self.view_in_dimensions_num, self.color_by)
+            self.network_plot.set_full_view(self.view_in_dimensions_num, self.color_by, self.group_by)
 
             if self.is_show_group_names:
                 self.network_plot.show_group_names('all')
@@ -1550,7 +1645,7 @@ class MainWindow(QMainWindow):
             self.network_plot.show_group_names('selected')
 
     def reset_group_names_positions(self):
-        self.network_plot.reset_group_names_positions()
+        self.network_plot.reset_group_names_positions(self.group_by)
 
     def manage_group_names(self):
 
@@ -1574,7 +1669,7 @@ class MainWindow(QMainWindow):
             else:
                 self.network_plot.show_group_names('selected')
 
-            #self.network_plot.reset_group_names_positions()
+            #self.network_plot.reset_group_names_positions(self.group_by)
 
         # The 'show group names' button is not checked
         else:
@@ -1595,17 +1690,18 @@ class MainWindow(QMainWindow):
 
     def edit_groups(self):
 
-        dlg = gd.ManageGroupsDialog(self.network_plot, self.view, self.dim_num, self.z_indexing_mode, self.color_by)
+        dlg = gd.ManageGroupsDialog(self.network_plot, self.view, self.dim_num, self.z_indexing_mode, self.color_by,
+                                    self.group_by)
 
         if dlg.exec_():
 
             # The order of the groups has changed
             if dlg.changed_order_flag:
-                self.network_plot.update_groups_order(self.dim_num, self.z_indexing_mode, self.color_by)
+                self.network_plot.update_groups_order(self.dim_num, self.z_indexing_mode, self.group_by)
 
     def open_add_to_group_dialog(self):
 
-        dlg = gd.AddToGroupDialog()
+        dlg = gd.AddToGroupDialog(self.group_by)
 
         if dlg.exec_():
             choice, group_ID = dlg.get_choice()
@@ -1617,22 +1713,22 @@ class MainWindow(QMainWindow):
 
             # The user chose to add the selected sequences to an existing group
             else:
-                print("Adding the sequences to group " + cfg.groups_dict[group_ID]['name'])
+                print("Adding the sequences to group " + cfg.groups_dict[self.group_by][group_ID]['name'])
                 self.add_sequences_to_group(group_ID)
 
     def add_sequences_to_group(self, group_ID):
 
         # Add the sequences to the main group_list array
-        groups.add_to_group(self.network_plot.selected_points, group_ID)
+        groups.add_to_group(self.group_by, self.network_plot.selected_points, group_ID)
 
         # Update the look of the selected data-points according to the new group definitions
         self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, self.dim_num,
-                                       self.z_indexing_mode, self.color_by)
+                                       self.z_indexing_mode, self.color_by, self.group_by)
 
     def create_group_from_selected(self):
 
         # Open the 'Create group from selected' dialog
-        dlg = gd.CreateGroupDialog(self.network_plot)
+        dlg = gd.CreateGroupDialog(self.network_plot, self.group_by)
 
         # The user defined a new group
         if dlg.exec_():
@@ -1650,18 +1746,19 @@ class MainWindow(QMainWindow):
             group_dict['color_array'] = color_array
             group_dict['is_bold'] = is_bold
             group_dict['is_italic'] = is_italic
-            group_dict['order'] = len(cfg.groups_dict) - 1
-            group_ID = groups.add_group_with_sequences(self.network_plot.selected_points.copy(), group_dict)
+            group_dict['order'] = len(cfg.groups_dict[self.group_by]) - 1
+            group_ID = groups.add_group_with_sequences(self.group_by, self.network_plot.selected_points.copy(),
+                                                       group_dict)
 
             # Add the new group to the graph
-            self.network_plot.add_group(group_ID)
+            self.network_plot.add_group(self.group_by, group_ID)
 
             # Update the look of the selected data-points according to the new group definitions
-            if self.dim_num == 2 and len(cfg.groups_dict) > 1:
+            if self.dim_num == 2 and len(cfg.groups_dict[self.group_by]) > 1:
                 self.z_index_mode_combo.setEnabled(True)
 
             self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, self.dim_num,
-                                           self.z_indexing_mode, self.color_by)
+                                           self.z_indexing_mode, self.color_by, self.group_by)
 
             self.edit_groups_button.setEnabled(True)
             self.show_group_names_button.setEnabled(True)
@@ -1674,24 +1771,25 @@ class MainWindow(QMainWindow):
     def remove_selected_from_group(self):
 
         # Remove the selected sequences group-assignment in the main group_list array
-        groups_with_deleted_members = groups.remove_from_group(self.network_plot.selected_points.copy())
+        groups_with_deleted_members = groups.remove_from_group(self.group_by, self.network_plot.selected_points.copy())
 
         # Update the look of the selected data-points to the default look (without group assignment)
         self.network_plot.remove_from_group(self.network_plot.selected_points, self.dim_num, self.z_indexing_mode,
-                                            self.color_by)
+                                            self.color_by, self.group_by)
 
         # Check if there is an empty group among the groups with removed members
         for group_ID in groups_with_deleted_members:
-            if len(cfg.groups_dict[group_ID]['seqIDs']) == 0:
+            if len(cfg.groups_dict[self.group_by][group_ID]['seqIDs']) == 0:
 
                 # 1. Delete it from the group_names visual and other graph-related data-structures
-                self.network_plot.delete_empty_group(group_ID, self.dim_num, self.z_indexing_mode,self.color_by)
+                self.network_plot.delete_empty_group(group_ID, self.dim_num, self.z_indexing_mode, self.color_by,
+                                                     self.group_by)
 
                 # 2. Delete the group
-                groups.delete_group(group_ID)
+                groups.delete_group(self.group_by, group_ID)
 
         # Check if there are groups left. If not, disable the related groups controls
-        if len(cfg.groups_dict) == 0:
+        if len(cfg.groups_dict[self.group_by]) == 0:
             self.show_group_names_button.setChecked(False)
             self.show_group_names_button.setEnabled(False)
             self.show_groups_combo.setEnabled(False)
@@ -1715,82 +1813,59 @@ class MainWindow(QMainWindow):
         if dlg.exec_():
             tax_level, points_size, group_names_size, is_bold, is_italic = dlg.get_tax_level()
 
-            # If there are groups already - delete them and start from scratch
-            if len(cfg.groups_dict) > 0:
+            self.group_by = "Taxonomy - " + tax_level
 
-                for group_ID in cfg.groups_dict.copy():
-                    seq_dict = cfg.groups_dict[group_ID]['seqIDs'].copy()
+            # First time for this taxonomic level
+            if self.group_by not in cfg.groups_dict:
+                cfg.groups_dict[self.group_by] = dict()
+                cfg.sequences_in_groups[self.group_by] = np.full(cfg.run_params['total_sequences_num'], -1)
 
-                    # 1. Remove the sequences assigned to this group (they get '-1' assignment)
-                    groups.remove_from_group(seq_dict)
+                # Generate distinct colors according to the number of groups in the chosen level
+                color_map = colors.generate_distinct_colors(len(cfg.seq_by_tax_level_dict[tax_level])-1)
+                color_index = 0
 
-                    # 2. Remove the group from the plot
-                    self.network_plot.delete_group(group_ID, seq_dict, self.dim_num, self.z_indexing_mode,
-                                                   self.color_by)
+                # Sort the groups alphabetically and move the 'Not assigned' group to the end
+                tax_groups = sorted(cfg.seq_by_tax_level_dict[tax_level])
+                tax_groups.append(tax_groups.pop(tax_groups.index('Not assigned')))
 
-                    # 3. Delete the group from the main groups dictionary
-                    groups.delete_group(group_ID)
+                # A loop over the groups in the chosen taxonomic level
+                for tax_group in tax_groups:
 
-                if len(self.network_plot.selected_groups) > 0:
-                    self.clear_selection()
+                    if tax_group != "Not assigned":
 
-            # Generate distinct colors according to the number of groups in the chosen level
-            color_map = colors.generate_distinct_colors(len(cfg.seq_by_tax_level_dict[tax_level])-1)
-            color_index = 0
+                        color = color_map[color_index].RGBA[0]
+                        r = color[0]
+                        g = color[1]
+                        b = color[2]
+                        color_rgb = str(r) + "," + str(g) + "," + str(b)
+                        color_clans = str(r) + ";" + str(g) + ";" + str(b) + ";255"
+                        color_array = color / 255
 
-            # Sort the groups alphabetically and move the 'Not assigned' group to the end
-            tax_groups = sorted(cfg.seq_by_tax_level_dict[tax_level])
-            tax_groups.append(tax_groups.pop(tax_groups.index('Not assigned')))
+                        color_index += 1
 
-            # A loop over the groups in the chosen taxonomic level
-            for tax_group in tax_groups:
+                    else:
+                        color_rgb = "217,217,217"
+                        color_clans = "217;217;217;255"
+                        color_array = [0.85, 0.85, 0.85, 1]
 
-                if tax_group != "Not assigned":
+                    # Add the new group to the main groups array
+                    group_dict = dict()
+                    group_dict['name'] = tax_group
+                    group_dict['size'] = points_size
+                    group_dict['name_size'] = group_names_size
+                    group_dict['color'] = color_clans
+                    group_dict['color_rgb'] = color_rgb
+                    group_dict['color_array'] = color_array
+                    group_dict['is_bold'] = is_bold
+                    group_dict['is_italic'] = is_italic
+                    group_dict['order'] = len(cfg.groups_dict[self.group_by]) - 1
+                    seq_dict = cfg.seq_by_tax_level_dict[tax_level][tax_group].copy()
+                    group_ID = groups.add_group_with_sequences(self.group_by, seq_dict, group_dict)
 
-                    color = color_map[color_index].RGBA[0]
-                    r = color[0]
-                    g = color[1]
-                    b = color[2]
-                    color_rgb = str(r) + "," + str(g) + "," + str(b)
-                    color_clans = str(r) + ";" + str(g) + ";" + str(b) + ";255"
-                    color_array = color / 255
-
-                    color_index += 1
-
-                else:
-                    color_rgb = "217,217,217"
-                    color_clans = "217;217;217;255"
-                    color_array = [0.85, 0.85, 0.85, 1]
-
-                # Add the new group to the main groups array
-                group_dict = dict()
-                group_dict['name'] = tax_group
-                group_dict['size'] = points_size
-                group_dict['name_size'] = group_names_size
-                group_dict['color'] = color_clans
-                group_dict['color_rgb'] = color_rgb
-                group_dict['color_array'] = color_array
-                group_dict['is_bold'] = is_bold
-                group_dict['is_italic'] = is_italic
-                group_dict['order'] = len(cfg.groups_dict) - 1
-                seq_dict = cfg.seq_by_tax_level_dict[tax_level][tax_group].copy()
-                group_ID = groups.add_group_with_sequences(seq_dict, group_dict)
-
-                # Add the new group to the graph
-                self.network_plot.add_group(group_ID)
-
-                # Update the look of the selected data-points according to the new group definitions
-                self.network_plot.add_to_group(cfg.seq_by_tax_level_dict[tax_level][tax_group], group_ID, self.dim_num,
-                                               self.z_indexing_mode, self.color_by)
-
-                self.edit_groups_button.setEnabled(True)
-                self.show_group_names_button.setEnabled(True)
-                self.selection_type_combo.setEnabled(True)
-
-                # The group names are displayed -> update them including the new group
-                if self.is_show_group_names:
-                    self.network_plot.show_group_names('all')
-
+                # Add the new group-type to the group-by combo-box, enable it and update the grouping
+                self.group_by_combo.addItem(self.group_by)
+                self.group_by_combo.setCurrentText(self.group_by)
+                self.group_by_combo.setEnabled(True)
 
     ## Callback functions to deal with mouse and key events
 
@@ -1825,13 +1900,13 @@ class MainWindow(QMainWindow):
             if len(pos_array) == 1 or len(pos_array) == 2 and pos_array[0][0] == pos_array[1][0] \
                     and pos_array[0][1] == pos_array[1][1]:
                 self.network_plot.find_selected_point(self.selection_type, event.pos, self.z_indexing_mode,
-                                                      self.color_by)
+                                                      self.color_by, self.group_by)
 
             # Drag event
             else:
                 self.network_plot.remove_dragging_rectangle()
                 self.network_plot.find_selected_area(self.selection_type, pos_array[0], event.pos,
-                                                     self.z_indexing_mode, self.color_by)
+                                                     self.z_indexing_mode, self.color_by, self.group_by)
 
             # If at least one point is selected -> enable all buttons related to actions on selected points
             if self.network_plot.selected_points != {}:
@@ -1893,7 +1968,8 @@ class MainWindow(QMainWindow):
                 distance = np.linalg.norm(pos_array[-1] - pos_array[-2])
                 if distance >= 1:
                     self.network_plot.move_selected_points(self.view_in_dimensions_num, pos_array[-2],
-                                                           pos_array[-1], self.z_indexing_mode, self.color_by)
+                                                           pos_array[-1], self.z_indexing_mode, self.color_by,
+                                                           self.group_by)
 
         # Move visuals mode
         else:
@@ -1904,7 +1980,7 @@ class MainWindow(QMainWindow):
 
                 # The visual to move is a group name
                 if self.visual_to_move == "text":
-                    self.network_plot.find_group_name_to_move(pos_array[0])
+                    self.network_plot.find_group_name_to_move(pos_array[0], self.group_by)
 
                 ## Disabled currently
                 # The visual to move is a data-point(s)
@@ -1926,7 +2002,7 @@ class MainWindow(QMainWindow):
                     # Move data-point(s)
                     #elif self.visual_to_move == "data":
                         #self.network_plot.move_points(pos_array[-2], pos_array[-1], self.z_indexing_mode,
-                                                    # self.color_by)
+                                                    # self.color_by, self.group_by)
 
     def canvas_mouse_double_click(self, event):
 
@@ -1939,25 +2015,26 @@ class MainWindow(QMainWindow):
 
             # The visual to move is a group name
             if visual_to_edit == "text":
-                group_ID = self.network_plot.find_group_name_to_edit(pos_array)
+                group_ID = self.network_plot.find_group_name_to_edit(pos_array, self.group_by)
 
-                edit_group_name_dlg = gd.EditGroupNameDialog(group_ID, self.network_plot)
+                edit_group_name_dlg = gd.EditGroupNameDialog(self.group_by, group_ID, self.network_plot)
 
                 if edit_group_name_dlg.exec_():
                     group_name, group_name_size, clans_color, rgb_color, color_array, is_bold, is_italic = \
                         edit_group_name_dlg.get_group_info()
 
                     # Update the group information in the main dict
-                    cfg.groups_dict[group_ID]['name'] = group_name
-                    cfg.groups_dict[group_ID]['name_size'] = group_name_size
-                    cfg.groups_dict[group_ID]['color'] = clans_color
-                    cfg.groups_dict[group_ID]['color_rgb'] = rgb_color
-                    cfg.groups_dict[group_ID]['color_array'] = color_array
-                    cfg.groups_dict[group_ID]['is_bold'] = is_bold
-                    cfg.groups_dict[group_ID]['is_italic'] = is_italic
+                    cfg.groups_dict[self.group_by][group_ID]['name'] = group_name
+                    cfg.groups_dict[self.group_by][group_ID]['name_size'] = group_name_size
+                    cfg.groups_dict[self.group_by][group_ID]['color'] = clans_color
+                    cfg.groups_dict[self.group_by][group_ID]['color_rgb'] = rgb_color
+                    cfg.groups_dict[self.group_by][group_ID]['color_array'] = color_array
+                    cfg.groups_dict[self.group_by][group_ID]['is_bold'] = is_bold
+                    cfg.groups_dict[self.group_by][group_ID]['is_italic'] = is_italic
 
                     # Update the plot with the new group parameters
-                    self.network_plot.edit_group_parameters(group_ID, 2, self.z_indexing_mode, self.color_by)
+                    self.network_plot.edit_group_parameters(group_ID, 2, self.z_indexing_mode, self.color_by,
+                                                            self.group_by)
 
     def canvas_CTRL_release(self, event):
         self.ctrl_key_pressed = 0
