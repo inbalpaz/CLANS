@@ -59,6 +59,7 @@ class MainWindow(QMainWindow):
         self.is_show_connections = 0
         self.is_show_selected_names = 0
         self.is_show_group_names = 0
+        self.group_names_display = 'all'
         self.rounds_done = 0
         self.rounds_done_subset = 0
         self.view_in_dimensions_num = cfg.run_params['dimensions_num_for_clustering']
@@ -618,6 +619,7 @@ class MainWindow(QMainWindow):
         self.is_show_connections = 0
         self.is_show_selected_names = 0
         self.is_show_group_names = 0
+        self.group_names_display = 'all'
         self.rounds_done = 0
         self.rounds_done_subset = 0
         self.view_in_dimensions_num = cfg.run_params['dimensions_num_for_clustering']
@@ -1486,6 +1488,9 @@ class MainWindow(QMainWindow):
 
             self.network_plot.hide_group_names()
 
+            if len(cfg.groups_dict[self.group_by]) == 0:
+                self.selection_type_combo.setCurrentIndex(0)
+
             self.network_plot.update_group_by(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
 
             # Enable all groups-related controls (in case there are groups)
@@ -1520,7 +1525,7 @@ class MainWindow(QMainWindow):
     def select_all(self):
 
         self.network_plot.select_all(self.selection_type, self.dim_num, self.z_indexing_mode, self.color_by,
-                                     self.group_by)
+                                     self.group_by, self.is_show_group_names, self.group_names_display)
 
         # Update the selected sequences window
         self.selected_seq_window.update_sequences()
@@ -1536,7 +1541,8 @@ class MainWindow(QMainWindow):
 
     def clear_selection(self):
 
-        self.network_plot.reset_selection(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+        self.network_plot.reset_selection(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by,
+                                          self.is_show_group_names, self.group_names_display)
 
         # Update the selected sequences window
         self.selected_seq_window.update_sequences()
@@ -1638,11 +1644,14 @@ class MainWindow(QMainWindow):
 
         # Show all the group names
         if self.show_groups_combo.currentIndex() == 0:
-            self.network_plot.show_group_names('all')
+            self.group_names_display = 'all'
 
         # Show the selected group names only
         else:
-            self.network_plot.show_group_names('selected')
+            self.group_names_display = 'selected'
+
+        self.network_plot.hide_group_names()
+        self.network_plot.show_group_names(self.group_names_display)
 
     def reset_group_names_positions(self):
         self.network_plot.reset_group_names_positions(self.group_by)
@@ -1900,13 +1909,15 @@ class MainWindow(QMainWindow):
             if len(pos_array) == 1 or len(pos_array) == 2 and pos_array[0][0] == pos_array[1][0] \
                     and pos_array[0][1] == pos_array[1][1]:
                 self.network_plot.find_selected_point(self.selection_type, event.pos, self.z_indexing_mode,
-                                                      self.color_by, self.group_by)
+                                                      self.color_by, self.group_by, self.is_show_group_names,
+                                                      self.group_names_display)
 
             # Drag event
             else:
                 self.network_plot.remove_dragging_rectangle()
-                self.network_plot.find_selected_area(self.selection_type, pos_array[0], event.pos,
-                                                     self.z_indexing_mode, self.color_by, self.group_by)
+                self.network_plot.find_selected_area(self.selection_type, pos_array[0], event.pos, self.z_indexing_mode,
+                                                     self.color_by, self.group_by, self.is_show_group_names,
+                                                     self.group_names_display)
 
             # If at least one point is selected -> enable all buttons related to actions on selected points
             if self.network_plot.selected_points != {}:
@@ -1980,7 +1991,7 @@ class MainWindow(QMainWindow):
 
                 # The visual to move is a group name
                 if self.visual_to_move == "text":
-                    self.network_plot.find_group_name_to_move(pos_array[0], self.group_by)
+                    self.network_plot.find_group_name_to_move(pos_array[0], self.group_by, self.group_names_display)
 
                 ## Disabled currently
                 # The visual to move is a data-point(s)
@@ -1996,7 +2007,7 @@ class MainWindow(QMainWindow):
 
                     # Move group name
                     if self.visual_to_move == "text":
-                        self.network_plot.move_group_name(pos_array[-2], pos_array[-1])
+                        self.network_plot.move_group_name(pos_array[-1], self.group_names_display)
 
                     ## Disabled currently
                     # Move data-point(s)
