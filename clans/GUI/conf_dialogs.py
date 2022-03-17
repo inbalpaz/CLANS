@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import *
 import re
+import numpy as np
 from vispy.color import ColorArray
 import clans.config as cfg
 
@@ -128,15 +129,15 @@ class FruchtermanReingoldConfig(QDialog):
 
 class NodesConfig(QDialog):
 
-    def __init__(self, current_nodes_size, current_nodes_color):
+    def __init__(self, current_nodes_size, current_nodes_color, current_outline_color, current_outline_width):
         super().__init__()
 
-        self.setWindowTitle("Configure data-points")
+        self.setWindowTitle("Configure default visual parameters for data-points")
 
         self.main_layout = QVBoxLayout()
         self.layout = QGridLayout()
 
-        self.nodes_sizes_label = QLabel("Default size:")
+        self.nodes_sizes_label = QLabel("Size:")
         self.nodes_size_combo = QComboBox()
 
         i = 0
@@ -150,17 +151,44 @@ class NodesConfig(QDialog):
         self.layout.addWidget(self.nodes_sizes_label, 0, 0)
         self.layout.addWidget(self.nodes_size_combo, 0, 1)
 
-        self.nodes_color_label = QLabel("Default color:")
+        self.nodes_color_label = QLabel("Color:")
 
         self.nodes_color = ColorArray(current_nodes_color)
         self.nodes_color_box = QLabel(" ")
         self.nodes_color_box.setStyleSheet("background-color: " + self.nodes_color.hex[0])
         self.nodes_color_button = QPushButton("Change color")
-        self.nodes_color_button.pressed.connect(self.change_color)
+        self.nodes_color_button.pressed.connect(self.change_nodes_color)
 
         self.layout.addWidget(self.nodes_color_label, 1, 0)
         self.layout.addWidget(self.nodes_color_box, 1, 1)
         self.layout.addWidget(self.nodes_color_button, 1, 2)
+
+        self.outline_color_label = QLabel("Outline color:")
+
+        self.outline_color = ColorArray(current_outline_color)
+        self.outline_color_box = QLabel(" ")
+        self.outline_color_box.setStyleSheet("background-color: " + self.outline_color.hex[0])
+        self.outline_color_button = QPushButton("Change color")
+        self.outline_color_button.pressed.connect(self.change_outline_color)
+
+        self.layout.addWidget(self.outline_color_label, 2, 0)
+        self.layout.addWidget(self.outline_color_box, 2, 1)
+        self.layout.addWidget(self.outline_color_button, 2, 2)
+
+        self.outline_width_label = QLabel("Outline width:")
+        self.outline_width_combo = QComboBox()
+
+        i = 0
+        width_options = np.arange(0, 3.5, 0.5)
+        for size in width_options:
+            self.outline_width_combo.addItem(str(size))
+            if size == current_outline_width:
+                default_index = i
+            i += 1
+        self.outline_width_combo.setCurrentIndex(default_index)
+
+        self.layout.addWidget(self.outline_width_label, 3, 0)
+        self.layout.addWidget(self.outline_width_combo, 3, 1)
 
         # Add the OK/Cancel standard buttons
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -172,7 +200,7 @@ class NodesConfig(QDialog):
 
         self.setLayout(self.main_layout)
 
-    def change_color(self):
+    def change_nodes_color(self):
 
         dialog = QColorDialog()
 
@@ -183,12 +211,25 @@ class NodesConfig(QDialog):
             self.nodes_color = ColorArray(hex_color)
             self.nodes_color_box.setStyleSheet("background-color: " + hex_color)
 
+    def change_outline_color(self):
+
+        dialog = QColorDialog()
+
+        if dialog.exec_():
+            color = dialog.currentColor()
+            hex_color = color.name()
+
+            self.outline_color = ColorArray(hex_color)
+            self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+
     def get_parameters(self):
 
         size = self.nodes_size_combo.currentText()
         color = self.nodes_color.rgba[0]
+        outline_color = self.outline_color.rgba[0]
+        outline_width = self.outline_width_combo.currentText()
 
-        return size, color
+        return size, color, outline_color, outline_width
 
 
 

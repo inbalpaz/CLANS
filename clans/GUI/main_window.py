@@ -159,7 +159,7 @@ class MainWindow(QMainWindow):
         self.conf_FR_layout_action.triggered.connect(self.conf_FR_layout)
         self.conf_layout_submenu.addAction(self.conf_FR_layout_action)
 
-        self.conf_nodes_action = QAction("Data-points", self)
+        self.conf_nodes_action = QAction("Data-points default parameters", self)
         self.conf_nodes_action.triggered.connect(self.conf_nodes)
         self.conf_menu.addAction(self.conf_nodes_action)
 
@@ -905,7 +905,7 @@ class MainWindow(QMainWindow):
 
     def update_plot(self):
 
-        self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by, self.group_by)
+        self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by)
 
         # Full data mode
         if self.is_subset_mode == 0:
@@ -1038,7 +1038,7 @@ class MainWindow(QMainWindow):
                                                 cfg.sequences_array['y_coor'],
                                                 cfg.sequences_array['z_coor'])
 
-            self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by, self.group_by)
+            self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by)
             # Calculate the angles of each point for future use when having rotations
             self.network_plot.calculate_initial_angles()
 
@@ -1112,7 +1112,7 @@ class MainWindow(QMainWindow):
                 else:
                     # 3D clustering -> need to present the rotated-coordinates
                     if cfg.run_params['dimensions_num_for_clustering'] == 3:
-                        self.network_plot.update_view(2, self.color_by, self.group_by)
+                        self.network_plot.update_view(2, self.color_by)
                     # 2D clustering
                     else:
                         self.network_plot.update_connections(2)
@@ -1177,12 +1177,15 @@ class MainWindow(QMainWindow):
 
     def conf_nodes(self):
 
-        conf_nodes_dlg = cd.NodesConfig(self.network_plot.nodes_size, self.network_plot.nodes_default_color)
+        conf_nodes_dlg = cd.NodesConfig(self.network_plot.nodes_size, self.network_plot.nodes_default_color,
+                                        self.network_plot.nodes_outline_default_color,
+                                        self.network_plot.nodes_outline_width)
 
         if conf_nodes_dlg.exec_():
-            default_size, default_color = conf_nodes_dlg.get_parameters()
+            size, color, outline_color, outline_width = conf_nodes_dlg.get_parameters()
 
-            self.network_plot.set_defaults(default_size, default_color, self.dim_num, self.color_by, self.group_by)
+            self.network_plot.set_defaults(size, color, outline_color, outline_width, self.dim_num, self.color_by,
+                                           self.group_by)
 
     def change_dimensions_view(self):
 
@@ -1198,7 +1201,7 @@ class MainWindow(QMainWindow):
 
             # Not in init file mode
             if self.is_init == 0:
-                self.network_plot.set_3d_view(self.fr_object, self.color_by, self.group_by)
+                self.network_plot.set_3d_view(self.fr_object, self.color_by)
 
         # 2D view
         else:
@@ -1245,7 +1248,7 @@ class MainWindow(QMainWindow):
 
             # The view was already in 2D -> update the rotated positions
             if self.view_in_dimensions_num == 2:
-                self.network_plot.save_rotated_coordinates(2, self.fr_object, self.color_by, self.group_by)
+                self.network_plot.save_rotated_coordinates(2, self.fr_object, self.color_by)
 
             # Set 2D view
             else:
@@ -1278,7 +1281,7 @@ class MainWindow(QMainWindow):
             # Not in init file mode
             if self.is_init == 0:
                 self.network_plot.set_interactive_mode(self.view_in_dimensions_num, self.fr_object,
-                                                       self.color_by, self.group_by)
+                                                       self.color_by)
 
             self.init_button.setEnabled(True)
             self.start_button.setEnabled(True)
@@ -1605,7 +1608,7 @@ class MainWindow(QMainWindow):
             self.z_index_mode_combo.setCurrentIndex(0)
             self.z_index_mode_combo.setEnabled(False)
 
-            self.network_plot.set_subset_view(self.view_in_dimensions_num, self.color_by, self.group_by)
+            self.network_plot.set_subset_view(self.view_in_dimensions_num, self.color_by)
 
             if self.is_show_group_names:
                 self.network_plot.show_group_names('selected')
@@ -1635,7 +1638,7 @@ class MainWindow(QMainWindow):
                                             cfg.sequences_array['y_coor'],
                                             cfg.sequences_array['z_coor'])
 
-            self.network_plot.set_full_view(self.view_in_dimensions_num, self.color_by, self.group_by)
+            self.network_plot.set_full_view(self.view_in_dimensions_num, self.color_by)
 
             if self.is_show_group_names:
                 self.network_plot.show_group_names('all')
@@ -1695,7 +1698,7 @@ class MainWindow(QMainWindow):
         # The user has entered text
         #if dlg.exec_():
             ## Get all the text definitions entered by the user
-            #text, size, color_rgb, color_array = dlg.get_text_info()
+            #text, size, color_array = dlg.get_text_info()
 
     def edit_groups(self):
 
@@ -1706,7 +1709,7 @@ class MainWindow(QMainWindow):
 
             # The order of the groups has changed
             if dlg.changed_order_flag:
-                self.network_plot.update_groups_order(self.dim_num, self.z_indexing_mode, self.group_by)
+                self.network_plot.update_groups_order(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
 
     def open_add_to_group_dialog(self):
 
@@ -1742,7 +1745,7 @@ class MainWindow(QMainWindow):
         # The user defined a new group
         if dlg.exec_():
             # Get all the group definitions entered by the user
-            group_name, group_name_size, size, color_clans, color_rgb, color_array, is_bold, is_italic = \
+            group_name, group_name_size, size, color_clans, color_array, is_bold, is_italic, outline_color = \
                 dlg.get_group_info()
 
             # Add the new group to the main groups array
@@ -1751,11 +1754,11 @@ class MainWindow(QMainWindow):
             group_dict['size'] = size
             group_dict['name_size'] = group_name_size
             group_dict['color'] = color_clans
-            group_dict['color_rgb'] = color_rgb
             group_dict['color_array'] = color_array
             group_dict['is_bold'] = is_bold
             group_dict['is_italic'] = is_italic
             group_dict['order'] = len(cfg.groups_dict[self.group_by]) - 1
+            group_dict['outline_color'] = outline_color
             group_ID = groups.add_group_with_sequences(self.group_by, self.network_plot.selected_points.copy(),
                                                        group_dict)
 
@@ -1846,14 +1849,12 @@ class MainWindow(QMainWindow):
                         r = color[0]
                         g = color[1]
                         b = color[2]
-                        color_rgb = str(r) + "," + str(g) + "," + str(b)
                         color_clans = str(r) + ";" + str(g) + ";" + str(b) + ";255"
                         color_array = color / 255
 
                         color_index += 1
 
                     else:
-                        color_rgb = "217,217,217"
                         color_clans = "217;217;217;255"
                         color_array = [0.85, 0.85, 0.85, 1]
 
@@ -1863,8 +1864,8 @@ class MainWindow(QMainWindow):
                     group_dict['size'] = points_size
                     group_dict['name_size'] = group_names_size
                     group_dict['color'] = color_clans
-                    group_dict['color_rgb'] = color_rgb
                     group_dict['color_array'] = color_array
+                    group_dict['outline_color'] = [0.0, 0.0, 0.0, 1.0]
                     group_dict['is_bold'] = is_bold
                     group_dict['is_italic'] = is_italic
                     group_dict['order'] = len(cfg.groups_dict[self.group_by]) - 1
@@ -2031,14 +2032,13 @@ class MainWindow(QMainWindow):
                 edit_group_name_dlg = gd.EditGroupNameDialog(self.group_by, group_ID, self.network_plot)
 
                 if edit_group_name_dlg.exec_():
-                    group_name, group_name_size, clans_color, rgb_color, color_array, is_bold, is_italic = \
+                    group_name, group_name_size, clans_color, color_array, is_bold, is_italic = \
                         edit_group_name_dlg.get_group_info()
 
                     # Update the group information in the main dict
                     cfg.groups_dict[self.group_by][group_ID]['name'] = group_name
                     cfg.groups_dict[self.group_by][group_ID]['name_size'] = group_name_size
                     cfg.groups_dict[self.group_by][group_ID]['color'] = clans_color
-                    cfg.groups_dict[self.group_by][group_ID]['color_rgb'] = rgb_color
                     cfg.groups_dict[self.group_by][group_ID]['color_array'] = color_array
                     cfg.groups_dict[self.group_by][group_ID]['is_bold'] = is_bold
                     cfg.groups_dict[self.group_by][group_ID]['is_italic'] = is_italic

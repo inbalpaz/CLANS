@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+from vispy.color import ColorArray
 import clans.config as cfg
 import clans.data.groups as gr
 
@@ -126,7 +127,6 @@ class CreateGroupDialog(QDialog):
         self.color_label = QLabel("Color:")
         self.selected_color_label = QLabel(" ")
         self.selected_color = "black"
-        self.rgb_color = "0,0,0,255"
         self.clans_color = "0;0;0;255"
         self.color_array = [0.0, 0.0, 0.0, 1.0]
         self.selected_color_label.setStyleSheet("background-color: " + self.selected_color)
@@ -154,6 +154,19 @@ class CreateGroupDialog(QDialog):
         self.layout.addWidget(self.size_label, 4, 0)
         self.layout.addWidget(self.group_size, 4, 1)
 
+        # Set the outline color of the group's nodes
+        self.outline_color_label = QLabel("Data-points outline color:")
+        self.outline_color_box = QLabel(" ")
+        self.outline_color = ColorArray('black')
+        self.outline_color_box.setStyleSheet("background-color: " + self.outline_color.hex[0])
+
+        self.change_outline_color_button = QPushButton("Change color")
+        self.change_outline_color_button.pressed.connect(self.change_outline_color)
+
+        self.layout.addWidget(self.outline_color_label, 5, 0)
+        self.layout.addWidget(self.outline_color_box, 5, 1)
+        self.layout.addWidget(self.change_outline_color_button, 5, 2)
+
         # Add the OK/Cancel standard buttons
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
@@ -172,10 +185,20 @@ class CreateGroupDialog(QDialog):
             blue = color.blue()
             hex = color.name()
             self.clans_color = str(red) + ";" + str(green) + ";" + str(blue) + ";255"
-            self.rgb_color = color.rgb()
             self.color_array = [red/255, green/255, blue/255, 1.0]
             self.selected_color = hex
             self.selected_color_label.setStyleSheet("background-color: " + self.selected_color)
+
+    def change_outline_color(self):
+
+        dialog = QColorDialog()
+
+        if dialog.exec_():
+            color = dialog.currentColor()
+            hex_color = color.name()
+
+            self.outline_color = ColorArray(hex_color)
+            self.outline_color_box.setStyleSheet("background-color: " + hex_color)
 
     def get_group_info(self):
 
@@ -194,7 +217,8 @@ class CreateGroupDialog(QDialog):
         is_bold = self.bold_checkbox.isChecked()
         is_italic = self.italic_checkbox.isChecked()
 
-        return group_name, group_name_size, size, self.clans_color, self.rgb_color, self.color_array, is_bold, is_italic
+        return group_name, group_name_size, size, self.clans_color, self.color_array, is_bold, is_italic, \
+               self.outline_color.rgba[0]
 
 
 class ManageGroupsDialog(QDialog):
@@ -225,9 +249,8 @@ class ManageGroupsDialog(QDialog):
             name_str = cfg.groups_dict[self.group_by][group_ID]['name'] + " (" + \
                        str(len(cfg.groups_dict[self.group_by][group_ID]['seqIDs'])) + ")"
             item = QListWidgetItem(name_str)
-            item_color = QColor(cfg.groups_dict[self.group_by][group_ID]['color_array'][0]*255,
-                                cfg.groups_dict[self.group_by][group_ID]['color_array'][1]*255,
-                                cfg.groups_dict[self.group_by][group_ID]['color_array'][2]*255)
+            group_color = ColorArray(cfg.groups_dict[self.group_by][group_ID]['color_array'])
+            item_color = QColor(group_color.hex[0])
             item.setForeground(item_color)
             self.groups_list.insertItem(i, item)
 
@@ -272,7 +295,7 @@ class ManageGroupsDialog(QDialog):
         edit_group_dlg = EditGroupDialog(self.group_by, group_ID, self.network_plot)
 
         if edit_group_dlg.exec_():
-            group_name, group_size, group_name_size, clans_color, rgb_color, color_array, is_bold, is_italic, \
+            group_name, group_size, group_name_size, clans_color, color_array, outline_color, is_bold, is_italic, \
             removed_dict = self.get_group_info(edit_group_dlg, group_ID)
 
             # Update the group information in the main dict
@@ -280,8 +303,8 @@ class ManageGroupsDialog(QDialog):
             cfg.groups_dict[self.group_by][group_ID]['size'] = group_size
             cfg.groups_dict[self.group_by][group_ID]['name_size'] = group_name_size
             cfg.groups_dict[self.group_by][group_ID]['color'] = clans_color
-            cfg.groups_dict[self.group_by][group_ID]['color_rgb'] = rgb_color
             cfg.groups_dict[self.group_by][group_ID]['color_array'] = color_array
+            cfg.groups_dict[self.group_by][group_ID]['outline_color'] = outline_color
             cfg.groups_dict[self.group_by][group_ID]['is_bold'] = is_bold
             cfg.groups_dict[self.group_by][group_ID]['is_italic'] = is_italic
 
@@ -295,7 +318,7 @@ class ManageGroupsDialog(QDialog):
                        str(len(cfg.groups_dict[self.group_by][group_ID]['seqIDs'])) + ")"
             item = self.groups_list.currentItem()
             item.setText(name_str)
-            item.setForeground(edit_group_dlg.color)
+            item.setForeground(QColor(edit_group_dlg.color.hex[0]))
 
             # Update the plot with the removed sequences
             if len(removed_dict) > 0:
@@ -320,9 +343,10 @@ class ManageGroupsDialog(QDialog):
 
         # Get the group color
         group_color = edit_group_dlg.color
-        rgb_color = group_color.rgb()
-        clans_color = str(group_color.red()) + ";" + str(group_color.green()) + ";" + str(group_color.blue()) + ";255"
-        color_array = [group_color.red() / 255, group_color.green() / 255, group_color.blue() / 255, 1.0]
+        clans_color = str(group_color.RGBA[0][0]) + ";" + str(group_color.RGBA[0][1]) + ";" + \
+                      str(group_color.RGBA[0][2]) + ";255"
+        color_array = group_color.rgba[0]
+        outline_color = edit_group_dlg.outline_color.rgba[0]
 
         # Get the selected group-name size
         group_name_size = edit_group_dlg.group_name_size.currentText()
@@ -334,7 +358,7 @@ class ManageGroupsDialog(QDialog):
         # Get a dictionary of the sequences that were removed from the group
         removed_dict = edit_group_dlg.removed_seq_dict
 
-        return group_name, group_size, group_name_size, clans_color, rgb_color, color_array, is_bold, is_italic, \
+        return group_name, group_size, group_name_size, clans_color, color_array, outline_color, is_bold, is_italic, \
                removed_dict
 
     def delete_group(self):
@@ -478,11 +502,8 @@ class EditGroupDialog(QDialog):
         # Set the color of the group's nodes and names
         self.color_label = QLabel("Group color:")
         self.color_box = QLabel(" ")
-        self.color = QColor(cfg.groups_dict[group_by][group_ID]['color_array'][0] * 255,
-                            cfg.groups_dict[group_by][group_ID]['color_array'][1] * 255,
-                            cfg.groups_dict[group_by][group_ID]['color_array'][2] * 255)
-
-        self.color_box.setStyleSheet("background-color: " + self.color.name())
+        self.color = ColorArray(cfg.groups_dict[group_by][group_ID]['color_array'])
+        self.color_box.setStyleSheet("background-color: " + self.color.hex[0])
 
         self.change_color_button = QPushButton("Change color")
         self.change_color_button.pressed.connect(self.change_color)
@@ -506,6 +527,19 @@ class EditGroupDialog(QDialog):
 
         self.grid_layout.addWidget(self.size_label, 4, 0)
         self.grid_layout.addWidget(self.group_size, 4, 1)
+
+        # Set the outline color of the group's nodes
+        self.outline_color_label = QLabel("Data-points outline color:")
+        self.outline_color_box = QLabel(" ")
+        self.outline_color = ColorArray(cfg.groups_dict[group_by][group_ID]['outline_color'])
+        self.outline_color_box.setStyleSheet("background-color: " + self.outline_color.hex[0])
+
+        self.change_outline_color_button = QPushButton("Change color")
+        self.change_outline_color_button.pressed.connect(self.change_outline_color)
+
+        self.grid_layout.addWidget(self.outline_color_label, 5, 0)
+        self.grid_layout.addWidget(self.outline_color_box, 5, 1)
+        self.grid_layout.addWidget(self.change_outline_color_button, 5, 2)
 
         self.parameters_layout.addLayout(self.grid_layout)
         self.parameters_layout.addStretch()
@@ -549,8 +583,18 @@ class EditGroupDialog(QDialog):
     def change_color(self):
         dialog = QColorDialog()
         if dialog.exec_():
-            self.color = dialog.currentColor()
-            self.color_box.setStyleSheet("background-color: " + self.color.name())
+            color = dialog.currentColor()
+            hex_color = color.name()
+            self.color = ColorArray(hex_color)
+            self.color_box.setStyleSheet("background-color: " + hex_color)
+
+    def change_outline_color(self):
+        dialog = QColorDialog()
+        if dialog.exec_():
+            color = dialog.currentColor()
+            hex_color = color.name()
+            self.outline_color = ColorArray(hex_color)
+            self.outline_color_box.setStyleSheet("background-color: " + hex_color)
 
     def remove_from_group(self):
         row_index = self.members_list.currentRow()
@@ -673,7 +717,6 @@ class EditGroupNameDialog(QDialog):
 
         # Get the group color
         group_color = self.color
-        rgb_color = group_color.rgb()
         clans_color = str(group_color.red()) + ";" + str(group_color.green()) + ";" + str(group_color.blue()) + ";255"
         color_array = [group_color.red() / 255, group_color.green() / 255, group_color.blue() / 255, 1.0]
 
@@ -681,7 +724,7 @@ class EditGroupNameDialog(QDialog):
         is_bold = self.bold_checkbox.isChecked()
         is_italic = self.italic_checkbox.isChecked()
 
-        return group_name, group_name_size, clans_color, rgb_color, color_array, is_bold, is_italic
+        return group_name, group_name_size, clans_color, color_array, is_bold, is_italic
 
 
 

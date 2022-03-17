@@ -90,8 +90,8 @@ sequences_discrete_params = dict()
 # - 'seqIDs' is a dictionary holding the indices of the sequences belonging to each group
 # - 'order' (starting from -1) determines which group is displayed in front of the other (-1 = the most front)
 # - 'color' is the old clans format: 225;32;100;255
-# - 'color_rgb' is the new RGB format: 225,32,100
 # - 'color_array' is an array of size 4 to be used by Vispy
+# - 'outline_color': array of size 4 for the group node's outline color
 groups_dict = dict()
 groups_dict['input_file'] = dict()
 groups_dict['manual'] = dict()

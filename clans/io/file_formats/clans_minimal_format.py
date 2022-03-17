@@ -180,7 +180,6 @@ class ClansMinimalFormat:
                             elif k == 'color':
                                 d[k] = v
                                 color_arr = v.split(';')
-                                d['color_rgb'] = color_arr[0] + "," + color_arr[1] + "," + color_arr[2] + ",255"
                                 d['color_array'] = []
                                 for i in range(3):
                                     d['color_array'].append(int(color_arr[i]) / 255)
