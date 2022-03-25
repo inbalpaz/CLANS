@@ -192,6 +192,7 @@ class DelimitedFormat:
 
         output.close()
 
+    # Read a metadata file with one or more numeric parameters
     def read_metadata(self, file_path):
 
         param_name = ""
@@ -208,12 +209,14 @@ class DelimitedFormat:
                 error = "The file is invalid.\nPlease upload a tab-delimited file containing at least two columns: " \
                         "sequenceID, parameter_1.\nThe file should contain a header line with the parameter names\n" \
                         "and may contain more than one parameter column."
-                return param_name, error
+                return sequences_params_dict, error
 
             fields_num = len(header)
 
             if fields_num < 2:
-                error = "The file is not valid."
+                error = "The file is invalid.\nPlease upload a tab-delimited file containing at least two columns: " \
+                        "sequenceID, parameter_1.\nThe file should contain a header line with the parameter names\n" \
+                        "and may contain more than one parameter column."
                 return sequences_params_dict, error
 
             col_num = len(header)
@@ -232,12 +235,31 @@ class DelimitedFormat:
                 params.append(param_name)
                 sequences_params_dict[param_name] = dict()
 
+            seq_index = 0
             for row in reader:
                 seq_ID = row[0]
 
                 for i in range(1, col_num):
                     value = row[i]
-                    sequences_params_dict[params[i-1]][seq_ID] = value
+
+                    # Sequence ID is given as serial number
+                    if seq_ID == str(seq_index):
+                        sequences_params_dict[params[i-1]][seq_index] = value
+
+                    else:
+                        # Sequence ID matches the ID taken from the input file
+                        if seq_ID in cfg.sequences_ID_to_index:
+                            sequences_params_dict[params[i-1]][cfg.sequences_ID_to_index[seq_ID]] = value
+
+                        # Unknown sequence ID -> print error
+                        else:
+                            error = "Unknown sequence_IDs.\n" \
+                                    "The sequence_IDs can be provided either as serial numbers\n" \
+                                    "(starting from 0, in the order of the FASTA sequences)\n" \
+                                    "or as sequence names (FASTA headers up to space character)."
+                            return sequences_params_dict, error
+
+                seq_index += 1
 
         # Verify that the provided number of sequences equals the dataset
         if len(sequences_params_dict[params[0]]) != cfg.run_params['total_sequences_num']:
@@ -246,6 +268,87 @@ class DelimitedFormat:
 
         # The file is valid, no error
         return sequences_params_dict, error
+
+    # Read a metadata file with one or more group-categories with pre-defined groups
+    def read_metadata_groups(self, file_path):
+
+        group_category = ""
+        error = ""
+        categories = []
+        groups_dict = dict()
+
+        # Open and read the delimited text file
+        with open(file_path) as infile:
+            reader = csv.reader(infile, delimiter='\t')
+
+            header = next(reader)
+            if header is None:
+                error = "The file is invalid.\nPlease upload a tab-delimited file containing at least two columns: " \
+                        "Sequence_ID, Grouping_category.\nThe file should contain a header line with the category " \
+                        "names and may contain more than one grouping-category column."
+                return groups_dict, error
+
+            fields_num = len(header)
+
+            if fields_num < 2:
+                error = "The file is invalid.\n" \
+                        "Please upload a tab-delimited file containing at least two columns:\n" \
+                        "Sequence_ID, Grouping_category.\n" \
+                        "The file should contain a header line with the category names\n" \
+                        "and may contain more than one grouping-category column."
+                return groups_dict, error
+
+            col_num = len(header)
+            for i in range(1, col_num):
+                group_category = header[i]
+
+                categories.append(group_category)
+                groups_dict[group_category] = dict()
+
+            seq_index = 0
+            for row in reader:
+                seq_ID = row[0]
+
+                for i in range(1, col_num):
+                    group = row[i]
+
+                    if group == "":
+                        group = 'Not assigned'
+
+                    # First time this group appears
+                    if group not in groups_dict[categories[i-1]]:
+                        groups_dict[categories[i-1]][group] = dict()
+
+                    # Sequence ID is given as serial number
+                    if seq_ID == str(seq_index):
+                        groups_dict[categories[i-1]][group][seq_index] = 1
+
+                    else:
+                        # Sequence ID matches the ID taken from the input file
+                        if seq_ID in cfg.sequences_ID_to_index:
+                            groups_dict[categories[i - 1]][group][cfg.sequences_ID_to_index[seq_ID]] = 1
+
+                        # Unknown sequence ID -> print error
+                        else:
+                            error = "Unknown sequence_IDs.\n" \
+                                    "The sequence_IDs can be provided either as serial numbers\n" \
+                                    "(starting from 0, in the order of the FASTA sequences)\n" \
+                                    "or as sequence names (FASTA headers up to space character)."
+                            return groups_dict, error
+
+                    seq_index += 1
+
+            # Verify that the provided number of sequences equals the dataset
+            if seq_index != cfg.run_params['total_sequences_num']:
+                error = "The metadata file in invalid:\n" \
+                        "The number of povided sequences does not match the original dataset."
+
+        # The file is valid, no error
+        return groups_dict, error
+
+
+
+
 
 
 

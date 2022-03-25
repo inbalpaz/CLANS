@@ -79,9 +79,6 @@ sequences_ID_to_index = dict()
 # A dictionary of lists containing numeric parameters (for example: 'sequence length') for each sequence
 sequences_numeric_params = dict()
 
-# A dictionary of lists containing user-defined discrete parameters for each sequence (to be used as group-by)
-sequences_discrete_params = dict()
-
 # an hierarchic dictionary containing several levels, for holding all the groups information
 # Upper level: grouping type (input_file, manual, taxonomy, user-defined)
 # Second level: Group_ID

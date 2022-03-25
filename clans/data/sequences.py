@@ -44,16 +44,12 @@ def add_numeric_params(params_dict):
 
     for param_name in params_dict:
 
-        # Check whether the provided sequence_ID is the serial number - in this case it is already sorted
-        keys = list(params_dict[param_name].keys())
-        if keys[0] == '0' and keys[1] == '1' and keys[2] == '2':
-            values_list = list(params_dict[param_name].values())
+        # Sort the sequence indices in case they were originally provided by sequence_ID, not necessarily ordered
+        sorted_keys = sorted(params_dict[param_name].keys())
+        values_list = []
 
-        else:
-            items_list = sorted(params_dict[param_name].items(), key=lambda item: cfg.sequences_ID_to_index[item[0]])
-            values_list = []
-            for item in items_list:
-                values_list.append(item[1])
+        for key in sorted_keys:
+            values_list.append(params_dict[param_name][key])
 
         # If parameter already exists: add a serial number to it
         if param_name in cfg.sequences_numeric_params:

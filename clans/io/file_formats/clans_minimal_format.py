@@ -184,6 +184,7 @@ class ClansMinimalFormat:
                                 for i in range(3):
                                     d['color_array'].append(int(color_arr[i]) / 255)
                                 d['color_array'].append(1.0)
+                                d['outline_color'] = [0.0, 0.0, 0.0, 1.0]
                             else:
                                 d[k] = v
                                 d['order'] = order

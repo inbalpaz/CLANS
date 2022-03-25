@@ -39,6 +39,45 @@ def create_artificial_metadata_file_with_seq_index(file_name):
     output.close()
 
 
+def create_artificial_metadata_groups_file_with_seq_name(file_name):
+
+    dir_path = "/Users/ipaz/ownCloud/Documents/CLANS-Python/input_files/meta_data/"
+    file_path = dir_path + file_name + "_metadata_groups_seq_name.txt"
+
+    output = open(file_path, "w")
+
+    output.write("Sequence_ID\tCategory_1\n")
+
+    groups = ['group1', 'group2', 'group3', 'group4', 'group5', 'group6', 'group7']
+    for seq_index in range(cfg.run_params['total_sequences_num']):
+
+        group_index = generate_rand_int(7)
+        seq_id = cfg.sequences_array['seq_ID'][seq_index]
+        line = seq_id + "\t" + groups[group_index] + "\n"
+        output.write(line)
+
+    output.close()
+
+
+def create_artificial_metadata_groups_file_with_seq_index(file_name):
+
+    dir_path = "/Users/ipaz/ownCloud/Documents/CLANS-Python/input_files/meta_data/"
+    file_path = dir_path + file_name + "_metadata_groups_seq_index.txt"
+
+    output = open(file_path, "w")
+
+    output.write("Sequence_ID\tCategory_1\n")
+
+    groups = ['group1', 'group2', 'group3', 'group4', 'group5', 'group6', 'group7', 'group8']
+    for seq_index in range(cfg.run_params['total_sequences_num']):
+
+        group_index = generate_rand_int(8)
+        line = str(seq_index) + "\t" + groups[group_index] + "\n"
+        output.write(line)
+
+    output.close()
+
+
 def generate_rand_int(n):
     rand = random.randrange(n)
     return rand

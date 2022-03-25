@@ -22,7 +22,7 @@ import clans.GUI.metadata_dialogs as md
 #import clans.GUI.text_dialogs as td
 import clans.GUI.conf_dialogs as cd
 import clans.graphics.colors as colors
-import clans.io.try_io as try_io
+#import clans.io.try_io as try_io
 
 
 class Button(QPushButton):
@@ -169,17 +169,17 @@ class MainWindow(QMainWindow):
         self.color_by_submenu = self.tools_menu.addMenu("Color data by:")
 
         # Group by taxonomy action
-        self.group_by_tax_action = QAction("Taxonomy", self)
+        self.group_by_tax_action = QAction("NCBI Taxonomy", self)
         self.group_by_tax_action.setEnabled(False)
         self.group_by_tax_action.triggered.connect(self.group_by_taxonomy)
 
         self.group_by_submenu.addAction(self.group_by_tax_action)
 
         # Group-by user-defined param action
-        self.group_by_param_action = QAction("User-defined parameter", self)
-        self.group_by_param_action.triggered.connect(self.open_group_by_param_dialog)
+        self.add_groups_from_metadata_action = QAction("Add custom grouping category", self)
+        self.add_groups_from_metadata_action.triggered.connect(self.add_groups_from_metadata)
 
-        self.group_by_submenu.addAction(self.group_by_param_action)
+        self.group_by_submenu.addAction(self.add_groups_from_metadata_action)
 
         # Color by seq_length action
         self.color_by_length_action = QAction("Sequence length", self)
@@ -189,16 +189,10 @@ class MainWindow(QMainWindow):
         self.color_by_submenu.addAction(self.color_by_length_action)
 
         # Color-by user-defined param action
-        self.color_by_param_action = QAction("User-defined parameter", self)
+        self.color_by_param_action = QAction("Add/Configure custom parameter", self)
         self.color_by_param_action.triggered.connect(self.open_color_by_param_dialog)
 
         self.color_by_submenu.addAction(self.color_by_param_action)
-
-        # Upload Metadata file action
-        #self.upload_metadata_action = QAction("Upload Metadata file", self)
-        #self.upload_metadata_action.triggered.connect(self.upload_metadata_file)
-
-        #self.tools_menu.addAction(self.upload_metadata_action)
 
         # Create the canvas (the graph area)
         self.canvas = scene.SceneCanvas(size=(800, 750), keys='interactive', show=True, bgcolor='w')
@@ -727,8 +721,8 @@ class MainWindow(QMainWindow):
                 self.group_by_tax_action.setEnabled(True)
 
             ## Debug
-            #try_io.create_artificial_metadata_file_with_seq_name(self.file_name)
-            #try_io.create_artificial_metadata_file_with_seq_index(self.file_name)
+            #try_io.create_artificial_metadata_groups_file_with_seq_name(self.file_name)
+            #try_io.create_artificial_metadata_groups_file_with_seq_index(self.file_name)
 
         else:
             # Remove the 'loading file' message from the scene and put an error message instead
@@ -1424,9 +1418,6 @@ class MainWindow(QMainWindow):
 
                 self.z_index_mode_combo.setEnabled(False)
 
-    def open_group_by_param_dialog(self):
-        pass
-
     def color_by_user_param(self, param):
 
         min_param_color = cfg.sequences_numeric_params[param]['min_color']
@@ -1876,6 +1867,77 @@ class MainWindow(QMainWindow):
                 self.group_by_combo.addItem(self.group_by)
                 self.group_by_combo.setCurrentText(self.group_by)
                 self.group_by_combo.setEnabled(True)
+
+    def add_groups_from_metadata(self):
+
+        # Open the 'Add custom grouping category' dialog
+        dlg = md.GroupByParamDialog(self.network_plot)
+
+        if dlg.exec_():
+            groups_dict, points_size, group_names_size, is_bold, is_italic, is_error = dlg.get_categories()
+
+            if not is_error:
+
+                for category in groups_dict:
+
+                    # This category is new
+                    if category not in cfg.groups_dict:
+                        cfg.groups_dict[category] = dict()
+                        cfg.sequences_in_groups[category] = np.full(cfg.run_params['total_sequences_num'], -1)
+
+                        # Generate distinct colors according to the number of groups in the chosen level
+                        if "Not assigned" in groups_dict[category]:
+                            colors_num = len(groups_dict[category]) - 1
+                        else:
+                            colors_num = len(groups_dict[category])
+                        color_map = colors.generate_distinct_colors(colors_num)
+                        color_index = 0
+
+                        # Sort the groups alphabetically and move the 'Not assigned' group to the end
+                        sorted_groups = sorted(groups_dict[category])
+
+                        # If there is group 'Not assigned', move it to the end
+                        if "Not assigned" in groups_dict[category]:
+                            sorted_groups.append(sorted_groups.pop(sorted_groups.index('Not assigned')))
+
+                        # A loop over the groups in the chosen taxonomic level
+                        for group in sorted_groups:
+
+                            if group != "Not assigned":
+
+                                color = color_map[color_index].RGBA[0]
+                                r = color[0]
+                                g = color[1]
+                                b = color[2]
+                                color_clans = str(r) + ";" + str(g) + ";" + str(b) + ";255"
+                                color_array = color / 255
+
+                                color_index += 1
+
+                            else:
+                                color_clans = "217;217;217;255"
+                                color_array = [0.85, 0.85, 0.85, 1]
+
+                            # Add the new group to the main groups array
+                            group_dict = dict()
+                            group_dict['name'] = group
+                            group_dict['size'] = points_size
+                            group_dict['name_size'] = group_names_size
+                            group_dict['color'] = color_clans
+                            group_dict['color_array'] = color_array
+                            group_dict['outline_color'] = [0.0, 0.0, 0.0, 1.0]
+                            group_dict['is_bold'] = is_bold
+                            group_dict['is_italic'] = is_italic
+                            group_dict['order'] = len(cfg.groups_dict[category]) - 1
+                            seq_dict = groups_dict[category][group].copy()
+                            group_ID = groups.add_group_with_sequences(category, seq_dict, group_dict)
+
+                        # Add the new group-type to the group-by combo-box, enable it and update the grouping
+                        self.group_by_combo.addItem(category)
+                        self.group_by_combo.setCurrentText(category)
+                        self.group_by_combo.setEnabled(True)
+
+                self.group_by = category
 
     ## Callback functions to deal with mouse and key events
 

@@ -206,6 +206,167 @@ class GroupByTaxDialog(QDialog):
         return tax_level, points_size, group_names_size, is_bold, is_italic
 
 
+class GroupByParamDialog(QDialog):
+
+    def __init__(self, net_plot_object):
+        super().__init__()
+
+        self.added_categories = []
+        self.groups_dict = dict()
+        self.is_error = 0
+
+        self.threadpool = QThreadPool()
+
+        self.setWindowTitle("Add custom grouping category")
+
+        self.main_layout = QVBoxLayout()
+        self.layout = QGridLayout()
+        self.colors_layout = QGridLayout()
+
+        self.file_label = QLabel("Upload a metadata file with pre-defined groups")
+
+        self.upload_file_button = QPushButton("Upload file")
+        self.upload_file_button.pressed.connect(self.upload_file)
+
+        self.layout.addWidget(self.file_label, 0, 0, 1, 2)
+        self.layout.addWidget(self.upload_file_button, 1, 0)
+
+        self.added_params_label = QLabel()
+        self.layout.addWidget(self.added_params_label, 2, 0, 1, 2)
+
+        # Add general parameters for groups presentation (hided at first)
+        self.space_label = QLabel(" ")
+        self.layout.addWidget(self.space_label, 3, 0, 1, 2)
+        self.group_params_label = QLabel("General parameters for the groups:")
+        self.layout.addWidget(self.group_params_label, 4, 0, 1, 2)
+
+        # Set the data points size
+        self.points_size_label = QLabel("Data-points size:")
+        default_size = net_plot_object.nodes_size
+        self.points_size_combo = QComboBox()
+
+        i = 0
+        for size in range(4, 21):
+            self.points_size_combo.addItem(str(size))
+            if size == default_size:
+                default_index = i
+            i += 1
+        self.points_size_combo.setCurrentIndex(default_index)
+
+        self.layout.addWidget(self.points_size_label, 5, 0)
+        self.layout.addWidget(self.points_size_combo, 5, 1)
+
+        # Set the size of the group names
+        self.group_name_size_label = QLabel("Group names text size:")
+        default_size = net_plot_object.text_size
+        self.group_name_size = QComboBox()
+
+        i = 0
+        for size in range(5, 21):
+            self.group_name_size.addItem(str(size))
+            if size == int(default_size):
+                default_index = i
+            i += 1
+        self.group_name_size.setCurrentIndex(default_index)
+
+        self.layout.addWidget(self.group_name_size_label, 6, 0)
+        self.layout.addWidget(self.group_name_size, 6, 1)
+
+        # Add Bold and Italic options
+        self.bold_label = QLabel("Bold")
+        self.bold_checkbox = QCheckBox()
+        self.bold_checkbox.setChecked(True)
+        self.bold_layout = QHBoxLayout()
+        self.bold_layout.addWidget(self.bold_checkbox)
+        self.bold_layout.addWidget(self.bold_label)
+        self.bold_layout.addStretch()
+
+        self.italic_label = QLabel("Italic")
+        self.italic_checkbox = QCheckBox()
+        self.italic_checkbox.setChecked(False)
+        self.italic_layout = QHBoxLayout()
+        self.italic_layout.addWidget(self.italic_checkbox)
+        self.italic_layout.addWidget(self.italic_label)
+        self.italic_layout.addStretch()
+
+        self.layout.addLayout(self.bold_layout, 7, 0)
+        self.layout.addLayout(self.italic_layout, 7, 1)
+
+        # Hide all the groups-configuration controls (show them after reading the file)
+        self.added_params_label.hide()
+        self.group_params_label.hide()
+        self.points_size_label.hide()
+        self.points_size_combo.hide()
+        self.group_name_size_label.hide()
+        self.group_name_size.hide()
+        self.bold_checkbox.hide()
+        self.bold_label.hide()
+        self.italic_checkbox.hide()
+        self.italic_label.hide()
+
+        self.main_layout.addLayout(self.layout)
+
+        # Add the OK/Cancel standard buttons
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        self.main_layout.addWidget(self.button_box)
+
+        self.setLayout(self.main_layout)
+
+    def upload_file(self):
+        opened_file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "All files (*.*)")
+
+        if opened_file:
+            file_worker = io.ReadMetadataGroupsWorker(opened_file)
+            file_worker.signals.finished.connect(self.update_categories)
+
+            # Execute worker
+            self.threadpool.start(file_worker)
+
+    def update_categories(self, groups_dict, error):
+
+        if error == "":
+            self.is_error = 0
+            self.groups_dict = groups_dict
+            added_categories_str = ""
+            for category in self.groups_dict:
+                self.added_categories.append(category)
+                added_categories_str += category + "\n"
+            added_categories_str.strip()
+
+            self.file_label.setText("Added grouping categories: ")
+            self.file_label.setStyleSheet("color: black")
+            self.upload_file_button.hide()
+            self.added_params_label.setText(added_categories_str)
+            self.added_params_label.setStyleSheet("color: maroon")
+            self.added_params_label.show()
+            self.group_params_label.show()
+            self.points_size_label.show()
+            self.points_size_combo.show()
+            self.group_name_size_label.show()
+            self.group_name_size.show()
+            self.bold_checkbox.show()
+            self.bold_label.show()
+            self.italic_checkbox.show()
+            self.italic_label.show()
+
+        else:
+            self.is_error = 1
+            self.file_label.setText(error)
+            self.file_label.setStyleSheet("color: red")
+            self.upload_file_button.setText("Upload new file")
+
+    def get_categories(self):
+
+        points_size = self.points_size_combo.currentText()
+        group_names_size = self.group_name_size.currentText()
+        is_bold = self.bold_checkbox.isChecked()
+        is_italic = self.italic_checkbox.isChecked()
+
+        return self.groups_dict, points_size, group_names_size, is_bold, is_italic, self.is_error
+
+
 class ColorByLengthDialog(QDialog):
 
     def __init__(self):
@@ -447,7 +608,6 @@ class ColorByParamDialog(QDialog):
             self.max_color_button.show()
 
         else:
-            print(error)
             self.message_label.setText(error)
             self.message_label.show()
 

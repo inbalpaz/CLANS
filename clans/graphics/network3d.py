@@ -1202,6 +1202,8 @@ class Network3D:
             text_vis.font_size = cfg.groups_dict[group_by][group_ID]['name_size']
             text_vis.anchors = ['left', 'center']
             text_vis.color = cfg.groups_dict[group_by][group_ID]['color_array']
+            text_vis.bold = cfg.groups_dict[group_by][group_ID]['is_bold']
+            text_vis.italic = cfg.groups_dict[group_by][group_ID]['is_italic']
             text_vis.interactive = True
             self.groups_text_visual[group_ID] = text_vis
 
@@ -1217,6 +1219,8 @@ class Network3D:
         text_vis.anchors = ['left', 'center']
         text_vis.color = cfg.groups_dict[group_by][group_ID]['color_array']
         text_vis.font_size = cfg.groups_dict[group_by][group_ID]['name_size']
+        text_vis.bold = cfg.groups_dict[group_by][group_ID]['is_bold']
+        text_vis.italic = cfg.groups_dict[group_by][group_ID]['is_italic']
         text_vis.interactive = True
         self.groups_text_visual[group_ID] = text_vis
 
@@ -1233,6 +1237,8 @@ class Network3D:
         text_vis.anchors = ['left', 'center']
         text_vis.color = cfg.groups_dict[group_by][group_ID]['color_array']
         text_vis.font_size = cfg.groups_dict[group_by][group_ID]['name_size']
+        text_vis.bold = cfg.groups_dict[group_by][group_ID]['is_bold']
+        text_vis.italic = cfg.groups_dict[group_by][group_ID]['is_italic']
         text_vis.interactive = True
         self.selected_groups_text_visual[group_ID] = text_vis
 

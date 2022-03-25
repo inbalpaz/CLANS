@@ -97,6 +97,29 @@ class ReadMetadataWorker(QRunnable):
         self.get_metadata()
 
 
+class ReadMetadataGroupsSignals(QObject):
+    finished = pyqtSignal(dict, str)
+
+
+class ReadMetadataGroupsWorker(QRunnable):
+    def __init__(self, file):
+        super().__init__()
+
+        self.signals = ReadMetadataGroupsSignals()
+        self.file = file
+
+    def get_metadata(self):
+
+        format_obj = tab.DelimitedFormat()
+        groups_dict, error = format_obj.read_metadata_groups(self.file)
+
+        self.signals.finished.emit(groups_dict, error)
+
+    @pyqtSlot()
+    def run(self):
+        self.get_metadata()
+
+
 class TaxonomySignals(QObject):
     finished = pyqtSignal(str)
 
