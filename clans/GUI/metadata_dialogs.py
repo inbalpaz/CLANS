@@ -30,15 +30,21 @@ class GroupByTaxDialog(QDialog):
         self.tax_level_combo.addItem("Phylum")
         self.tax_level_combo.addItem("Kingdom")
         self.tax_level_combo.addItem("Domain")
+        self.tax_level_combo.currentIndexChanged.connect(self.change_groups_num)
 
         self.grid_layout.addWidget(self.tax_level_label, 2, 0)
         self.grid_layout.addWidget(self.tax_level_combo, 2, 1)
 
+        self.groups_num_label = QLabel()
+        self.groups_num_label.setStyleSheet("color: maroon; font-size: 10px")
+
+        self.grid_layout.addWidget(self.groups_num_label, 3, 1)
+
         # Add general parameters for groups presentation (hided at first)
         self.space_label = QLabel(" ")
-        self.grid_layout.addWidget(self.space_label, 3, 0, 1, 2)
+        self.grid_layout.addWidget(self.space_label, 4, 0, 1, 2)
         self.group_params_label = QLabel("General parameters for the groups:")
-        self.grid_layout.addWidget(self.group_params_label, 4, 0, 1, 2)
+        self.grid_layout.addWidget(self.group_params_label, 5, 0, 1, 2)
 
         # Set the data points size
         self.points_size_label = QLabel("Data-points size:")
@@ -53,8 +59,8 @@ class GroupByTaxDialog(QDialog):
             i += 1
         self.points_size_combo.setCurrentIndex(default_index)
 
-        self.grid_layout.addWidget(self.points_size_label, 5, 0)
-        self.grid_layout.addWidget(self.points_size_combo, 5, 1)
+        self.grid_layout.addWidget(self.points_size_label, 6, 0)
+        self.grid_layout.addWidget(self.points_size_combo, 6, 1)
 
         # Set the size of the group names
         self.group_name_size_label = QLabel("Group names text size:")
@@ -69,8 +75,8 @@ class GroupByTaxDialog(QDialog):
             i += 1
         self.group_name_size.setCurrentIndex(default_index)
 
-        self.grid_layout.addWidget(self.group_name_size_label, 6, 0)
-        self.grid_layout.addWidget(self.group_name_size, 6, 1)
+        self.grid_layout.addWidget(self.group_name_size_label, 7, 0)
+        self.grid_layout.addWidget(self.group_name_size, 7, 1)
 
         # Add Bold and Italic options
         self.bold_label = QLabel("Bold")
@@ -89,8 +95,8 @@ class GroupByTaxDialog(QDialog):
         self.italic_layout.addWidget(self.italic_label)
         self.italic_layout.addStretch()
 
-        self.grid_layout.addLayout(self.bold_layout, 7, 0)
-        self.grid_layout.addLayout(self.italic_layout, 7, 1)
+        self.grid_layout.addLayout(self.bold_layout, 8, 0)
+        self.grid_layout.addLayout(self.italic_layout, 8, 1)
 
         self.main_layout.addLayout(self.grid_layout)
 
@@ -111,6 +117,7 @@ class GroupByTaxDialog(QDialog):
             # Hide all the further widgets until the search finishes
             self.tax_level_label.hide()
             self.tax_level_combo.hide()
+            self.groups_num_label.hide()
             self.space_label.hide()
             self.group_params_label.hide()
             self.points_size_label.hide()
@@ -131,6 +138,9 @@ class GroupByTaxDialog(QDialog):
                 self.message_label.setText(text)
                 self.message_label.setStyleSheet("color: maroon; font-size: 14px;")
 
+                groups_num_str = str(len(cfg.seq_by_tax_level_dict['Family'])) + " groups"
+                self.groups_num_label.setText(groups_num_str)
+
                 # Add the OK/Cancel standard buttons
                 self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
                 self.button_box.accepted.connect(self.accept)
@@ -146,6 +156,7 @@ class GroupByTaxDialog(QDialog):
                 # Hide all the widgets
                 self.tax_level_label.hide()
                 self.tax_level_combo.hide()
+                self.groups_num_label.hide()
                 self.space_label.hide()
                 self.group_params_label.hide()
                 self.points_size_label.hide()
@@ -166,11 +177,15 @@ class GroupByTaxDialog(QDialog):
             self.message_label.setText(text_message)
             self.message_label.setStyleSheet("color: maroon; font-size: 14px;")
 
+            groups_num_str = str(len(cfg.seq_by_tax_level_dict['Family'])) + " groups"
+            self.groups_num_label.setText(groups_num_str)
+
             self.loading_gif.stop()
             self.loading_label.hide()
 
             self.tax_level_label.show()
             self.tax_level_combo.show()
+            self.groups_num_label.show()
             self.space_label.show()
             self.group_params_label.show()
             self.points_size_label.show()
@@ -194,6 +209,13 @@ class GroupByTaxDialog(QDialog):
 
             self.loading_gif.stop()
             self.loading_label.hide()
+
+    def change_groups_num(self):
+
+        tax_level = self.tax_level_combo.currentText()
+        groups_num = len(cfg.seq_by_tax_level_dict[tax_level])
+        groups_num_str = str(groups_num) + " groups"
+        self.groups_num_label.setText(groups_num_str)
 
     def get_tax_level(self):
 

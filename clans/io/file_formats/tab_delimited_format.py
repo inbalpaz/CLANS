@@ -254,9 +254,9 @@ class DelimitedFormat:
                         # Unknown sequence ID -> print error
                         else:
                             error = "Unknown sequence_IDs.\n" \
-                                    "The sequence_IDs can be provided either as serial numbers\n" \
+                                    "The sequence_IDs can be provided as either serial numbers\n" \
                                     "(starting from 0, in the order of the FASTA sequences)\n" \
-                                    "or as sequence names (FASTA headers up to space character)."
+                                    "or sequence names (FASTA headers up to space character)."
                             return sequences_params_dict, error
 
                 seq_index += 1
@@ -272,7 +272,6 @@ class DelimitedFormat:
     # Read a metadata file with one or more group-categories with pre-defined groups
     def read_metadata_groups(self, file_path):
 
-        group_category = ""
         error = ""
         categories = []
         groups_dict = dict()
@@ -331,17 +330,24 @@ class DelimitedFormat:
                         # Unknown sequence ID -> print error
                         else:
                             error = "Unknown sequence_IDs.\n" \
-                                    "The sequence_IDs can be provided either as serial numbers\n" \
+                                    "The sequence_IDs can be provided as either serial numbers\n" \
                                     "(starting from 0, in the order of the FASTA sequences)\n" \
-                                    "or as sequence names (FASTA headers up to space character)."
+                                    "or sequence names (FASTA headers up to space character)."
                             return groups_dict, error
 
-                    seq_index += 1
+                seq_index += 1
 
             # Verify that the provided number of sequences equals the dataset
             if seq_index != cfg.run_params['total_sequences_num']:
                 error = "The metadata file in invalid:\n" \
                         "The number of povided sequences does not match the original dataset."
+                return groups_dict, error
+
+            # Verify that the number of groups does not exceed 100
+            for category in groups_dict:
+                if len(groups_dict[category]) > 100:
+                    error = "The number of groups for grouping-category \'" + category + "\' exceeds 100."
+                    return groups_dict, error
 
         # The file is valid, no error
         return groups_dict, error

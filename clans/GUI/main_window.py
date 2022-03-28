@@ -19,6 +19,7 @@ import clans.data.groups as groups
 import clans.GUI.group_dialogs as gd
 import clans.GUI.windows as windows
 import clans.GUI.metadata_dialogs as md
+import clans.GUI.message_dialogs as mes_dialogs
 #import clans.GUI.text_dialogs as td
 import clans.GUI.conf_dialogs as cd
 import clans.graphics.colors as colors
@@ -679,13 +680,27 @@ class MainWindow(QMainWindow):
             self.connections_button.setEnabled(True)
             #self.add_text_button.setEnabled(True)
 
-            if len(cfg.groups_dict['input_file']) > 0:
-                self.edit_groups_button.setEnabled(True)
-                self.show_group_names_button.setEnabled(True)
-                self.group_by = 'input_file'
-                self.group_by_combo.addItem("Input CLANS file")
-                self.group_by_combo.setCurrentIndex(1)
-                self.group_by_combo.setEnabled(True)
+            groups_num = len(cfg.groups_dict['input_file'])
+            if groups_num > 0:
+
+                # Pop up an error message
+                if groups_num > 100:
+                    message = "The Number of groups exceeds 100 (" + str(groups_num) + " groups).\n" \
+                                                                                   "Continue without loading groups."
+                    print(message)
+                    dlg = mes_dialogs.MessageDialog(message)
+
+                    if dlg.exec_():
+                        cfg.groups_dict['input_file'] = {}
+
+                # The number of groups is ok
+                else:
+                    self.edit_groups_button.setEnabled(True)
+                    self.show_group_names_button.setEnabled(True)
+                    self.group_by = 'input_file'
+                    self.group_by_combo.addItem("Input CLANS file")
+                    self.group_by_combo.setCurrentIndex(1)
+                    self.group_by_combo.setEnabled(True)
 
             # Update the file name in the selected sequences window
             self.selected_seq_window.update_window_title(self.file_name)
