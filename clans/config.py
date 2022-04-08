@@ -83,7 +83,7 @@ sequences_numeric_params = dict()
 # Upper level: grouping type (input_file, manual, taxonomy, user-defined)
 # Second level: Group_ID
 # Inner level (holding the following info for each group):
-# - 'name', 'size', 'name_size', 'seqIDs', 'order', 'color', 'color_rgb', 'color_array', 'is_bold', 'is_italic'
+# - 'name', 'size', 'name_size', 'seqIDs', 'order', 'color', 'color_array', 'is_bold', 'is_italic'
 # - 'seqIDs' is a dictionary holding the indices of the sequences belonging to each group
 # - 'order' (starting from -1) determines which group is displayed in front of the other (-1 = the most front)
 # - 'color' is the old clans format: 225;32;100;255

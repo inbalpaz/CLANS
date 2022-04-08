@@ -145,7 +145,7 @@ class Network3D:
         #self.general_text_visual = {}
 
     # Set the plot data for the first time
-    def init_data(self, fr_object):
+    def init_data(self, fr_object, group_by):
 
         # Initialise the coordinates array
         self.pos_array = fr_object.coordinates.copy()
@@ -176,26 +176,26 @@ class Network3D:
         self.nodes_size_array = np.full((cfg.run_params['total_sequences_num']), self.nodes_size, dtype=np.int8)
 
         # If the input file contained groups
-        if len(cfg.groups_dict['input_file']) > 0:
+        if len(cfg.groups_dict[group_by]) > 0:
 
             # Build a dictionary of the groups that should be displayed
-            for group_ID in cfg.groups_dict['input_file']:
-                self.groups_to_show[group_ID] = cfg.groups_dict['input_file'][group_ID]['order']
+            for group_ID in cfg.groups_dict[group_by]:
+                self.groups_to_show[group_ID] = cfg.groups_dict[group_by][group_ID]['order']
             self.ordered_groups_to_show = sorted(self.groups_to_show, key=self.groups_to_show.get)
 
             # Build the text visuals of the group names
-            self.build_group_names_visual('input_file')
+            self.build_group_names_visual(group_by)
 
             for seq_index in range(cfg.run_params['total_sequences_num']):
 
                 # Update the colors and size of the nodes that belongs to a group according to the group's information
-                if cfg.sequences_in_groups['input_file'][seq_index] > -1:
-                    group_ID = cfg.sequences_in_groups['input_file'][seq_index]
-                    self.nodes_colors_array[seq_index] = cfg.groups_dict['input_file'][group_ID]['color_array']
-                    self.nodes_size_array[seq_index] = cfg.groups_dict['input_file'][group_ID]['size']
-                    self.nodes_outline_color_array[seq_index] = cfg.groups_dict['input_file'][group_ID]['outline_color']
+                if cfg.sequences_in_groups[group_by][seq_index] > -1:
+                    group_ID = cfg.sequences_in_groups[group_by][seq_index]
+                    self.nodes_colors_array[seq_index] = cfg.groups_dict[group_by][group_ID]['color_array']
+                    self.nodes_size_array[seq_index] = cfg.groups_dict[group_by][group_ID]['size']
+                    self.nodes_outline_color_array[seq_index] = cfg.groups_dict[group_by][group_ID]['outline_color']
 
-            self.build_scatter_by_groups('input_file')
+            self.build_scatter_by_groups(group_by)
 
         # No groups in the input -> initiate the 'manual' group-by
         else:

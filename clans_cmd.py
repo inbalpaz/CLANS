@@ -46,7 +46,7 @@ if cfg.run_params['num_of_rounds'] > 0:
 ## Write the output file
 if cfg.run_params['output_file'] is not None:
     before = time.time()
-    fh.write_file(cfg.run_params['output_file'], cfg.run_params['output_format'])
+    fh.write_file(cfg.run_params['output_file'], cfg.run_params['output_format'], 'input_file')
     after = time.time()
     duration = (after - before)
     print("Writing the output file took "+str(duration)+" seconds")

@@ -8,7 +8,9 @@ import time
 import re
 import clans.config as cfg
 import clans.io.io_gui as io
-import clans.io.file_formats as ff
+import clans.io.file_formats.clans_format as clans_format
+import clans.io.file_formats.clans_minimal_format as clans_mini
+import clans.io.file_formats.tab_delimited_format as tab_format
 import clans.layouts.layout_gui as lg
 import clans.layouts.fruchterman_reingold_class as fr_class
 import clans.graphics.network3d as net
@@ -106,23 +108,28 @@ class MainWindow(QMainWindow):
         self.file_menu = self.main_menu.addMenu("File")
 
         self.load_file_submenu = self.file_menu.addMenu("Load file")
-        self.load_clans_file_sumenu = self.load_file_submenu.addMenu("CLANS format")
+        #self.load_clans_file_sumenu = self.load_file_submenu.addMenu("CLANS format")
 
-        self.load_clans_file_action = QAction("Standard CLANS (compatible)", self)
+        #self.load_clans_file_action = QAction("Standard CLANS (compatible)", self)
+        self.load_clans_file_action = QAction("CLANS format", self)
         self.load_clans_file_action.triggered.connect(self.load_clans_file)
 
-        self.load_mini_clans_file_action = QAction("Minimal CLANS (without sequences)", self)
-        self.load_mini_clans_file_action.triggered.connect(self.load_mini_clans_file)
+        #self.load_mini_clans_file_action = QAction("Minimal CLANS (without sequences)", self)
+        #self.load_mini_clans_file_action.triggered.connect(self.load_mini_clans_file)
 
         self.load_delimited_file_action = QAction("Tab-delimited format", self)
         self.load_delimited_file_action.triggered.connect(self.load_delimited_file)
 
-        self.load_clans_file_sumenu.addAction(self.load_clans_file_action)
-        self.load_clans_file_sumenu.addAction(self.load_mini_clans_file_action)
+        #self.load_clans_file_sumenu.addAction(self.load_clans_file_action)
+        #self.load_clans_file_sumenu.addAction(self.load_mini_clans_file_action)
+        self.load_file_submenu.addAction(self.load_clans_file_action)
         self.load_file_submenu.addAction(self.load_delimited_file_action)
 
         self.save_file_submenu = self.file_menu.addMenu("Save to file")
         self.save_clans_submenu = self.save_file_submenu.addMenu("CLANS format")
+
+        self.save_full_clans_file_action = QAction("Full CLANS (including metadata)", self)
+        self.save_full_clans_file_action.triggered.connect(self.save_full_clans_file)
 
         self.save_clans_file_action = QAction("Standard CLANS (compatible)", self)
         self.save_clans_file_action.triggered.connect(self.save_clans_file)
@@ -133,6 +140,7 @@ class MainWindow(QMainWindow):
         self.save_delimited_file_action = QAction("Tab-delimited format", self)
         self.save_delimited_file_action.triggered.connect(self.save_delimited_file)
 
+        self.save_clans_submenu.addAction(self.save_full_clans_file_action)
         self.save_clans_submenu.addAction(self.save_clans_file_action)
         self.save_clans_submenu.addAction(self.save_mini_clans_file_action)
         self.save_file_submenu.addAction(self.save_delimited_file_action)
@@ -680,34 +688,57 @@ class MainWindow(QMainWindow):
             self.connections_button.setEnabled(True)
             #self.add_text_button.setEnabled(True)
 
-            groups_num = len(cfg.groups_dict['input_file'])
-            if groups_num > 0:
+            # Check if there are any defined groups
+            groups_ok = 0
+            for category in cfg.groups_dict:
+                groups_num = len(cfg.groups_dict[category])
+                if groups_num > 0:
 
-                # Pop up an error message
-                if groups_num > 100:
-                    message = "The Number of groups exceeds 100 (" + str(groups_num) + " groups).\n" \
-                                                                                   "Continue without loading groups."
-                    print(message)
-                    dlg = mes_dialogs.MessageDialog(message)
+                    # Pop up an error message
+                    if groups_num > 100:
+                        message = "The Number of groups in the \'" + category + "\' grouping-category exceeds 100 " \
+                                  "(" + str(groups_num) + " groups).\nContinue without loading groups in this category."
+                        print(message)
+                        dlg = mes_dialogs.MessageDialog(message)
 
-                    if dlg.exec_():
-                        cfg.groups_dict['input_file'] = {}
+                        if dlg.exec_():
+                            cfg.groups_dict[category] = {}
 
-                # The number of groups is ok
+                    # The number of groups is ok
+                    else:
+                        groups_ok = 1
+                        if category == 'input_file':
+                            self.group_by_combo.addItem("Input CLANS file")
+                        elif category == 'manual_file':
+                            self.group_by_combo.addItem("Manual - from file")
+                        else:
+                            self.group_by_combo.addItem(category)
+
+            # There is at least one valid pre-defined grouping caegory
+            if groups_ok:
+                self.edit_groups_button.setEnabled(True)
+                self.show_group_names_button.setEnabled(True)
+                self.group_by_combo.setEnabled(True)
+                self.group_by_combo.setCurrentIndex(1)
+                if self.group_by_combo.currentText() == "Input CLANS file":
+                    self.group_by = "input_file"
+                elif self.group_by_combo.currentText() == "Manual - from file":
+                    self.group_by = "manual_file"
                 else:
-                    self.edit_groups_button.setEnabled(True)
-                    self.show_group_names_button.setEnabled(True)
-                    self.group_by = 'input_file'
-                    self.group_by_combo.addItem("Input CLANS file")
-                    self.group_by_combo.setCurrentIndex(1)
-                    self.group_by_combo.setEnabled(True)
+                    self.group_by = self.group_by_combo.currentText()
+
+            # If there are uploaded numeric parameters - enable the color-by combo-box
+            if len(cfg.sequences_numeric_params) > 0:
+                self.color_by_combo.setEnabled(True)
+                for param in cfg.sequences_numeric_params:
+                    self.color_by_combo.addItem(param)
 
             # Update the file name in the selected sequences window
             self.selected_seq_window.update_window_title(self.file_name)
 
             # Create and display the FR layout as scatter plot
             self.before = time.time()
-            self.network_plot.init_data(self.fr_object)
+            self.network_plot.init_data(self.fr_object, self.group_by)
 
             if cfg.run_params['is_debug_mode']:
                 self.after = time.time()
@@ -1137,24 +1168,44 @@ class MainWindow(QMainWindow):
         saved_file, _ = QFileDialog.getSaveFileName()
 
         if saved_file:
-            file_object = ff.ClansFormat()
+            file_object = clans_format.ClansFormat()
             file_object.write_file(saved_file, True, self.group_by)
+
+            if cfg.run_params['is_debug_mode']:
+                print("Session is successfully saved to " + saved_file + " in CLANS format")
+
+    def save_full_clans_file(self):
+
+        saved_file, _ = QFileDialog.getSaveFileName()
+
+        if saved_file:
+            file_object = clans_format.ClansFormat()
+            file_object.write_full_file(saved_file)
+
+            if cfg.run_params['is_debug_mode']:
+                print("Session is successfully saved to " + saved_file + " in full-CLANS format")
 
     # Save a minimal clans file (without the sequences)
     def save_mini_clans_file(self):
         saved_file, _ = QFileDialog.getSaveFileName()
 
         if saved_file:
-            file_object = ff.ClansMinimalFormat()
+            file_object = clans_mini.ClansMinimalFormat()
             file_object.write_file(saved_file, self.group_by)
+
+            if cfg.run_params['is_debug_mode']:
+                print("Session is successfully saved to " + saved_file + " in mini-CLANS format")
 
     def save_delimited_file(self):
 
         saved_file, _ = QFileDialog.getSaveFileName()
 
         if saved_file:
-            file_object = ff.DelimitedFormat()
+            file_object = tab_format.DelimitedFormat()
             file_object.write_file(saved_file)
+
+            if cfg.run_params['is_debug_mode']:
+                print("Session is successfully saved to " + saved_file + " in tab-delimited format")
 
     def save_image(self):
 
@@ -1478,6 +1529,9 @@ class MainWindow(QMainWindow):
         # Group the data according to the <Seqgoups> section in the input file
         elif self.group_by_combo.currentText() == 'Input CLANS file':
             self.group_by = "input_file"
+
+        elif self.group_by_combo.currentText() == 'Manual - from file':
+            self.group_by = "manual_file"
 
         # Group the data by some user-defined parameter
         else:

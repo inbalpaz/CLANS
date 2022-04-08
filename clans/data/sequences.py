@@ -1,5 +1,6 @@
 import numpy as np
 import numba
+from vispy.color import ColorArray
 import clans.config as cfg
 import random
 
@@ -66,6 +67,25 @@ def add_numeric_params(params_dict):
         added_params.append(param_name)
 
     return added_params
+
+
+# Add numeric parameters that were saved in a full CLANS file (including colors)
+def add_saved_numeric_params(params_dict):
+
+    for param_name in params_dict:
+        cfg.sequences_numeric_params[param_name] = dict()
+
+        cfg.sequences_numeric_params[param_name]['raw'] = np.array(params_dict[param_name]['values'], dtype=float)
+        normalize_numeric_param(param_name)
+
+        min_color_arr = params_dict[param_name]['min_color'].split(';')
+        max_color_arr = params_dict[param_name]['max_color'].split(';')
+
+        for i in range(4):
+            min_color_arr[i] = int(min_color_arr[i]) / 255
+            max_color_arr[i] = int(max_color_arr[i]) / 255
+        cfg.sequences_numeric_params[param_name]['min_color'] = ColorArray(min_color_arr)
+        cfg.sequences_numeric_params[param_name]['max_color'] = ColorArray(max_color_arr)
 
 
 def normalize_numeric_param(param_name):
