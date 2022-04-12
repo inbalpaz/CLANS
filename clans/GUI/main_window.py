@@ -186,6 +186,7 @@ class MainWindow(QMainWindow):
 
         # Group-by user-defined param action
         self.add_groups_from_metadata_action = QAction("Add custom grouping category", self)
+        self.add_groups_from_metadata_action.setEnabled(False)
         self.add_groups_from_metadata_action.triggered.connect(self.add_groups_from_metadata)
 
         self.group_by_submenu.addAction(self.add_groups_from_metadata_action)
@@ -199,6 +200,7 @@ class MainWindow(QMainWindow):
 
         # Color-by user-defined param action
         self.color_by_param_action = QAction("Add/Configure custom parameter", self)
+        self.color_by_param_action.setEnabled(False)
         self.color_by_param_action.triggered.connect(self.open_color_by_param_dialog)
 
         self.color_by_submenu.addAction(self.color_by_param_action)
@@ -515,6 +517,8 @@ class MainWindow(QMainWindow):
 
         self.color_by_length_action.setEnabled(False)
         self.group_by_tax_action.setEnabled(False)
+        self.add_groups_from_metadata_action.setEnabled(False)
+        self.color_by_param_action.setEnabled(False)
 
         self.start_button.setText("Start")
         self.dimensions_clustering_combo.setCurrentIndex(0)
@@ -612,6 +616,10 @@ class MainWindow(QMainWindow):
         cfg.run_params['rep_exp'] = cfg.layouts['FR']['params']['rep_exp']
         cfg.run_params['dampening'] = cfg.layouts['FR']['params']['dampening']
         cfg.run_params['gravity'] = cfg.layouts['FR']['params']['gravity']
+        cfg.run_params['nodes_size'] = 8
+        cfg.run_params['nodes_color'] = [0.0, 0.0, 0.0, 1.0]
+        cfg.run_params['nodes_outline_color'] = [0.0, 0.0, 0.0, 1.0]
+        cfg.run_params['nodes_outline_width'] = 0.5
         cfg.min_param_color = ColorArray([1.0, 1.0, 0.0, 1.0])
         cfg.max_param_color = ColorArray([1.0, 0.0, 0.0, 1.0])
         cfg.short_color = ColorArray([1.0, 1.0, 0.0, 1.0])
@@ -655,6 +663,8 @@ class MainWindow(QMainWindow):
 
         # Loaded file is valid
         if status == 0:
+
+            print("Nodes color: " + str(cfg.run_params['nodes_color']))
 
             if cfg.run_params['is_debug_mode']:
                 print("Finished loading the input file - file is valid")
@@ -739,6 +749,9 @@ class MainWindow(QMainWindow):
             # Create and display the FR layout as scatter plot
             self.before = time.time()
             self.network_plot.init_data(self.fr_object, self.group_by)
+            self.network_plot.set_defaults(cfg.run_params['nodes_size'], cfg.run_params['nodes_color'],
+                                           cfg.run_params['nodes_outline_color'], cfg.run_params['nodes_outline_width'],
+                                           self.dim_num, self.color_by, self.group_by)
 
             if cfg.run_params['is_debug_mode']:
                 self.after = time.time()
@@ -765,6 +778,9 @@ class MainWindow(QMainWindow):
             if cfg.run_params['input_format'] == 'clans':
                 self.color_by_length_action.setEnabled(True)
                 self.group_by_tax_action.setEnabled(True)
+
+            self.add_groups_from_metadata_action.setEnabled(True)
+            self.color_by_param_action.setEnabled(True)
 
             ## Debug
             #try_io.create_artificial_metadata_groups_file_with_seq_name(self.file_name)
@@ -1243,6 +1259,11 @@ class MainWindow(QMainWindow):
 
         if conf_nodes_dlg.exec_():
             size, color, outline_color, outline_width = conf_nodes_dlg.get_parameters()
+
+            cfg.run_params['nodes_size'] = size
+            cfg.run_params['nodes_color'] = color
+            cfg.run_params['nodes_outline_color'] = outline_color
+            cfg.run_params['nodes_outline_width'] = outline_width
 
             self.network_plot.set_defaults(size, color, outline_color, outline_width, self.dim_num, self.color_by,
                                            self.group_by)

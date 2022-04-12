@@ -56,7 +56,11 @@ run_params = {  # a dict to hold all the running parameters (given by the user /
     'rep_val': layouts['FR']['params']['rep_val'],
     'rep_exp': layouts['FR']['params']['rep_exp'],
     'dampening': layouts['FR']['params']['dampening'],
-    'gravity': layouts['FR']['params']['gravity']
+    'gravity': layouts['FR']['params']['gravity'],
+    'nodes_size': 8,
+    'nodes_color': [0.0, 0.0, 0.0, 1.0],
+    'nodes_outline_color': [0.0, 0.0, 0.0, 1.0],
+    'nodes_outline_width': 0.5
 }
 
 ## Data-related variables

@@ -371,6 +371,14 @@ class ClansFormat:
             cfg.run_params['maxmove'] = float(self.params['maxmove'])
         if 'minattract' in self.params:
             cfg.run_params['gravity'] = float(self.params['minattract'])
+        if 'nodes_size' in self.params:
+            cfg.run_params['nodes_size'] = int(self.params['nodes_size'])
+        if 'nodes_color' in self.params:
+            cfg.run_params['nodes_color'] = [int(c) / 255 for c in self.params['nodes_color'].split(';')]
+        if 'nodes_outline_color' in self.params:
+            cfg.run_params['nodes_outline_color'] = [int(c) / 255 for c in self.params['nodes_outline_color'].split(';')]
+        if 'nodes_outline_width' in self.params:
+            cfg.run_params['nodes_outline_width'] = float(self.params['nodes_outline_width'])
 
         # Apply the similarity cutoff
         if self.type_of_values == "hsp":
@@ -493,6 +501,11 @@ class ClansFormat:
         output.write('dampening=' + str(cfg.run_params['dampening']) + '\n')
         output.write('maxmove=' + str(cfg.run_params['maxmove']) + '\n')
         output.write('minattract=' + str(cfg.run_params['gravity']) + '\n')
+        output.write('nodes_size=' + str(cfg.run_params['nodes_size']) + '\n')
+        output.write('nodes_color=' + ';'.join([str(int(c * 255)) for c in cfg.run_params['nodes_color']]) + '\n')
+        output.write('nodes_outline_color=' + ';'.join([str(int(c * 255))
+                                                        for c in cfg.run_params['nodes_outline_color']]) + '\n')
+        output.write('nodes_outline_width=' + str(cfg.run_params['nodes_outline_width']) + '\n')
         output.write('</param>\n')
 
         # Write the sequences block
@@ -528,7 +541,8 @@ class ClansFormat:
                         for seq_index in cfg.groups_dict[category][group_ID]['seqIDs']:
                             seq_ids_str += str(seq_index) + ";"
 
-                        outline_color = ';'.join([str(int(c * 255)) for c in cfg.groups_dict[category][group_ID]['outline_color']])
+                        outline_color = ';'.join([str(int(c * 255))
+                                                  for c in cfg.groups_dict[category][group_ID]['outline_color']])
 
                         groups_block += 'name=' + cfg.groups_dict[category][group_ID]['name'] + '\n'
                         groups_block += 'size=' + str(cfg.groups_dict[category][group_ID]['size']) + '\n'

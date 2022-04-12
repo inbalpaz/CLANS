@@ -22,12 +22,12 @@ class Network3D:
         self.selected_nodes_size_array = []
         self.nodes_outline_color_array = []
         self.selected_nodes_outline_color_array = []
-        self.nodes_outline_width = 0.5
+        self.nodes_outline_width = cfg.run_params['nodes_outline_width']
         self.nodes_size_large = 10
         self.nodes_size_medium = 8
         self.nodes_size_small = 6
         self.nodes_size_tiny = 4
-        self.nodes_size = self.nodes_size_medium
+        self.nodes_size = cfg.run_params['nodes_size']
         self.text_size_large = 12
         self.text_size_medium = 10
         self.text_size_small = 8
@@ -35,9 +35,9 @@ class Network3D:
         self.selected_nodes_size = self.nodes_size + 5
         self.highlighted_nodes_size = self.selected_nodes_size + 5
         self.nodes_symbol = 'disc'
-        self.nodes_default_color = [0.0, 0.0, 0.0, 1.0]
+        self.nodes_default_color = cfg.run_params['nodes_color']
         self.nodes_highlight_color = [0.0, 1.0, 1.0, 1.0]  # Turquoise
-        self.nodes_outline_default_color = [0.0, 0.0, 0.0, 1.0]
+        self.nodes_outline_default_color = cfg.run_params['nodes_outline_color']
         self.selected_outline_color = [1.0, 0.0, 1.0, 1.0]
         self.highlighted_outline_color = [1.0, 0.0, 1.0, 1.0]
         self.att_values_bins = np.array([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
