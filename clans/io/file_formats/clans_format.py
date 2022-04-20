@@ -25,6 +25,7 @@ class ClansFormat:
         in_seq_block = 0
         in_seqgroups_block = 0
         in_seqparams_block = 0
+        in_tax_block = 0
         in_pos_block = 0
         in_hsp_block = 0
         in_att_block = 0
@@ -179,7 +180,6 @@ class ClansFormat:
                             k = m.group(1)
                             v = m.group(2)
 
-                            # Format is full-clans - expect category names
                             if k == 'param':
                                 param_name = v
                                 self.params_dict[param_name] = dict()
@@ -190,6 +190,30 @@ class ClansFormat:
 
                             else:
                                 self.params_dict[param_name][k] = v
+
+                elif line.strip() == "<taxonomy>":
+                    in_tax_block = 1
+                elif in_tax_block:
+                    if line.strip() == "</taxonomy>":
+                        in_tax_block = 0
+                    else:
+                        m = re.search("^(\w+)\=(.+)\n", line)
+                        if m:
+                            k = m.group(1)
+                            v = m.group(2)
+
+                            if k == 'tax_level':
+                                tax_level = v
+                                cfg.seq_by_tax_level_dict[tax_level] = dict()
+
+                            elif k == 'name':
+                                name = v
+                                cfg.seq_by_tax_level_dict[tax_level][name] = dict()
+
+                            elif k == 'numbers':
+                                for num in (v.split(';')):
+                                    if num != '':
+                                        cfg.seq_by_tax_level_dict[tax_level][name][int(num)] = 1
 
                 elif line.strip() == "<pos>":
                     in_pos_block = 1
@@ -379,6 +403,10 @@ class ClansFormat:
             cfg.run_params['nodes_outline_color'] = [int(c) / 255 for c in self.params['nodes_outline_color'].split(';')]
         if 'nodes_outline_width' in self.params:
             cfg.run_params['nodes_outline_width'] = float(self.params['nodes_outline_width'])
+        if 'is_taxonomy_available' in self.params:
+            cfg.run_params['is_taxonomy_available'] = True
+            cfg.run_params['finished_taxonomy_search'] = True
+            cfg.run_params['found_taxa_num'] = int(self.params['found_taxa_number'])
 
         # Apply the similarity cutoff
         if self.type_of_values == "hsp":
@@ -506,6 +534,9 @@ class ClansFormat:
         output.write('nodes_outline_color=' + ';'.join([str(int(c * 255))
                                                         for c in cfg.run_params['nodes_outline_color']]) + '\n')
         output.write('nodes_outline_width=' + str(cfg.run_params['nodes_outline_width']) + '\n')
+        if cfg.run_params['is_taxonomy_available']:
+            output.write('is_taxonomy_available=' + str(cfg.run_params['is_taxonomy_available']) + '\n')
+            output.write('found_taxa_number=' + str(cfg.run_params['found_taxa_num']) + '\n')
         output.write('</param>\n')
 
         # Write the sequences block
@@ -576,6 +607,22 @@ class ClansFormat:
                 output.write(param_str)
 
             output.write('</seqparams>\n')
+
+        # Write the taxonomy block (if any)
+        if cfg.run_params['is_taxonomy_available']:
+            output.write('<taxonomy>\n')
+
+            for tax_level in cfg.seq_by_tax_level_dict:
+                tax_level_str = "tax_level=" + tax_level + "\n"
+                output.write(tax_level_str)
+
+                for name in cfg.seq_by_tax_level_dict[tax_level]:
+                    name_str = "name=" + name + "\n"
+                    numbers_str = ";".join([str(k) for k in cfg.seq_by_tax_level_dict[tax_level][name].keys()])
+                    name_str += "numbers=" + numbers_str + "\n"
+                    output.write(name_str)
+
+            output.write('</taxonomy>\n')
 
         output.write('<pos>\n')
         output.write(pos_block)

@@ -608,6 +608,7 @@ class MainWindow(QMainWindow):
         cfg.run_params['similarity_cutoff'] = cfg.similarity_cutoff
         cfg.run_params['is_taxonomy_available'] = False
         cfg.run_params['finished_taxonomy_search'] = False
+        cfg.run_params['found_taxa_num'] = 0
         cfg.run_params['cooling'] = cfg.layouts['FR']['params']['cooling']
         cfg.run_params['maxmove'] = cfg.layouts['FR']['params']['maxmove']
         cfg.run_params['att_val'] = cfg.layouts['FR']['params']['att_val']
@@ -705,8 +706,8 @@ class MainWindow(QMainWindow):
                 if groups_num > 0:
 
                     # Pop up an error message
-                    if groups_num > 100:
-                        message = "The Number of groups in the \'" + category + "\' grouping-category exceeds 100 " \
+                    if groups_num > 300:
+                        message = "The Number of groups in the \'" + category + "\' grouping-category exceeds 300 " \
                                   "(" + str(groups_num) + " groups).\nContinue without loading groups in this category."
                         print(message)
                         dlg = mes_dialogs.MessageDialog(message)

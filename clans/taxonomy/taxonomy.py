@@ -127,13 +127,13 @@ def get_taxonomy_hierarchy():
     with open(cfg.taxonomy_lineage_file) as lineage_infile:
 
         found_tax = 0
-        total_tax_num = len(cfg.taxonomy_dict) # The number of organisms found in the input file
+        cfg.run_params['found_taxa_num'] = len(cfg.taxonomy_dict) # The number of organisms found in the input file
 
         # A loop over the lines of the file
         for line in lineage_infile:
 
             # As long as not all the tax_IDs in the dict were found in the dump file -> keep searching
-            if found_tax < total_tax_num:
+            if found_tax < cfg.run_params['found_taxa_num']:
                 row = re.split("\s*\|\s*", line.strip())
                 tax_ID = row[0]
 

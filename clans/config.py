@@ -46,6 +46,7 @@ run_params = {  # a dict to hold all the running parameters (given by the user /
     'is_debug_mode': False,
     'is_taxonomy_available': False,
     'finished_taxonomy_search': False,
+    'found_taxa_num': 0,
     'dimensions_num_for_clustering': num_of_dimensions,
     'num_of_rounds': 0,
     'rounds_done': 0,

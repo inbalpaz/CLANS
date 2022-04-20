@@ -134,7 +134,7 @@ class GroupByTaxDialog(QDialog):
 
             # Taxonomic information exists
             if cfg.run_params['is_taxonomy_available']:
-                text = "Taxonomic hierarchy for " + str(len(cfg.taxonomy_dict)) + " taxa is available"
+                text = "Taxonomic hierarchy for " + str(cfg.run_params['found_taxa_num']) + " taxa is available"
                 self.message_label.setText(text)
                 self.message_label.setStyleSheet("color: maroon; font-size: 14px;")
 
@@ -173,7 +173,7 @@ class GroupByTaxDialog(QDialog):
     def finished_tax_search(self, error):
 
         if cfg.run_params['is_taxonomy_available']:
-            text_message = "Found taxonomic hierarchy for " + str(len(cfg.taxonomy_dict)) + " taxa"
+            text_message = "Found taxonomic hierarchy for " + str(cfg.run_params['found_taxa_num']) + " taxa"
             self.message_label.setText(text_message)
             self.message_label.setStyleSheet("color: maroon; font-size: 14px;")
 
