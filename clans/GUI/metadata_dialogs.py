@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import QThreadPool
 from vispy.color import ColorArray
+import numpy as np
 import clans.config as cfg
 import clans.io.io_gui as io
 import clans.data.sequences as seq
@@ -9,7 +10,7 @@ import clans.data.sequences as seq
 
 class GroupByTaxDialog(QDialog):
 
-    def __init__(self, net_plot_object):
+    def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Group data by taxonomy")
@@ -19,7 +20,7 @@ class GroupByTaxDialog(QDialog):
 
         # Add a 'message' label
         self.message_label = QLabel()
-        self.grid_layout.addWidget(self.message_label, 0, 0, 1, 2)
+        self.grid_layout.addWidget(self.message_label, 0, 0, 1, 3)
 
         # Add a taxonomic-level selection combo-box
         self.tax_level_label = QLabel("Taxonomic level to group by:")
@@ -42,13 +43,13 @@ class GroupByTaxDialog(QDialog):
 
         # Add general parameters for groups presentation (hided at first)
         self.space_label = QLabel(" ")
-        self.grid_layout.addWidget(self.space_label, 4, 0, 1, 2)
+        self.grid_layout.addWidget(self.space_label, 4, 0, 1, 3)
         self.group_params_label = QLabel("General parameters for the groups:")
-        self.grid_layout.addWidget(self.group_params_label, 5, 0, 1, 2)
+        self.grid_layout.addWidget(self.group_params_label, 5, 0, 1, 3)
 
         # Set the data points size
         self.points_size_label = QLabel("Data-points size:")
-        default_size = net_plot_object.nodes_size
+        default_size = cfg.run_params['nodes_size']
         self.points_size_combo = QComboBox()
 
         i = 0
@@ -62,9 +63,35 @@ class GroupByTaxDialog(QDialog):
         self.grid_layout.addWidget(self.points_size_label, 6, 0)
         self.grid_layout.addWidget(self.points_size_combo, 6, 1)
 
+        self.outline_color_label = QLabel("Outline color:")
+        self.outline_color = ColorArray(cfg.run_params['nodes_outline_color'])
+        self.outline_color_box = QLabel(" ")
+        self.outline_color_box.setStyleSheet("background-color: " + self.outline_color.hex[0])
+        self.outline_color_button = QPushButton("Change color")
+        self.outline_color_button.pressed.connect(self.change_outline_color)
+
+        self.grid_layout.addWidget(self.outline_color_label, 7, 0)
+        self.grid_layout.addWidget(self.outline_color_box, 7, 1)
+        self.grid_layout.addWidget(self.outline_color_button, 7, 2)
+
+        self.outline_width_label = QLabel("Outline width:")
+        self.outline_width_combo = QComboBox()
+
+        i = 0
+        width_options = np.arange(0, 3.5, 0.5)
+        for size in width_options:
+            self.outline_width_combo.addItem(str(size))
+            if size == cfg.run_params['nodes_outline_width']:
+                default_index = i
+            i += 1
+        self.outline_width_combo.setCurrentIndex(default_index)
+
+        self.grid_layout.addWidget(self.outline_width_label, 8, 0)
+        self.grid_layout.addWidget(self.outline_width_combo, 8, 1)
+
         # Set the size of the group names
         self.group_name_size_label = QLabel("Group names text size:")
-        default_size = net_plot_object.text_size
+        default_size = cfg.run_params['text_size']
         self.group_name_size = QComboBox()
 
         i = 0
@@ -75,13 +102,13 @@ class GroupByTaxDialog(QDialog):
             i += 1
         self.group_name_size.setCurrentIndex(default_index)
 
-        self.grid_layout.addWidget(self.group_name_size_label, 7, 0)
-        self.grid_layout.addWidget(self.group_name_size, 7, 1)
+        self.grid_layout.addWidget(self.group_name_size_label, 9, 0)
+        self.grid_layout.addWidget(self.group_name_size, 9, 1)
 
         # Add Bold and Italic options
         self.bold_label = QLabel("Bold")
         self.bold_checkbox = QCheckBox()
-        self.bold_checkbox.setChecked(True)
+        self.bold_checkbox.setChecked(cfg.run_params['is_bold'])
         self.bold_layout = QHBoxLayout()
         self.bold_layout.addWidget(self.bold_checkbox)
         self.bold_layout.addWidget(self.bold_label)
@@ -89,14 +116,14 @@ class GroupByTaxDialog(QDialog):
 
         self.italic_label = QLabel("Italic")
         self.italic_checkbox = QCheckBox()
-        self.italic_checkbox.setChecked(False)
+        self.italic_checkbox.setChecked(cfg.run_params['is_italic'])
         self.italic_layout = QHBoxLayout()
         self.italic_layout.addWidget(self.italic_checkbox)
         self.italic_layout.addWidget(self.italic_label)
         self.italic_layout.addStretch()
 
-        self.grid_layout.addLayout(self.bold_layout, 8, 0)
-        self.grid_layout.addLayout(self.italic_layout, 8, 1)
+        self.grid_layout.addLayout(self.bold_layout, 10, 0)
+        self.grid_layout.addLayout(self.italic_layout, 10, 1)
 
         self.main_layout.addLayout(self.grid_layout)
 
@@ -112,7 +139,7 @@ class GroupByTaxDialog(QDialog):
             self.loading_label.setMovie(self.loading_gif)
             self.loading_gif.start()
 
-            self.grid_layout.addWidget(self.loading_label, 1, 0, 1, 2)
+            self.grid_layout.addWidget(self.loading_label, 1, 0, 1, 3)
 
             # Hide all the further widgets until the search finishes
             self.tax_level_label.hide()
@@ -122,6 +149,11 @@ class GroupByTaxDialog(QDialog):
             self.group_params_label.hide()
             self.points_size_label.hide()
             self.points_size_combo.hide()
+            self.outline_color_label.hide()
+            self.outline_color_box.hide()
+            self.outline_color_button.hide()
+            self.outline_width_label.hide()
+            self.outline_width_combo.hide()
             self.group_name_size_label.hide()
             self.group_name_size.hide()
             self.bold_label.hide()
@@ -161,6 +193,11 @@ class GroupByTaxDialog(QDialog):
                 self.group_params_label.hide()
                 self.points_size_label.hide()
                 self.points_size_combo.hide()
+                self.outline_color_label.hide()
+                self.outline_color_box.hide()
+                self.outline_color_button.hide()
+                self.outline_width_label.hide()
+                self.outline_width_combo.hide()
                 self.group_name_size_label.hide()
                 self.group_name_size.hide()
                 self.bold_label.hide()
@@ -190,6 +227,11 @@ class GroupByTaxDialog(QDialog):
             self.group_params_label.show()
             self.points_size_label.show()
             self.points_size_combo.show()
+            self.outline_color_label.show()
+            self.outline_color_box.show()
+            self.outline_color_button.show()
+            self.outline_width_label.show()
+            self.outline_width_combo.show()
             self.group_name_size_label.show()
             self.group_name_size.show()
             self.bold_label.show()
@@ -217,20 +259,33 @@ class GroupByTaxDialog(QDialog):
         groups_num_str = str(groups_num) + " groups"
         self.groups_num_label.setText(groups_num_str)
 
+    def change_outline_color(self):
+
+        dialog = QColorDialog()
+
+        if dialog.exec_():
+            color = dialog.currentColor()
+            hex_color = color.name()
+
+            self.outline_color = ColorArray(hex_color)
+            self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+
     def get_tax_level(self):
 
         tax_level = self.tax_level_combo.currentText()
-        points_size = self.points_size_combo.currentText()
-        group_names_size = self.group_name_size.currentText()
+        points_size = int(self.points_size_combo.currentText())
+        outline_color = self.outline_color.rgba[0]
+        outline_width = float(self.outline_width_combo.currentText())
+        group_names_size = int(self.group_name_size.currentText())
         is_bold = self.bold_checkbox.isChecked()
         is_italic = self.italic_checkbox.isChecked()
 
-        return tax_level, points_size, group_names_size, is_bold, is_italic
+        return tax_level, points_size, outline_color, outline_width, group_names_size, is_bold, is_italic
 
 
 class GroupByParamDialog(QDialog):
 
-    def __init__(self, net_plot_object):
+    def __init__(self):
         super().__init__()
 
         self.added_categories = []
@@ -250,21 +305,21 @@ class GroupByParamDialog(QDialog):
         self.upload_file_button = QPushButton("Upload file")
         self.upload_file_button.pressed.connect(self.upload_file)
 
-        self.layout.addWidget(self.file_label, 0, 0, 1, 2)
+        self.layout.addWidget(self.file_label, 0, 0, 1, 3)
         self.layout.addWidget(self.upload_file_button, 1, 0)
 
         self.added_params_label = QLabel()
-        self.layout.addWidget(self.added_params_label, 2, 0, 1, 2)
+        self.layout.addWidget(self.added_params_label, 2, 0, 1, 3)
 
         # Add general parameters for groups presentation (hided at first)
         self.space_label = QLabel(" ")
-        self.layout.addWidget(self.space_label, 3, 0, 1, 2)
+        self.layout.addWidget(self.space_label, 3, 0, 1, 3)
         self.group_params_label = QLabel("General parameters for the groups:")
-        self.layout.addWidget(self.group_params_label, 4, 0, 1, 2)
+        self.layout.addWidget(self.group_params_label, 4, 0, 1, 3)
 
         # Set the data points size
         self.points_size_label = QLabel("Data-points size:")
-        default_size = net_plot_object.nodes_size
+        default_size = cfg.run_params['nodes_size']
         self.points_size_combo = QComboBox()
 
         i = 0
@@ -278,9 +333,35 @@ class GroupByParamDialog(QDialog):
         self.layout.addWidget(self.points_size_label, 5, 0)
         self.layout.addWidget(self.points_size_combo, 5, 1)
 
+        self.outline_color_label = QLabel("Outline color:")
+        self.outline_color = ColorArray(cfg.run_params['nodes_outline_color'])
+        self.outline_color_box = QLabel(" ")
+        self.outline_color_box.setStyleSheet("background-color: " + self.outline_color.hex[0])
+        self.outline_color_button = QPushButton("Change color")
+        self.outline_color_button.pressed.connect(self.change_outline_color)
+
+        self.layout.addWidget(self.outline_color_label, 6, 0)
+        self.layout.addWidget(self.outline_color_box, 6, 1)
+        self.layout.addWidget(self.outline_color_button, 6, 2)
+
+        self.outline_width_label = QLabel("Outline width:")
+        self.outline_width_combo = QComboBox()
+
+        i = 0
+        width_options = np.arange(0, 3.5, 0.5)
+        for size in width_options:
+            self.outline_width_combo.addItem(str(size))
+            if size == cfg.run_params['nodes_outline_width']:
+                default_index = i
+            i += 1
+        self.outline_width_combo.setCurrentIndex(default_index)
+
+        self.layout.addWidget(self.outline_width_label, 7, 0)
+        self.layout.addWidget(self.outline_width_combo, 7, 1)
+
         # Set the size of the group names
         self.group_name_size_label = QLabel("Group names text size:")
-        default_size = net_plot_object.text_size
+        default_size = cfg.run_params['text_size']
         self.group_name_size = QComboBox()
 
         i = 0
@@ -291,8 +372,8 @@ class GroupByParamDialog(QDialog):
             i += 1
         self.group_name_size.setCurrentIndex(default_index)
 
-        self.layout.addWidget(self.group_name_size_label, 6, 0)
-        self.layout.addWidget(self.group_name_size, 6, 1)
+        self.layout.addWidget(self.group_name_size_label, 8, 0)
+        self.layout.addWidget(self.group_name_size, 8, 1)
 
         # Add Bold and Italic options
         self.bold_label = QLabel("Bold")
@@ -311,14 +392,19 @@ class GroupByParamDialog(QDialog):
         self.italic_layout.addWidget(self.italic_label)
         self.italic_layout.addStretch()
 
-        self.layout.addLayout(self.bold_layout, 7, 0)
-        self.layout.addLayout(self.italic_layout, 7, 1)
+        self.layout.addLayout(self.bold_layout, 9, 0)
+        self.layout.addLayout(self.italic_layout, 9, 1)
 
         # Hide all the groups-configuration controls (show them after reading the file)
         self.added_params_label.hide()
         self.group_params_label.hide()
         self.points_size_label.hide()
         self.points_size_combo.hide()
+        self.outline_color_label.hide()
+        self.outline_color_box.hide()
+        self.outline_color_button.hide()
+        self.outline_width_label.hide()
+        self.outline_width_combo.hide()
         self.group_name_size_label.hide()
         self.group_name_size.hide()
         self.bold_checkbox.hide()
@@ -366,6 +452,11 @@ class GroupByParamDialog(QDialog):
             self.group_params_label.show()
             self.points_size_label.show()
             self.points_size_combo.show()
+            self.outline_color_label.show()
+            self.outline_color_box.show()
+            self.outline_color_button.show()
+            self.outline_width_label.show()
+            self.outline_width_combo.show()
             self.group_name_size_label.show()
             self.group_name_size.show()
             self.bold_checkbox.show()
@@ -379,14 +470,28 @@ class GroupByParamDialog(QDialog):
             self.file_label.setStyleSheet("color: red")
             self.upload_file_button.setText("Upload new file")
 
+    def change_outline_color(self):
+
+        dialog = QColorDialog()
+
+        if dialog.exec_():
+            color = dialog.currentColor()
+            hex_color = color.name()
+
+            self.outline_color = ColorArray(hex_color)
+            self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+
     def get_categories(self):
 
-        points_size = self.points_size_combo.currentText()
-        group_names_size = self.group_name_size.currentText()
+        points_size = int(self.points_size_combo.currentText())
+        outline_color = self.outline_color.rgba[0]
+        outline_width = float(self.outline_width_combo.currentText())
+        group_names_size = int(self.group_name_size.currentText())
         is_bold = self.bold_checkbox.isChecked()
         is_italic = self.italic_checkbox.isChecked()
 
-        return self.groups_dict, points_size, group_names_size, is_bold, is_italic, self.is_error
+        return self.groups_dict, points_size, outline_color, outline_width, group_names_size, is_bold, is_italic, \
+               self.is_error
 
 
 class ColorByLengthDialog(QDialog):
@@ -498,7 +603,7 @@ class ColorByParamDialog(QDialog):
         self.layout.addWidget(self.row_space, 1, 0, 1, 3)
 
         self.message_label = QLabel("No user-defined parameters")
-        self.message_label.setStyleSheet("color: red;font-size: 14px")
+        self.message_label.setStyleSheet("color: maroon;font-size: 14px")
 
         self.layout.addWidget(self.message_label, 2, 0, 1, 3)
 

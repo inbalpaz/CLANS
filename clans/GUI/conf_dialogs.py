@@ -129,7 +129,7 @@ class FruchtermanReingoldConfig(QDialog):
 
 class NodesConfig(QDialog):
 
-    def __init__(self, current_nodes_size, current_nodes_color, current_outline_color, current_outline_width):
+    def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Configure default visual parameters for data-points")
@@ -143,7 +143,7 @@ class NodesConfig(QDialog):
         i = 0
         for size in range(4, 21):
             self.nodes_size_combo.addItem(str(size))
-            if size == current_nodes_size:
+            if size == cfg.run_params['nodes_size']:
                 default_index = i
             i += 1
         self.nodes_size_combo.setCurrentIndex(default_index)
@@ -153,7 +153,7 @@ class NodesConfig(QDialog):
 
         self.nodes_color_label = QLabel("Color:")
 
-        self.nodes_color = ColorArray(current_nodes_color)
+        self.nodes_color = ColorArray(cfg.run_params['nodes_color'])
         self.nodes_color_box = QLabel(" ")
         self.nodes_color_box.setStyleSheet("background-color: " + self.nodes_color.hex[0])
         self.nodes_color_button = QPushButton("Change color")
@@ -165,7 +165,7 @@ class NodesConfig(QDialog):
 
         self.outline_color_label = QLabel("Outline color:")
 
-        self.outline_color = ColorArray(current_outline_color)
+        self.outline_color = ColorArray(cfg.run_params['nodes_outline_color'])
         self.outline_color_box = QLabel(" ")
         self.outline_color_box.setStyleSheet("background-color: " + self.outline_color.hex[0])
         self.outline_color_button = QPushButton("Change color")
@@ -182,7 +182,7 @@ class NodesConfig(QDialog):
         width_options = np.arange(0, 3.5, 0.5)
         for size in width_options:
             self.outline_width_combo.addItem(str(size))
-            if size == current_outline_width:
+            if size == cfg.run_params['nodes_outline_width']:
                 default_index = i
             i += 1
         self.outline_width_combo.setCurrentIndex(default_index)
@@ -224,10 +224,10 @@ class NodesConfig(QDialog):
 
     def get_parameters(self):
 
-        size = self.nodes_size_combo.currentText()
+        size = int(self.nodes_size_combo.currentText())
         color = self.nodes_color.rgba[0]
         outline_color = self.outline_color.rgba[0]
-        outline_width = self.outline_width_combo.currentText()
+        outline_width = float(self.outline_width_combo.currentText())
 
         return size, color, outline_color, outline_width
 

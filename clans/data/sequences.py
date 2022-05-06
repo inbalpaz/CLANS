@@ -17,8 +17,8 @@ def create_sequences_array(sequences_list):
     #print("create_sequences_array: Sequences_array=\n" + str(cfg.sequences_array))
 
 
-def init_seuences_in_groups():
-    cfg.sequences_in_groups['manual'] = np.full(cfg.run_params['total_sequences_num'], -1)
+def init_groups_by_categories():
+    cfg.groups_by_categories[0]['sequences'] = np.full(cfg.run_params['total_sequences_num'], -1)
 
 
 def add_seq_length_param():

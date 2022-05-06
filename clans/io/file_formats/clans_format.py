@@ -106,12 +106,14 @@ class ClansFormat:
                 elif line.strip() == "<seqgroups>":
                     in_seqgroups_block = 1
                     self.is_groups = 1
+                    category_index = 0
                     group_ID = 1
                     order = 0
-                    category_name = "input_file"
+
                 elif in_seqgroups_block:
                     if line.strip() == "</seqgroups>":
                         in_seqgroups_block = 0
+
                     else:
                         m = re.search("^(\w+)\=(.+)\n", line)
                         if m:
@@ -121,15 +123,49 @@ class ClansFormat:
                             # Format is full-clans - expect category names
                             if k == 'category':
                                 category_name = v
-                                if category_name == 'manual':
-                                    category_name = 'manual_file'
-                                cfg.groups_dict[category_name] = dict()
+                                category_index += 1
+                                if category_name == 'Manual definition' or category_name == 'manual':
+                                    category_name = 'Manual - from file'
+                                cfg.groups_by_categories.append({'name': category_name, 'groups': dict()})
                                 group_ID = 1
                                 order = 0
+
+                            elif k == 'nodes_size':
+                                cfg.groups_by_categories[category_index]['nodes_size'] = int(v)
+
+                            elif k == 'text_size':
+                                cfg.groups_by_categories[category_index]['text_size'] = int(v)
+
+                            elif k == 'nodes_outline_width':
+                                cfg.groups_by_categories[category_index]['nodes_outline_width'] = float(v)
+
+                            elif k == 'nodes_outline_color':
+                                cfg.groups_by_categories[category_index]['nodes_outline_color'] = \
+                                    [int(c) / 255 for c in v.split(';')]
+
+                            elif k == 'is_bold':
+                                cfg.groups_by_categories[category_index]['is_bold'] = bool(v)
+
+                            elif k == 'is_italic':
+                                cfg.groups_by_categories[category_index]['is_italic'] = bool(v)
 
                             elif k == 'name':
                                 # Initialize the current group's dict
                                 d = {k: v}
+
+                                # In case the file is compatible with older versions and contains no categories,
+                                # add the 'Input CLANS file' category and initiate it
+                                if category_index == 0:
+                                    cfg.groups_by_categories.append({'name': 'Input CLANS file',
+                                                                     'groups': dict(),
+                                                                     'nodes_size': cfg.run_params['nodes_size'],
+                                                                     'text_size': cfg.run_params['text_size'],
+                                                                     'nodes_outline_width': cfg.run_params['nodes_outline_width'],
+                                                                     'nodes_outline_color': cfg.run_params['nodes_outline_color'],
+                                                                     'is_bold': True,
+                                                                     'is_italic': False
+                                                                     })
+                                    category_index += 1
 
                             elif k == 'numbers':
                                 d['seqIDs'] = {}
@@ -145,13 +181,17 @@ class ClansFormat:
                                     d['name_size'] = 10
                                 if 'is_bold' not in d:
                                     d['is_bold'] = True
+                                else:
+                                    d['is_bold'] = bool(d['is_bold'])
                                 if 'is_italic' not in d:
                                     d['is_italic'] = False
+                                else:
+                                    d['is_italic'] = bool(d['is_italic'])
                                 if 'outline_color' not in d:
                                     d['outline_color'] = [0.0, 0.0, 0.0, 1.0]
 
                                 # Add the dictionary with the current group's info to the groups dictionary
-                                cfg.groups_dict[category_name][group_ID] = d.copy()
+                                cfg.groups_by_categories[category_index]['groups'][group_ID] = d.copy()
                                 group_ID += 1
                                 order += 1
 
@@ -164,6 +204,12 @@ class ClansFormat:
 
                             elif k == 'outline_color':
                                 d['outline_color'] = [int(c) / 255 for c in v.split(';')]
+
+                            elif k == 'size' or k == 'name_size':
+                                d[k] = int(v)
+
+                            elif k == 'is_bold' or k == 'is_italic':
+                                d[k] = bool(v)
 
                             else:
                                 d[k] = v
@@ -346,18 +392,17 @@ class ClansFormat:
     def fill_values(self):
         # Create the structured NumPy array of sequences
         seq.create_sequences_array(self.sequences_list)
-        seq.init_seuences_in_groups()
+        seq.init_groups_by_categories()
 
         # If there sre groups - add the information to the sequences array
         if self.is_groups:
-            for category in cfg.groups_dict:
-                # A category filled with groups
-                if len(cfg.groups_dict[category]) > 0:
-                    cfg.sequences_in_groups[category] = np.full(cfg.run_params['total_sequences_num'], -1)
-                    for group_ID in cfg.groups_dict[category]:
-                        for seq_num in cfg.groups_dict[category][group_ID]['seqIDs']:
-                            seq_index = int(seq_num)
-                            cfg.sequences_in_groups[category][seq_index] = group_ID
+            for category_index in range(len(cfg.groups_by_categories)):
+                cfg.groups_by_categories[category_index]['sequences'] = np.full(cfg.run_params['total_sequences_num'],
+                                                                                -1)
+                for group_ID in cfg.groups_by_categories[category_index]['groups']:
+                    for seq_num in cfg.groups_by_categories[category_index]['groups'][group_ID]['seqIDs']:
+                        seq_index = int(seq_num)
+                        cfg.groups_by_categories[category_index]['sequences'][seq_index] = group_ID
 
         # calculate the sequence_length column
         seq.add_seq_length_param()
@@ -395,14 +440,45 @@ class ClansFormat:
             cfg.run_params['maxmove'] = float(self.params['maxmove'])
         if 'minattract' in self.params:
             cfg.run_params['gravity'] = float(self.params['minattract'])
+
         if 'nodes_size' in self.params:
             cfg.run_params['nodes_size'] = int(self.params['nodes_size'])
+
+            # Update default / compatible categories
+            cfg.groups_by_categories[0]['nodes_size'] = cfg.run_params['nodes_size']
+            if len(cfg.groups_by_categories) > 0 and cfg.groups_by_categories[1]['name'] == 'Input CLANS file':
+                cfg.groups_by_categories[1]['nodes_size'] = cfg.run_params['nodes_size']
+
+        # The nodes size is not defined in the parameters -> define according to the data size
+        else:
+            if cfg.run_params['total_sequences_num'] <= 1000:
+                cfg.run_params['nodes_size'] = cfg.nodes_size_large
+            elif 1000 < cfg.run_params['total_sequences_num'] <= 4000:
+                cfg.run_params['nodes_size'] = cfg.nodes_size_medium
+            elif 4000 < cfg.run_params['total_sequences_num'] <= 10000:
+                cfg.run_params['nodes_size'] = cfg.nodes_size_small
+            else:
+                cfg.run_params['nodes_size'] = cfg.nodes_size_tiny
+
         if 'nodes_color' in self.params:
             cfg.run_params['nodes_color'] = [int(c) / 255 for c in self.params['nodes_color'].split(';')]
+
         if 'nodes_outline_color' in self.params:
             cfg.run_params['nodes_outline_color'] = [int(c) / 255 for c in self.params['nodes_outline_color'].split(';')]
+
+            # Update default / compatible categories
+            cfg.groups_by_categories[0]['nodes_outline_color'] = cfg.run_params['nodes_outline_color']
+            if len(cfg.groups_by_categories) > 0 and cfg.groups_by_categories[1]['name'] == 'Input CLANS file':
+                cfg.groups_by_categories[1]['nodes_outline_color'] = cfg.run_params['nodes_outline_color']
+
         if 'nodes_outline_width' in self.params:
             cfg.run_params['nodes_outline_width'] = float(self.params['nodes_outline_width'])
+
+            # Update default / compatible categories
+            cfg.groups_by_categories[0]['nodes_outline_width'] = cfg.run_params['nodes_outline_width']
+            if len(cfg.groups_by_categories) > 0 and cfg.groups_by_categories[1]['name'] == 'Input CLANS file':
+                cfg.groups_by_categories[1]['nodes_outline_width'] = cfg.run_params['nodes_outline_width']
+
         if 'is_taxonomy_available' in self.params:
             cfg.run_params['is_taxonomy_available'] = True
             cfg.run_params['finished_taxonomy_search'] = True
@@ -461,17 +537,17 @@ class ClansFormat:
         output.write('</seq>\n')
 
         # Write the groups block
-        if len(cfg.groups_dict[group_by]) > 0:
+        if len(cfg.groups_by_categories[group_by]['groups']) > 0:
             groups_block = ""
             output.write('<seqgroups>\n')
-            for group_ID in cfg.groups_dict[group_by]:
+            for group_ID in cfg.groups_by_categories[group_by]['groups']:
 
                 seq_ids_str = ""
-                for seq_index in cfg.groups_dict[group_by][group_ID]['seqIDs']:
+                for seq_index in cfg.groups_by_categories[group_by]['groups'][group_ID]['seqIDs']:
                     seq_ids_str += str(seq_index) + ";"
-                groups_block += 'name=' + cfg.groups_dict[group_by][group_ID]['name'] + '\n'
-                groups_block += 'size=' + cfg.groups_dict[group_by][group_ID]['size'] + '\n'
-                groups_block += 'color=' + cfg.groups_dict[group_by][group_ID]['color'] + '\n'
+                groups_block += 'name=' + cfg.groups_by_categories[group_by]['groups'][group_ID]['name'] + '\n'
+                groups_block += 'size=' + cfg.groups_by_categories[group_by]['groups'][group_ID]['size'] + '\n'
+                groups_block += 'color=' + cfg.groups_by_categories[group_by]['groups'][group_ID]['color'] + '\n'
                 groups_block += 'numbers=' + seq_ids_str + '\n'
             output.write(groups_block)
             output.write('</seqgroups>\n')
@@ -551,37 +627,60 @@ class ClansFormat:
         output.write('</seq>\n')
 
         # Write the groups block: write the groups for each category, including new parameters
-        if len(cfg.groups_dict) > 2 or len(cfg.groups_dict['input_file']) > 0 or len(cfg.groups_dict['manual']) > 0:
+        if len(cfg.groups_by_categories) > 1 or len(cfg.groups_by_categories[0]['groups']) > 0:
             output.write('<seqgroups>\n')
 
             # A loop over the grouping categories
-            for category in cfg.groups_dict:
+            for category_index in range(len(cfg.groups_by_categories)):
 
-                if len(cfg.groups_dict[category]) > 0:
+                if len(cfg.groups_by_categories[category_index]['groups']) > 0:
                     groups_block = ""
-                    category_str = "category=" + category + "\n"
+
+                    category_str = "category=" + cfg.groups_by_categories[category_index]['name'] + "\n"
                     output.write(category_str)
 
-                    ordered_groups = sorted(cfg.groups_dict[category].keys(),
-                                            key=lambda k: cfg.groups_dict[category][k]['order'])
+                    nodes_size_str = "nodes_size=" + str(cfg.groups_by_categories[category_index]['nodes_size']) + "\n"
+                    output.write(nodes_size_str)
+
+                    text_size_str = "text_size=" + str(cfg.groups_by_categories[category_index]['text_size']) + "\n"
+                    output.write(text_size_str)
+
+                    nodes_outline_color_str = "nodes_outline_color=" + ';'.join([str(int(c * 255)) for c in
+                                               cfg.groups_by_categories[category_index]['nodes_outline_color']]) \
+                                              + "\n"
+                    output.write(nodes_outline_color_str)
+
+                    nodes_outline_width_str = "nodes_outline_width=" + \
+                                              str(cfg.groups_by_categories[category_index]['nodes_outline_width']) + \
+                                              "\n"
+                    output.write(nodes_outline_width_str)
+
+                    is_bold_str = "is_bold=" + str(cfg.groups_by_categories[category_index]['is_bold']) + "\n"
+                    output.write(is_bold_str)
+
+                    is_italic_str = "is_italic=" + str(cfg.groups_by_categories[category_index]['is_italic']) + "\n"
+                    output.write(is_italic_str)
+
+                    ordered_groups = sorted(cfg.groups_by_categories[category_index]['groups'].keys(),
+                                            key=lambda k: cfg.groups_by_categories[category_index]['groups'][k]['order'])
 
                     # a loop over the groups
                     for group_ID in ordered_groups:
 
                         seq_ids_str = ""
-                        for seq_index in cfg.groups_dict[category][group_ID]['seqIDs']:
+                        for seq_index in cfg.groups_by_categories[category_index]['groups'][group_ID]['seqIDs']:
                             seq_ids_str += str(seq_index) + ";"
 
                         outline_color = ';'.join([str(int(c * 255))
-                                                  for c in cfg.groups_dict[category][group_ID]['outline_color']])
+                                                  for c in cfg.groups_by_categories[category_index]['groups'][group_ID]['outline_color']])
 
-                        groups_block += 'name=' + cfg.groups_dict[category][group_ID]['name'] + '\n'
-                        groups_block += 'size=' + str(cfg.groups_dict[category][group_ID]['size']) + '\n'
-                        groups_block += 'name_size=' + str(cfg.groups_dict[category][group_ID]['name_size']) + '\n'
-                        groups_block += 'color=' + cfg.groups_dict[category][group_ID]['color'] + '\n'
+                        groups_block += 'name=' + cfg.groups_by_categories[category_index]['groups'][group_ID]['name'] + '\n'
+                        groups_block += 'size=' + str(cfg.groups_by_categories[category_index]['groups'][group_ID]['size']) + '\n'
+                        groups_block += 'name_size=' + str(cfg.groups_by_categories[category_index]['groups'][group_ID]['name_size']) + '\n'
+                        groups_block += 'color=' + cfg.groups_by_categories[category_index]['groups'][group_ID]['color'] + '\n'
                         groups_block += 'outline_color=' + outline_color + '\n'
-                        groups_block += 'is_bold=' + str(cfg.groups_dict[category][group_ID]['is_bold']) + '\n'
-                        groups_block += 'is_italic=' + str(cfg.groups_dict[category][group_ID]['is_italic']) + '\n'
+                        groups_block += 'is_bold=' + str(cfg.groups_by_categories[category_index]['groups'][group_ID]['is_bold']) + '\n'
+                        groups_block += 'is_italic=' + str(cfg.groups_by_categories[category_index]['groups'][group_ID]['is_italic']) + '\n'
                         groups_block += 'numbers=' + seq_ids_str + '\n'
 
                     output.write(groups_block)

@@ -1,7 +1,6 @@
 from PyQt5.QtCore import QObject, QRunnable, pyqtSignal, pyqtSlot
 import clans.config as cfg
 import clans.io.file_formats.clans_format as clans
-import clans.io.file_formats.clans_minimal_format as clans_mini
 import clans.io.file_formats.tab_delimited_format as tab
 import clans.data.sequence_pairs as sp
 import clans.taxonomy.taxonomy as tax
@@ -20,8 +19,6 @@ class ReadInputWorker(QRunnable):
 
         if format == 'clans':
             self.format_object = clans.ClansFormat()
-        elif format == 'mini_clans':
-            self.format_object = clans_mini.ClansMinimalFormat()
         else:
             self.format_object = tab.DelimitedFormat()
 

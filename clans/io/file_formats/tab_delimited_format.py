@@ -159,7 +159,7 @@ class DelimitedFormat:
     def fill_values(self):
         # Create the structured NumPy array of sequences
         seq.create_sequences_array(self.sequences_list)
-        seq.init_seuences_in_groups()
+        seq.init_groups_by_categories()
 
         # Apply the similarity cutoff
         if self.type_of_values == "hsp":
@@ -174,6 +174,16 @@ class DelimitedFormat:
             if cfg.run_params['similarity_cutoff'] < 0.1:
                 cfg.run_params['similarity_cutoff'] = 0.1
             sp.define_connected_sequences('att')
+
+        # Update the nodes-size parameter according to the dataset size
+        if cfg.run_params['total_sequences_num'] <= 1000:
+            cfg.run_params['nodes_size'] = cfg.nodes_size_large
+        elif 1000 < cfg.run_params['total_sequences_num'] <= 4000:
+            cfg.run_params['nodes_size'] = cfg.nodes_size_medium
+        elif 4000 < cfg.run_params['total_sequences_num'] <= 10000:
+            cfg.run_params['nodes_size'] = cfg.nodes_size_small
+        else:
+            cfg.run_params['nodes_size'] = cfg.nodes_size_tiny
 
     def write_file(self, file_path):
 

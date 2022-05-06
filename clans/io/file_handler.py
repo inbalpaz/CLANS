@@ -1,5 +1,4 @@
 import clans.io.file_formats.clans_format as clans
-import clans.io.file_formats.clans_minimal_format as mini_clans
 import clans.io.file_formats.fasta_format as fasta
 import clans.io.file_formats.tab_delimited_format as tab
 import clans.config as cfg
@@ -11,8 +10,6 @@ def read_input_file(file_path, file_format):
         format_object = fasta.FastaFormat()
     elif file_format == 'clans':
         format_object = clans.ClansFormat()
-    elif file_format == 'mini-clans':
-        format_object = mini_clans.ClansMinimalFormat()
     elif file_format == 'delimited':
         format_object = tab.DelimitedFormat()
 
@@ -40,12 +37,6 @@ def write_file(file_path, file_format, group_type):
             is_param_block = True
 
         format_object.write_file(file_path, is_param_block, group_type)
-
-    # Mini-clans
-    elif file_format == 'mini-clans':
-        format_object = mini_clans.ClansMinimalFormat()
-
-        format_object.write_file(file_path, group_type)
 
     # tab-delimited format
     else:

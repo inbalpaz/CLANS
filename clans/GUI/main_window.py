@@ -9,7 +9,6 @@ import re
 import clans.config as cfg
 import clans.io.io_gui as io
 import clans.io.file_formats.clans_format as clans_format
-import clans.io.file_formats.clans_minimal_format as clans_mini
 import clans.io.file_formats.tab_delimited_format as tab_format
 import clans.layouts.layout_gui as lg
 import clans.layouts.fruchterman_reingold_class as fr_class
@@ -25,7 +24,6 @@ import clans.GUI.message_dialogs as mes_dialogs
 #import clans.GUI.text_dialogs as td
 import clans.GUI.conf_dialogs as cd
 import clans.graphics.colors as colors
-#import clans.io.try_io as try_io
 
 
 class Button(QPushButton):
@@ -70,14 +68,13 @@ class MainWindow(QMainWindow):
         self.mode = "interactive"  # Modes of interaction: 'interactive' (rotate/pan) / 'selection'
         self.selection_type = "sequences"  # switch between 'sequences' and 'groups' modes
         self.color_by = "groups"  # Color the nodes according to: 'groups' / 'param'
-        self.group_by = "manual"  # Determines which grouping methos is active. ('manual', 'input_file', 'taxonomy', etc...)
+        self.group_by = 0  # The category_index of the active grouping category (default is 0 - 'Manual definition').
         self.is_subset_mode = 0  # In subset mode, only the selected data-points are displayed
         self.z_indexing_mode = "auto"  # Switch between 'auto' and 'groups' modes
         self.ctrl_key_pressed = 0
         self.visual_to_move = None
         self.is_init = 0
         self.done_color_by_length = 0
-        self.added_user_param = 0
         self.load_file_worker = None
 
         self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
@@ -128,21 +125,17 @@ class MainWindow(QMainWindow):
         self.save_file_submenu = self.file_menu.addMenu("Save to file")
         self.save_clans_submenu = self.save_file_submenu.addMenu("CLANS format")
 
-        self.save_full_clans_file_action = QAction("Full CLANS (including metadata)", self)
+        self.save_full_clans_file_action = QAction("Full CLANS", self)
         self.save_full_clans_file_action.triggered.connect(self.save_full_clans_file)
 
-        self.save_clans_file_action = QAction("Standard CLANS (compatible)", self)
+        self.save_clans_file_action = QAction("Compatible CLANS", self)
         self.save_clans_file_action.triggered.connect(self.save_clans_file)
-
-        self.save_mini_clans_file_action = QAction("Minimal CLANS (without sequences)", self)
-        self.save_mini_clans_file_action.triggered.connect(self.save_mini_clans_file)
 
         self.save_delimited_file_action = QAction("Tab-delimited format", self)
         self.save_delimited_file_action.triggered.connect(self.save_delimited_file)
 
         self.save_clans_submenu.addAction(self.save_full_clans_file_action)
         self.save_clans_submenu.addAction(self.save_clans_file_action)
-        self.save_clans_submenu.addAction(self.save_mini_clans_file_action)
         self.save_file_submenu.addAction(self.save_delimited_file_action)
 
         self.save_image_action = QAction("Save as image", self)
@@ -297,7 +290,7 @@ class MainWindow(QMainWindow):
         # Add a button to change the Z-indexing of nodes in 2D presentation
         self.z_index_mode_combo = QComboBox()
         self.z_index_mode_combo.addItems(["Auto Z-index", "By groups order"])
-        if self.dim_num == 3 or len(cfg.groups_dict[self.group_by]) < 2:
+        if self.dim_num == 3 or len(cfg.groups_by_categories[self.group_by]['groups']) < 2:
             self.z_index_mode_combo.setEnabled(False)
         self.z_index_mode_combo.currentIndexChanged.connect(self.manage_z_indexing)
 
@@ -321,73 +314,6 @@ class MainWindow(QMainWindow):
 
         # Add the view_layout to the main layout
         self.main_layout.addLayout(self.view_layout)
-
-        self.display_label = QLabel("Display:")
-        self.display_label.setStyleSheet("color: maroon; font-weight: bold;")
-
-        # Add a button to show/hide the connections
-        self.connections_button = QPushButton("Connections")
-        self.connections_button.setCheckable(True)
-        self.connections_button.setEnabled(False)
-        self.connections_button.released.connect(self.manage_connections)
-
-        # Add a button to show the selected sequences names on screen
-        self.show_selected_names_button = QPushButton("Selected names")
-        self.show_selected_names_button.setCheckable(True)
-        self.show_selected_names_button.setEnabled(False)
-        self.show_selected_names_button.released.connect(self.show_selected_names)
-
-        # Add a button to show the group names on screen
-        self.show_group_names_button = QPushButton("Group names")
-        self.show_group_names_button.setCheckable(True)
-        if len(cfg.groups_dict[self.group_by]) == 0:
-            self.show_group_names_button.setEnabled(False)
-        self.show_group_names_button.released.connect(self.manage_group_names)
-
-        # Add a combo-box to choose whether showing the selected group names only or all the group names
-        self.show_groups_combo = QComboBox()
-        self.show_groups_combo.addItems(["All", "Selected"])
-        self.show_groups_combo.setEnabled(False)
-        self.show_groups_combo.currentIndexChanged.connect(self.change_group_names_display)
-
-        # Add 'reset group names' button
-        self.reset_group_names_button = QPushButton("Init names")
-        self.reset_group_names_button.setEnabled(False)
-        self.reset_group_names_button.pressed.connect(self.reset_group_names_positions)
-
-        # Add a combo-box to switch between color-by options
-        self.color_by_label = QLabel("Color by:")
-        self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
-
-        self.color_by_combo = QComboBox()
-        self.color_by_combo.addItem("Groups/Default")
-        self.color_by_combo.setEnabled(False)
-        self.color_by_combo.currentIndexChanged.connect(self.change_coloring)
-
-        # Add 'Add text' button
-        #self.add_text_button = QPushButton("Add text")
-        #self.add_text_button.setEnabled(False)
-        #self.add_text_button.pressed.connect(self.add_text)
-
-        # Add the widgets to the view_layout
-        self.display_layout.addWidget(self.display_label)
-        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.display_layout.addWidget(self.connections_button)
-        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.display_layout.addWidget(self.show_selected_names_button)
-        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.display_layout.addWidget(self.show_group_names_button)
-        self.display_layout.addWidget(self.show_groups_combo)
-        self.display_layout.addWidget(self.reset_group_names_button)
-        self.display_layout.addSpacerItem(self.horizontal_spacer_short)
-        self.display_layout.addWidget(self.color_by_label)
-        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.display_layout.addWidget(self.color_by_combo)
-        #self.display_layout.addWidget(self.add_text_button)
-        self.display_layout.addStretch()
-
-        # Add the view_layout to the main layout
-        self.main_layout.addLayout(self.display_layout)
 
         self.selection_label = QLabel("Selection:")
         self.selection_label.setStyleSheet("color: maroon; font-weight: bold;")
@@ -435,6 +361,72 @@ class MainWindow(QMainWindow):
         # Add the selection_layout to the main layout
         self.main_layout.addLayout(self.selection_layout)
 
+        self.display_label = QLabel("Display:")
+        self.display_label.setStyleSheet("color: maroon; font-weight: bold;")
+
+        # Add a button to show/hide the connections
+        self.connections_button = QPushButton("Connections")
+        self.connections_button.setCheckable(True)
+        self.connections_button.setEnabled(False)
+        self.connections_button.released.connect(self.manage_connections)
+
+        # Add a button to show the selected sequences names on screen
+        self.show_selected_names_button = QPushButton("Selected names")
+        self.show_selected_names_button.setCheckable(True)
+        self.show_selected_names_button.setEnabled(False)
+        self.show_selected_names_button.released.connect(self.show_selected_names)
+
+        # Add a button to show the group names on screen
+        self.show_group_names_button = QPushButton("Group names")
+        self.show_group_names_button.setCheckable(True)
+        if len(cfg.groups_by_categories[self.group_by]['groups']) == 0:
+            self.show_group_names_button.setEnabled(False)
+        self.show_group_names_button.released.connect(self.manage_group_names)
+
+        # Add a combo-box to choose whether showing the selected group names only or all the group names
+        self.show_groups_combo = QComboBox()
+        self.show_groups_combo.addItems(["All", "Selected"])
+        self.show_groups_combo.setEnabled(False)
+        self.show_groups_combo.currentIndexChanged.connect(self.change_group_names_display)
+
+        # Add 'reset group names' button
+        self.reset_group_names_button = QPushButton("Init names")
+        self.reset_group_names_button.setEnabled(False)
+        self.reset_group_names_button.pressed.connect(self.reset_group_names_positions)
+
+        # Add a combo-box to switch between color-by options
+        self.color_by_label = QLabel("Color by:")
+        self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
+
+        self.color_by_combo = QComboBox()
+        self.color_by_combo.addItem("Groups/Default")
+        self.color_by_combo.setEnabled(False)
+        self.color_by_combo.currentIndexChanged.connect(self.change_coloring)
+
+        # Add 'Add text' button
+        #self.add_text_button = QPushButton("Add text")
+        #self.add_text_button.setEnabled(False)
+        #self.add_text_button.pressed.connect(self.add_text)
+
+        # Add the widgets to the view_layout
+        self.display_layout.addWidget(self.color_by_label)
+        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.display_layout.addWidget(self.color_by_combo)
+        self.display_layout.addSpacerItem(self.horizontal_spacer_short)
+        self.display_layout.addWidget(self.display_label)
+        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.display_layout.addWidget(self.connections_button)
+        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.display_layout.addWidget(self.show_selected_names_button)
+        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.display_layout.addWidget(self.show_group_names_button)
+        self.display_layout.addWidget(self.show_groups_combo)
+        self.display_layout.addWidget(self.reset_group_names_button)
+        self.display_layout.addStretch()
+
+        # Add the view_layout to the main layout
+        self.main_layout.addLayout(self.display_layout)
+
         self.groups_label = QLabel("Groups:")
         self.groups_label.setStyleSheet("color: maroon; font-weight: bold;")
 
@@ -444,12 +436,12 @@ class MainWindow(QMainWindow):
         self.edit_groups_button.released.connect(self.edit_groups)
 
         # Add a button for adding the selected sequences to a new / existing (opens a dialog)
-        self.add_to_group_button = QPushButton("Add selected to group")
+        self.add_to_group_button = QPushButton("Add to group")
         self.add_to_group_button.released.connect(self.open_add_to_group_dialog)
         self.add_to_group_button.setEnabled(False)
 
         # Add a button for removing the selected sequences from their group(s)
-        self.remove_selected_button = QPushButton("Remove selected from group(s)")
+        self.remove_selected_button = QPushButton("Remove from group(s)")
         self.remove_selected_button.released.connect(self.remove_selected_from_group)
         self.remove_selected_button.setEnabled(False)
 
@@ -462,15 +454,21 @@ class MainWindow(QMainWindow):
         self.group_by_combo.setEnabled(False)
         self.group_by_combo.currentIndexChanged.connect(self.change_grouping)
 
+        # Add a button to edit the grouping-categories (opens the editing-categories window)
+        self.edit_categories_button = QPushButton("Edit categories")
+        self.edit_categories_button.setEnabled(False)
+        self.edit_categories_button.released.connect(self.edit_categories)
+
+        self.groups_layout.addWidget(self.group_by_label)
+        self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.groups_layout.addWidget(self.group_by_combo)
+        self.groups_layout.addWidget(self.edit_categories_button)
+        self.groups_layout.addSpacerItem(self.horizontal_spacer_long)
         self.groups_layout.addWidget(self.groups_label)
         self.groups_layout.addSpacerItem(self.horizontal_spacer_short)
         self.groups_layout.addWidget(self.edit_groups_button)
         self.groups_layout.addWidget(self.add_to_group_button)
         self.groups_layout.addWidget(self.remove_selected_button)
-        self.groups_layout.addSpacerItem(self.horizontal_spacer_long)
-        self.groups_layout.addWidget(self.group_by_label)
-        self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.groups_layout.addWidget(self.group_by_combo)
         self.groups_layout.addStretch()
 
         self.main_layout.addLayout(self.groups_layout)
@@ -561,6 +559,7 @@ class MainWindow(QMainWindow):
         self.group_by_combo.clear()
         self.group_by_combo.addItem("Manual definition")
         self.group_by_combo.setEnabled(False)
+        self.edit_categories_button.setEnabled(False)
 
         # Reset the list of sequences in the 'selected sequences' window
         self.selected_seq_window.clear_list()
@@ -572,12 +571,18 @@ class MainWindow(QMainWindow):
     def reset_variables(self):
 
         # Reset global variables
-        cfg.groups_dict = dict()
-        cfg.groups_dict['input_file'] = dict()
-        cfg.groups_dict['manual'] = dict()
-        cfg.sequences_in_groups = dict()
-        cfg.sequences_in_groups['input_file'] = []
-        cfg.sequences_in_groups['manual'] = []
+        cfg.groups_by_categories = list()
+        cfg.groups_by_categories.append({
+            'name': 'Manual definition',
+            'groups': dict(),
+            'sequences': list(),
+            'nodes_size': cfg.run_params['nodes_size'],
+            'nodes_outline_color': cfg.run_params['nodes_outline_color'],
+            'text_size': cfg.run_params['text_size'],
+            'nodes_outline_width': cfg.run_params['nodes_outline_width'],
+            'is_bold': True,
+            'is_italic': False
+        })
         cfg.taxonomy_dict = {}
         cfg.organisms_dict = {}
         cfg.sequences_ID_to_index = {}
@@ -642,7 +647,6 @@ class MainWindow(QMainWindow):
         self.z_indexing_mode = "auto"  # Switch between 'auto' and 'groups' modes
         self.ctrl_key_pressed = 0
         self.done_color_by_length = 0
-        self.added_user_param = 0
         self.color_by = 'groups'
 
     def load_input_file(self):
@@ -701,42 +705,34 @@ class MainWindow(QMainWindow):
 
             # Check if there are any defined groups
             groups_ok = 0
-            for category in cfg.groups_dict:
-                groups_num = len(cfg.groups_dict[category])
+            for category_index in range(len(cfg.groups_by_categories)):
+                groups_num = len(cfg.groups_by_categories[category_index]['groups'])
                 if groups_num > 0:
 
                     # Pop up an error message
                     if groups_num > 300:
-                        message = "The Number of groups in the \'" + category + "\' grouping-category exceeds 300 " \
+                        message = "The Number of groups in the \'" + cfg.groups_by_categories[category_index]['name'] + \
+                                  "\' grouping-category exceeds 300 " \
                                   "(" + str(groups_num) + " groups).\nContinue without loading groups in this category."
                         print(message)
                         dlg = mes_dialogs.MessageDialog(message)
 
                         if dlg.exec_():
-                            cfg.groups_dict[category] = {}
+                            groups.delete_grouping_category(category_index)
 
                     # The number of groups is ok
                     else:
                         groups_ok = 1
-                        if category == 'input_file':
-                            self.group_by_combo.addItem("Input CLANS file")
-                        elif category == 'manual_file':
-                            self.group_by_combo.addItem("Manual - from file")
-                        else:
-                            self.group_by_combo.addItem(category)
+                        self.group_by_combo.addItem(cfg.groups_by_categories[category_index]['name'])
 
-            # There is at least one valid pre-defined grouping caegory
+            # There is at least one valid pre-defined grouping category
             if groups_ok:
+                self.edit_categories_button.setEnabled(True)
                 self.edit_groups_button.setEnabled(True)
                 self.show_group_names_button.setEnabled(True)
                 self.group_by_combo.setEnabled(True)
                 self.group_by_combo.setCurrentIndex(1)
-                if self.group_by_combo.currentText() == "Input CLANS file":
-                    self.group_by = "input_file"
-                elif self.group_by_combo.currentText() == "Manual - from file":
-                    self.group_by = "manual_file"
-                else:
-                    self.group_by = self.group_by_combo.currentText()
+                self.group_by = 1
 
             # If there are uploaded numeric parameters - enable the color-by combo-box
             if len(cfg.sequences_numeric_params) > 0:
@@ -748,16 +744,7 @@ class MainWindow(QMainWindow):
             self.selected_seq_window.update_window_title(self.file_name)
 
             # Create and display the FR layout as scatter plot
-            self.before = time.time()
             self.network_plot.init_data(self.fr_object, self.group_by)
-            self.network_plot.set_defaults(cfg.run_params['nodes_size'], cfg.run_params['nodes_color'],
-                                           cfg.run_params['nodes_outline_color'], cfg.run_params['nodes_outline_width'],
-                                           self.dim_num, self.color_by, self.group_by)
-
-            if cfg.run_params['is_debug_mode']:
-                self.after = time.time()
-                duration = (self.after - self.before)
-                print("Prepare and display the initial plot took " + str(duration) + " seconds")
 
             # Update the number of rounds label
             self.rounds_done = cfg.run_params['rounds_done']
@@ -782,10 +769,6 @@ class MainWindow(QMainWindow):
 
             self.add_groups_from_metadata_action.setEnabled(True)
             self.color_by_param_action.setEnabled(True)
-
-            ## Debug
-            #try_io.create_artificial_metadata_groups_file_with_seq_name(self.file_name)
-            #try_io.create_artificial_metadata_groups_file_with_seq_index(self.file_name)
 
         else:
             # Remove the 'loading file' message from the scene and put an error message instead
@@ -956,6 +939,7 @@ class MainWindow(QMainWindow):
             self.z_index_mode_combo.setEnabled(False)
             self.color_by_combo.setEnabled(False)
             self.group_by_combo.setEnabled(False)
+            self.edit_categories_button.setEnabled(False)
 
             # Execute
             self.threadpool.start(self.run_calc_worker)
@@ -1006,14 +990,14 @@ class MainWindow(QMainWindow):
         self.connections_button.setEnabled(True)
         #self.add_text_button.setEnabled(True)
 
-        if len(cfg.groups_dict[self.group_by]) > 0 and self.color_by == 'groups':
+        if len(cfg.groups_by_categories[self.group_by]['groups']) > 0 and self.color_by == 'groups':
             self.show_group_names_button.setEnabled(True)
             if len(self.network_plot.selected_groups) > 0:
                 self.show_groups_combo.setEnabled(True)
             self.edit_groups_button.setEnabled(True)
 
             if self.is_subset_mode == 0 and self.view_in_dimensions_num == 2 and self.color_by == 'groups' and \
-                    len(cfg.groups_dict[self.group_by]) > 1:
+                    len(cfg.groups_by_categories[self.group_by]['groups']) > 1:
                 self.z_index_mode_combo.setEnabled(True)
 
         # Enable selection-related buttons only in full data mode
@@ -1029,16 +1013,16 @@ class MainWindow(QMainWindow):
             self.open_selected_button.setEnabled(True)
             self.add_to_group_button.setEnabled(True)
             self.remove_selected_button.setEnabled(True)
-            if len(self.network_plot.selected_points) >= 4:
-                self.data_mode_combo.setEnabled(True)
+            self.data_mode_combo.setEnabled(True)
 
         # Enable the 'color by' combo box if the color-by-param was already done once
-        if self.done_color_by_length or self.added_user_param:
+        if self.done_color_by_length or len(cfg.sequences_numeric_params) > 0:
             self.color_by_combo.setEnabled(True)
 
         # Enable the 'group-by' combo box if is more than one grouping option
         if self.group_by_combo.count() > 1 and self.color_by == 'groups':
             self.group_by_combo.setEnabled(True)
+            self.edit_categories_button.setEnabled(True)
 
         # Whole data calculation mode
         if self.is_subset_mode == 0:
@@ -1202,17 +1186,6 @@ class MainWindow(QMainWindow):
             if cfg.run_params['is_debug_mode']:
                 print("Session is successfully saved to " + saved_file + " in full-CLANS format")
 
-    # Save a minimal clans file (without the sequences)
-    def save_mini_clans_file(self):
-        saved_file, _ = QFileDialog.getSaveFileName()
-
-        if saved_file:
-            file_object = clans_mini.ClansMinimalFormat()
-            file_object.write_file(saved_file, self.group_by)
-
-            if cfg.run_params['is_debug_mode']:
-                print("Session is successfully saved to " + saved_file + " in mini-CLANS format")
-
     def save_delimited_file(self):
 
         saved_file, _ = QFileDialog.getSaveFileName()
@@ -1254,9 +1227,7 @@ class MainWindow(QMainWindow):
 
     def conf_nodes(self):
 
-        conf_nodes_dlg = cd.NodesConfig(self.network_plot.nodes_size, self.network_plot.nodes_default_color,
-                                        self.network_plot.nodes_outline_default_color,
-                                        self.network_plot.nodes_outline_width)
+        conf_nodes_dlg = cd.NodesConfig()
 
         if conf_nodes_dlg.exec_():
             size, color, outline_color, outline_width = conf_nodes_dlg.get_parameters()
@@ -1266,8 +1237,13 @@ class MainWindow(QMainWindow):
             cfg.run_params['nodes_outline_color'] = outline_color
             cfg.run_params['nodes_outline_width'] = outline_width
 
-            self.network_plot.set_defaults(size, color, outline_color, outline_width, self.dim_num, self.color_by,
-                                           self.group_by)
+            # Update also the parameters of the 'Manual definition' grouping-category
+            cfg.groups_by_categories[0]['nodes_size'] = size
+            cfg.groups_by_categories[0]['nodes_color'] = color
+            cfg.groups_by_categories[0]['nodes_outline_color'] = outline_color
+            cfg.groups_by_categories[0]['nodes_outline_width'] = outline_width
+
+            self.network_plot.set_defaults(self.dim_num, self.color_by, self.group_by)
 
     def change_dimensions_view(self):
 
@@ -1294,7 +1270,8 @@ class MainWindow(QMainWindow):
             self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View of " + self.file_name)
 
             # Only in full data and color-by groups modes
-            if self.is_subset_mode == 0 and len(cfg.groups_dict[self.group_by]) > 1 and self.color_by == 'groups':
+            if self.is_subset_mode == 0 and len(cfg.groups_by_categories[self.group_by]['groups']) > 1 \
+                    and self.color_by == 'groups':
                 self.z_index_mode_combo.setEnabled(True)
 
             # Not in init file mode
@@ -1390,12 +1367,17 @@ class MainWindow(QMainWindow):
             if self.mode_combo.currentIndex() == 1:
                 self.mode = "selection"
 
+                if len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
+                    self.selection_type_combo.setEnabled(True)
+
                 if cfg.run_params['is_debug_mode']:
                     print("Selection mode")
 
             # Move visuals mode
             elif self.mode_combo.currentIndex() == 2:
                 self.mode = "move_visuals"
+
+                self.selection_type_combo.setEnabled(False)
 
                 if cfg.run_params['is_debug_mode']:
                     print("move_visuals mode")
@@ -1410,11 +1392,8 @@ class MainWindow(QMainWindow):
             self.pval_widget.setEnabled(False)
             self.dimensions_view_combo.setEnabled(False)
 
-            if len(cfg.groups_dict[self.group_by]) > 1 and self.color_by == 'groups':
+            if len(cfg.groups_by_categories[self.group_by]['groups']) > 1 and self.color_by == 'groups':
                 self.z_index_mode_combo.setEnabled(True)
-
-            if len(cfg.groups_dict[self.group_by]) > 0:
-                self.selection_type_combo.setEnabled(True)
 
             # Disconnect the default behaviour of the viewbox when the mouse moves
             # and connect special callbacks for mouse_move and mouse_release
@@ -1463,17 +1442,25 @@ class MainWindow(QMainWindow):
             if self.is_init == 0:
 
                 # Enable all the group-related controls (if there are groups)
-                if len(cfg.groups_dict[self.group_by]) > 0:
+                if len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                     self.edit_groups_button.setEnabled(True)
                     self.show_group_names_button.setEnabled(True)
-                    self.selection_type_combo.setEnabled(True)
 
-                if self.dim_num == 2 and len(cfg.groups_dict[self.group_by]) > 1:
+                    if self.mode_combo.currentIndex() == 1:
+                        self.selection_type_combo.setEnabled(True)
+
+                # Enable add + remove from group if there is at least one selected point
+                if len(self.network_plot.selected_points) > 0:
+                    self.add_to_group_button.setEnabled(True)
+                    self.remove_selected_button.setEnabled(True)
+
+                if self.dim_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 1:
                     self.z_index_mode_combo.setEnabled(True)
 
                 # Enable the 'group-by' combo box if is more than one grouping option
                 if self.group_by_combo.count() > 1:
                     self.group_by_combo.setEnabled(True)
+                    self.edit_categories_button.setEnabled(True)
 
                 self.color_by_groups()
 
@@ -1483,6 +1470,8 @@ class MainWindow(QMainWindow):
 
             # Disable all the group-related controls and hide the group names
             self.edit_groups_button.setEnabled(False)
+            self.add_to_group_button.setEnabled(False)
+            self.remove_selected_button.setEnabled(False)
             self.show_group_names_button.setChecked(False)
             self.network_plot.hide_group_names()
             self.reset_group_names_button.setEnabled(False)
@@ -1490,6 +1479,7 @@ class MainWindow(QMainWindow):
             self.show_group_names_button.setEnabled(False)
             self.selection_type_combo.setEnabled(False)
             self.group_by_combo.setEnabled(False)
+            self.edit_categories_button.setEnabled(False)
 
             if self.is_init == 0:
                 # Color the data by sequence length
@@ -1528,7 +1518,6 @@ class MainWindow(QMainWindow):
 
                 # At least one new parameter was added
                 if len(added_params_list) > 0:
-                    self.added_user_param = 1
 
                     for param_name in added_params_list:
                         self.color_by_combo.addItem(param_name)
@@ -1544,57 +1533,48 @@ class MainWindow(QMainWindow):
 
     def change_grouping(self):
 
-        # Group the data by manual definition (by selection)
-        if self.group_by_combo.currentText() == 'Manual definition':
-            self.group_by = "manual"
-
-        # Group the data according to the <Seqgoups> section in the input file
-        elif self.group_by_combo.currentText() == 'Input CLANS file':
-            self.group_by = "input_file"
-
-        elif self.group_by_combo.currentText() == 'Manual - from file':
-            self.group_by = "manual_file"
-
-        # Group the data by some user-defined parameter
-        else:
-            self.group_by = self.group_by_combo.currentText()
+        self.group_by = self.group_by_combo.currentIndex()
 
         if not self.is_init:
 
             if self.dim_num == 2:
                 self.z_index_mode_combo.setCurrentIndex(0)
-                if len(cfg.groups_dict[self.group_by]) > 1:
+                if not self.is_subset_mode and len(cfg.groups_by_categories[self.group_by]['groups']) > 1:
                     self.z_index_mode_combo.setEnabled(True)
                 else:
                     self.z_index_mode_combo.setEnabled(False)
 
-            if len(self.network_plot.selected_groups) > 0:
-                self.clear_selection()
-
             self.network_plot.hide_group_names()
 
-            if len(cfg.groups_dict[self.group_by]) == 0:
-                self.selection_type_combo.setCurrentIndex(0)
+            # Clear the groups-selection
+            if len(self.network_plot.selected_groups) > 0:
+                self.network_plot.selected_groups_text_visual = {}
+                self.network_plot.selected_groups = {}
 
             self.network_plot.update_group_by(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
 
             # Enable all groups-related controls (in case there are groups)
-            if len(cfg.groups_dict[self.group_by]) > 0:
+            if len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                 self.edit_groups_button.setEnabled(True)
                 self.show_group_names_button.setEnabled(True)
-                self.selection_type_combo.setEnabled(True)
+
+                if self.mode_combo.currentIndex() == 1:
+                    self.selection_type_combo.setEnabled(True)
 
                 # The group names are displayed -> update them including the new group
                 if self.is_show_group_names:
+                    self.show_groups_combo.setCurrentIndex(0)
+                    self.show_groups_combo.setEnabled(False)
                     self.network_plot.show_group_names('all')
 
-            # If there are no group (in 'manual' group-by, for example)
+            # If there are no group (in 'Manual definition' group-by, for example)
             else:
                 self.edit_groups_button.setEnabled(False)
                 self.show_group_names_button.setChecked(False)
                 self.reset_group_names_button.setEnabled(False)
                 self.is_show_group_names = 0
                 self.show_group_names_button.setEnabled(False)
+                self.selection_type_combo.setCurrentIndex(0)
                 self.selection_type_combo.setEnabled(False)
 
     def change_selection_type(self):
@@ -1685,12 +1665,13 @@ class MainWindow(QMainWindow):
             # Disable all selection-related buttons
             self.mode_combo.setEnabled(False)
             self.mode_combo.setCurrentIndex(0)
+            self.select_by_name_button.setEnabled(False)
             self.select_all_button.setEnabled(False)
             self.clear_selection_button.setEnabled(False)
             self.z_index_mode_combo.setCurrentIndex(0)
             self.z_index_mode_combo.setEnabled(False)
 
-            self.network_plot.set_subset_view(self.view_in_dimensions_num, self.color_by)
+            self.network_plot.set_subset_view(self.view_in_dimensions_num, self.color_by, self.group_by)
 
             if self.is_show_group_names:
                 self.network_plot.show_group_names('selected')
@@ -1711,8 +1692,9 @@ class MainWindow(QMainWindow):
             self.mode_combo.setEnabled(True)
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
+            self.select_by_name_button.setEnabled(True)
 
-            if self.view_in_dimensions_num == 2 and len(cfg.groups_dict[self.group_by]) > 1:
+            if self.view_in_dimensions_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 1:
                 self.z_index_mode_combo.setEnabled(True)
 
             # Update the coordinates in the fruchterman-reingold object
@@ -1748,20 +1730,13 @@ class MainWindow(QMainWindow):
             self.is_show_group_names = 1
             self.reset_group_names_button.setEnabled(True)
 
-            # Full data mode
-            if self.is_subset_mode == 0:
-
-                if len(self.network_plot.selected_groups) > 0:
-                    self.show_groups_combo.setEnabled(True)
-                else:
-                    self.show_groups_combo.setCurrentIndex(0)
-                    self.show_groups_combo.setEnabled(False)
-
-                self.change_group_names_display()
-
-            # Subset mode
+            if len(self.network_plot.selected_groups) > 0:
+                self.show_groups_combo.setEnabled(True)
             else:
-                self.network_plot.show_group_names('selected')
+                self.show_groups_combo.setCurrentIndex(0)
+                self.show_groups_combo.setEnabled(False)
+
+            self.change_group_names_display()
 
             #self.network_plot.reset_group_names_positions(self.group_by)
 
@@ -1781,6 +1756,26 @@ class MainWindow(QMainWindow):
         #if dlg.exec_():
             ## Get all the text definitions entered by the user
             #text, size, color_array = dlg.get_text_info()
+
+    def edit_categories(self):
+
+        dlg = gd.EditCategoriesDialog(self.network_plot, self.dim_num, self.z_indexing_mode, self.color_by,
+                                      self.group_by)
+
+        if dlg.exec_():
+
+            selected_category_index = dlg.get_current_category()
+
+            self.group_by_combo.clear()
+
+            for category_index in range(len(cfg.groups_by_categories)):
+                self.group_by_combo.addItem(cfg.groups_by_categories[category_index]['name'])
+
+            self.group_by_combo.setCurrentIndex(selected_category_index)
+
+            # No categories left except from 'Manual definition'
+            if selected_category_index == 0:
+                self.edit_categories_button.setEnabled(False)
 
     def edit_groups(self):
 
@@ -1807,7 +1802,7 @@ class MainWindow(QMainWindow):
 
             # The user chose to add the selected sequences to an existing group
             else:
-                print("Adding the sequences to group " + cfg.groups_dict[self.group_by][group_ID]['name'])
+                print("Adding the sequences to group " + cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'])
                 self.add_sequences_to_group(group_ID)
 
     def add_sequences_to_group(self, group_ID):
@@ -1839,7 +1834,7 @@ class MainWindow(QMainWindow):
             group_dict['color_array'] = color_array
             group_dict['is_bold'] = is_bold
             group_dict['is_italic'] = is_italic
-            group_dict['order'] = len(cfg.groups_dict[self.group_by]) - 1
+            group_dict['order'] = len(cfg.groups_by_categories[self.group_by]['groups']) - 1
             group_dict['outline_color'] = outline_color
             group_ID = groups.add_group_with_sequences(self.group_by, self.network_plot.selected_points.copy(),
                                                        group_dict)
@@ -1848,7 +1843,7 @@ class MainWindow(QMainWindow):
             self.network_plot.add_group(self.group_by, group_ID)
 
             # Update the look of the selected data-points according to the new group definitions
-            if self.dim_num == 2 and len(cfg.groups_dict[self.group_by]) > 1:
+            if self.dim_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 1:
                 self.z_index_mode_combo.setEnabled(True)
 
             self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, self.dim_num,
@@ -1856,7 +1851,9 @@ class MainWindow(QMainWindow):
 
             self.edit_groups_button.setEnabled(True)
             self.show_group_names_button.setEnabled(True)
-            self.selection_type_combo.setEnabled(True)
+
+            if self.mode_combo.currentIndex() == 1:
+                self.selection_type_combo.setEnabled(True)
 
             # The group names are displayed -> update them including the new group
             if self.is_show_group_names:
@@ -1873,7 +1870,7 @@ class MainWindow(QMainWindow):
 
         # Check if there is an empty group among the groups with removed members
         for group_ID in groups_with_deleted_members:
-            if len(cfg.groups_dict[self.group_by][group_ID]['seqIDs']) == 0:
+            if len(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs']) == 0:
 
                 # 1. Delete it from the group_names visual and other graph-related data-structures
                 self.network_plot.delete_empty_group(group_ID, self.dim_num, self.z_indexing_mode, self.color_by,
@@ -1883,7 +1880,7 @@ class MainWindow(QMainWindow):
                 groups.delete_group(self.group_by, group_ID)
 
         # Check if there are groups left. If not, disable the related groups controls
-        if len(cfg.groups_dict[self.group_by]) == 0:
+        if len(cfg.groups_by_categories[self.group_by]['groups']) == 0:
             self.show_group_names_button.setChecked(False)
             self.show_group_names_button.setEnabled(False)
             self.show_groups_combo.setEnabled(False)
@@ -1895,7 +1892,7 @@ class MainWindow(QMainWindow):
     def group_by_taxonomy(self):
 
         # Open the 'Group by taxonomy' dialog
-        dlg = md.GroupByTaxDialog(self.network_plot)
+        dlg = md.GroupByTaxDialog()
 
         # Create and execute the taxonomy worker to get the organism names and their taxonomy hierarchy
         # (only the first time)
@@ -1905,14 +1902,29 @@ class MainWindow(QMainWindow):
             taxonomy_worker.signals.finished.connect(dlg.finished_tax_search)
 
         if dlg.exec_():
-            tax_level, points_size, group_names_size, is_bold, is_italic = dlg.get_tax_level()
+            tax_level, points_size, outline_color, outline_width, group_names_size, is_bold, is_italic = \
+                dlg.get_tax_level()
 
-            self.group_by = "Taxonomy - " + tax_level
+            category_name = "Taxonomy - " + tax_level
+
+            found_tax_level = 0
+            for category_index in range(len(cfg.groups_by_categories)):
+                if category_name == cfg.groups_by_categories[category_index]['name']:
+                    found_tax_level = 1
 
             # First time for this taxonomic level
-            if self.group_by not in cfg.groups_dict:
-                cfg.groups_dict[self.group_by] = dict()
-                cfg.sequences_in_groups[self.group_by] = np.full(cfg.run_params['total_sequences_num'], -1)
+            if not found_tax_level:
+                cfg.groups_by_categories.append(dict())
+                self.group_by = len(cfg.groups_by_categories) - 1  # The current category index
+                cfg.groups_by_categories[self.group_by]['name'] = category_name
+                cfg.groups_by_categories[self.group_by]['nodes_size'] = points_size
+                cfg.groups_by_categories[self.group_by]['text_size'] = group_names_size
+                cfg.groups_by_categories[self.group_by]['nodes_outline_color'] = outline_color
+                cfg.groups_by_categories[self.group_by]['nodes_outline_width'] = outline_width
+                cfg.groups_by_categories[self.group_by]['is_bold'] = is_bold
+                cfg.groups_by_categories[self.group_by]['is_italic'] = is_italic
+                cfg.groups_by_categories[self.group_by]['groups'] = dict()
+                cfg.groups_by_categories[self.group_by]['sequences'] = np.full(cfg.run_params['total_sequences_num'], -1)
 
                 # Generate distinct colors according to the number of groups in the chosen level
                 color_map = colors.generate_distinct_colors(len(cfg.seq_by_tax_level_dict[tax_level])-1)
@@ -1947,88 +1959,100 @@ class MainWindow(QMainWindow):
                     group_dict['name_size'] = group_names_size
                     group_dict['color'] = color_clans
                     group_dict['color_array'] = color_array
-                    group_dict['outline_color'] = [0.0, 0.0, 0.0, 1.0]
+                    group_dict['outline_color'] = outline_color
                     group_dict['is_bold'] = is_bold
                     group_dict['is_italic'] = is_italic
-                    group_dict['order'] = len(cfg.groups_dict[self.group_by]) - 1
+                    group_dict['order'] = len(cfg.groups_by_categories[self.group_by]['groups']) - 1
                     seq_dict = cfg.seq_by_tax_level_dict[tax_level][tax_group].copy()
                     group_ID = groups.add_group_with_sequences(self.group_by, seq_dict, group_dict)
 
                 # Add the new group-type to the group-by combo-box, enable it and update the grouping
-                self.group_by_combo.addItem(self.group_by)
-                self.group_by_combo.setCurrentText(self.group_by)
-                self.group_by_combo.setEnabled(True)
+                self.group_by_combo.addItem(category_name)
+
+            self.group_by_combo.setCurrentText(category_name)
+            self.group_by_combo.setEnabled(True)
+            self.edit_categories_button.setEnabled(True)
 
     def add_groups_from_metadata(self):
 
         # Open the 'Add custom grouping category' dialog
-        dlg = md.GroupByParamDialog(self.network_plot)
+        dlg = md.GroupByParamDialog()
 
         if dlg.exec_():
-            groups_dict, points_size, group_names_size, is_bold, is_italic, is_error = dlg.get_categories()
+            groups_dict, points_size, outline_color, outline_width, group_names_size, is_bold, is_italic, is_error = \
+                dlg.get_categories()
 
             if not is_error:
 
                 for category in groups_dict:
 
-                    # This category is new
-                    if category not in cfg.groups_dict:
-                        cfg.groups_dict[category] = dict()
-                        cfg.sequences_in_groups[category] = np.full(cfg.run_params['total_sequences_num'], -1)
+                    cfg.groups_by_categories.append(dict())
+                    category_index = len(cfg.groups_by_categories) - 1
+                    cfg.groups_by_categories[category_index]['name'] = category
+                    cfg.groups_by_categories[category_index]['nodes_size'] = points_size
+                    cfg.groups_by_categories[category_index]['text_size'] = group_names_size
+                    cfg.groups_by_categories[category_index]['nodes_outline_color'] = outline_color
+                    cfg.groups_by_categories[category_index]['nodes_outline_width'] = outline_width
+                    cfg.groups_by_categories[category_index]['is_bold'] = is_bold
+                    cfg.groups_by_categories[category_index]['is_italic'] = is_italic
+                    cfg.groups_by_categories[category_index]['groups'] = dict()
+                    cfg.groups_by_categories[category_index]['sequences'] = \
+                        np.full(cfg.run_params['total_sequences_num'], -1)
 
-                        # Generate distinct colors according to the number of groups in the chosen level
-                        if "Not assigned" in groups_dict[category]:
-                            colors_num = len(groups_dict[category]) - 1
+                    # Generate distinct colors according to the number of groups in the chosen level
+                    if "Not assigned" in groups_dict[category]:
+                        colors_num = len(groups_dict[category]) - 1
+                    else:
+                        colors_num = len(groups_dict[category])
+                    color_map = colors.generate_distinct_colors(colors_num)
+                    color_index = 0
+
+                    # Sort the groups alphabetically and move the 'Not assigned' group to the end
+                    sorted_groups = sorted(groups_dict[category])
+
+                    # If there is group 'Not assigned', move it to the end
+                    if "Not assigned" in groups_dict[category]:
+                        sorted_groups.append(sorted_groups.pop(sorted_groups.index('Not assigned')))
+
+                    # A loop over the groups in the chosen taxonomic level
+                    for group in sorted_groups:
+
+                        if group != "Not assigned":
+
+                            color = color_map[color_index].RGBA[0]
+                            r = color[0]
+                            g = color[1]
+                            b = color[2]
+                            color_clans = str(r) + ";" + str(g) + ";" + str(b) + ";255"
+                            color_array = color / 255
+
+                            color_index += 1
+
                         else:
-                            colors_num = len(groups_dict[category])
-                        color_map = colors.generate_distinct_colors(colors_num)
-                        color_index = 0
+                            color_clans = "217;217;217;255"
+                            color_array = [0.85, 0.85, 0.85, 1]
 
-                        # Sort the groups alphabetically and move the 'Not assigned' group to the end
-                        sorted_groups = sorted(groups_dict[category])
+                        # Add the new group to the main groups array
+                        group_dict = dict()
+                        group_dict['name'] = group
+                        group_dict['size'] = points_size
+                        group_dict['name_size'] = group_names_size
+                        group_dict['color'] = color_clans
+                        group_dict['color_array'] = color_array
+                        group_dict['outline_color'] = outline_color
+                        group_dict['is_bold'] = is_bold
+                        group_dict['is_italic'] = is_italic
+                        group_dict['order'] = len(cfg.groups_by_categories[category_index]['groups']) - 1
+                        seq_dict = groups_dict[category][group].copy()
+                        group_ID = groups.add_group_with_sequences(category_index, seq_dict, group_dict)
 
-                        # If there is group 'Not assigned', move it to the end
-                        if "Not assigned" in groups_dict[category]:
-                            sorted_groups.append(sorted_groups.pop(sorted_groups.index('Not assigned')))
+                    # Add the new group-type to the group-by combo-box, enable it and update the grouping
+                    self.group_by_combo.addItem(category)
+                    self.group_by_combo.setCurrentText(category)
+                    self.group_by_combo.setEnabled(True)
+                    self.edit_categories_button.setEnabled(True)
 
-                        # A loop over the groups in the chosen taxonomic level
-                        for group in sorted_groups:
-
-                            if group != "Not assigned":
-
-                                color = color_map[color_index].RGBA[0]
-                                r = color[0]
-                                g = color[1]
-                                b = color[2]
-                                color_clans = str(r) + ";" + str(g) + ";" + str(b) + ";255"
-                                color_array = color / 255
-
-                                color_index += 1
-
-                            else:
-                                color_clans = "217;217;217;255"
-                                color_array = [0.85, 0.85, 0.85, 1]
-
-                            # Add the new group to the main groups array
-                            group_dict = dict()
-                            group_dict['name'] = group
-                            group_dict['size'] = points_size
-                            group_dict['name_size'] = group_names_size
-                            group_dict['color'] = color_clans
-                            group_dict['color_array'] = color_array
-                            group_dict['outline_color'] = [0.0, 0.0, 0.0, 1.0]
-                            group_dict['is_bold'] = is_bold
-                            group_dict['is_italic'] = is_italic
-                            group_dict['order'] = len(cfg.groups_dict[category]) - 1
-                            seq_dict = groups_dict[category][group].copy()
-                            group_ID = groups.add_group_with_sequences(category, seq_dict, group_dict)
-
-                        # Add the new group-type to the group-by combo-box, enable it and update the grouping
-                        self.group_by_combo.addItem(category)
-                        self.group_by_combo.setCurrentText(category)
-                        self.group_by_combo.setEnabled(True)
-
-                self.group_by = category
+                self.group_by = category_index
 
     ## Callback functions to deal with mouse and key events
 
@@ -2189,12 +2213,12 @@ class MainWindow(QMainWindow):
                         edit_group_name_dlg.get_group_info()
 
                     # Update the group information in the main dict
-                    cfg.groups_dict[self.group_by][group_ID]['name'] = group_name
-                    cfg.groups_dict[self.group_by][group_ID]['name_size'] = group_name_size
-                    cfg.groups_dict[self.group_by][group_ID]['color'] = clans_color
-                    cfg.groups_dict[self.group_by][group_ID]['color_array'] = color_array
-                    cfg.groups_dict[self.group_by][group_ID]['is_bold'] = is_bold
-                    cfg.groups_dict[self.group_by][group_ID]['is_italic'] = is_italic
+                    cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'] = group_name
+                    cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name_size'] = group_name_size
+                    cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color'] = clans_color
+                    cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color_array'] = color_array
+                    cfg.groups_by_categories[self.group_by]['groups'][group_ID]['is_bold'] = is_bold
+                    cfg.groups_by_categories[self.group_by]['groups'][group_ID]['is_italic'] = is_italic
 
                     # Update the plot with the new group parameters
                     self.network_plot.edit_group_parameters(group_ID, 2, self.z_indexing_mode, self.color_by,

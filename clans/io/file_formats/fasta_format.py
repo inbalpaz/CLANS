@@ -43,7 +43,17 @@ class FastaFormat:
 
         # Create the structured NumPy array of sequences
         seq.create_sequences_array(self.sequences_list)
-        seq.init_seuences_in_groups()
+        seq.init_groups_by_categories()
+
+        # Update the nodes-size parameter according to the dataset size
+        if cfg.run_params['total_sequences_num'] <= 1000:
+            cfg.run_params['nodes_size'] = cfg.nodes_size_large
+        elif 1000 < cfg.run_params['total_sequences_num'] <= 4000:
+            cfg.run_params['nodes_size'] = cfg.nodes_size_medium
+        elif 4000 < cfg.run_params['total_sequences_num'] <= 10000:
+            cfg.run_params['nodes_size'] = cfg.nodes_size_small
+        else:
+            cfg.run_params['nodes_size'] = cfg.nodes_size_tiny
 
     # Returns a random coordinate between -1 and 1
     @staticmethod

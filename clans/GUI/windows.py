@@ -485,7 +485,9 @@ class SearchResultsWindow(QWidget):
 
             # Clear the current selection
             self.net_plot_object.reset_selection(dim_num, self.main_window_object.z_indexing_mode,
-                                                 self.main_window_object.color_by, self.main_window_object.group_by)
+                                                 self.main_window_object.color_by, self.main_window_object.group_by,
+                                                 self.main_window_object.is_show_group_names,
+                                                 self.main_window_object.group_names_display)
 
             # Set the selected sequences as the selected subset
             self.net_plot_object.select_subset(selected_indices, dim_num, self.main_window_object.z_indexing_mode,

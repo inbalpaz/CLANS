@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from vispy.color import ColorArray
+import numpy as np
 import clans.config as cfg
 import clans.data.groups as gr
 
@@ -20,17 +21,17 @@ class AddToGroupDialog(QDialog):
         self.new_group_button.setChecked(True)
 
         self.existing_group_button = QRadioButton("Choose an existing group")
-        if len(cfg.groups_dict[group_by]) == 0:
+        if len(cfg.groups_by_categories[group_by]['groups']) == 0:
             self.existing_group_button.setEnabled(False)
 
         self.groups_combo = QComboBox()
         self.groups_combo.addItem("Select group")
-        self.group_IDs_list = sorted(cfg.groups_dict[group_by].keys(),
-                                     key=lambda k: cfg.groups_dict[group_by][k]['order'])
+        self.group_IDs_list = sorted(cfg.groups_by_categories[group_by]['groups'].keys(),
+                                     key=lambda k: cfg.groups_by_categories[group_by]['groups'][k]['order'])
 
         for i in range(len(self.group_IDs_list)):
             group_ID = self.group_IDs_list[i]
-            self.groups_combo.addItem(cfg.groups_dict[group_by][group_ID]['name'])
+            self.groups_combo.addItem(cfg.groups_by_categories[group_by]['groups'][group_ID]['name'])
         self.groups_combo.setEnabled(False)
 
         self.new_group_button.toggled.connect(self.on_radio_button_change)
@@ -77,10 +78,10 @@ class CreateGroupDialog(QDialog):
         self.name_label = QLabel("Group name:")
         self.name_widget = QLineEdit()
 
-        if len(cfg.groups_dict[group_by]) == 0:
+        if len(cfg.groups_by_categories[group_by]['groups']) == 0:
             group_num = 1
         else:
-            group_num = max(cfg.groups_dict[group_by].keys()) + 1
+            group_num = max(cfg.groups_by_categories[group_by]['groups'].keys()) + 1
         self.default_group_name = "Group_" + str(group_num)
         self.name_widget.setPlaceholderText(self.default_group_name)
 
@@ -209,10 +210,10 @@ class CreateGroupDialog(QDialog):
             group_name = self.name_widget.text()
 
         # Get the selected size
-        size = self.group_size.currentText()
+        size = int(self.group_size.currentText())
 
         # Get the group name size
-        group_name_size = self.group_name_size.currentText()
+        group_name_size = int(self.group_name_size.currentText())
 
         is_bold = self.bold_checkbox.isChecked()
         is_italic = self.italic_checkbox.isChecked()
@@ -241,15 +242,15 @@ class ManageGroupsDialog(QDialog):
         # Add a list widget of all the groups
         self.groups_list = QListWidget()
 
-        self.group_IDs_list = sorted(cfg.groups_dict[self.group_by].keys(),
-                                     key=lambda k: cfg.groups_dict[self.group_by][k]['order'])
+        self.group_IDs_list = sorted(cfg.groups_by_categories[self.group_by]['groups'].keys(),
+                                     key=lambda k: cfg.groups_by_categories[self.group_by]['groups'][k]['order'])
 
         for i in range(len(self.group_IDs_list)):
             group_ID = self.group_IDs_list[i]
-            name_str = cfg.groups_dict[self.group_by][group_ID]['name'] + " (" + \
-                       str(len(cfg.groups_dict[self.group_by][group_ID]['seqIDs'])) + ")"
+            name_str = cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'] + " (" + \
+                       str(len(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs'])) + ")"
             item = QListWidgetItem(name_str)
-            group_color = ColorArray(cfg.groups_dict[self.group_by][group_ID]['color_array'])
+            group_color = ColorArray(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color_array'])
             item_color = QColor(group_color.hex[0])
             item.setForeground(item_color)
             self.groups_list.insertItem(i, item)
@@ -299,23 +300,23 @@ class ManageGroupsDialog(QDialog):
             removed_dict = self.get_group_info(edit_group_dlg, group_ID)
 
             # Update the group information in the main dict
-            cfg.groups_dict[self.group_by][group_ID]['name'] = group_name
-            cfg.groups_dict[self.group_by][group_ID]['size'] = group_size
-            cfg.groups_dict[self.group_by][group_ID]['name_size'] = group_name_size
-            cfg.groups_dict[self.group_by][group_ID]['color'] = clans_color
-            cfg.groups_dict[self.group_by][group_ID]['color_array'] = color_array
-            cfg.groups_dict[self.group_by][group_ID]['outline_color'] = outline_color
-            cfg.groups_dict[self.group_by][group_ID]['is_bold'] = is_bold
-            cfg.groups_dict[self.group_by][group_ID]['is_italic'] = is_italic
+            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'] = group_name
+            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['size'] = group_size
+            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name_size'] = group_name_size
+            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color'] = clans_color
+            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color_array'] = color_array
+            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['outline_color'] = outline_color
+            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['is_bold'] = is_bold
+            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['is_italic'] = is_italic
 
             # Update the removed sequences in the main dict
             for seq_index in removed_dict:
-                if seq_index in cfg.groups_dict[self.group_by][group_ID]['seqIDs']:
-                    del cfg.groups_dict[self.group_by][group_ID]['seqIDs'][seq_index]
+                if seq_index in cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs']:
+                    del cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs'][seq_index]
 
             # Update the name and color of the list-item
-            name_str = cfg.groups_dict[self.group_by][group_ID]['name'] + " (" + \
-                       str(len(cfg.groups_dict[self.group_by][group_ID]['seqIDs'])) + ")"
+            name_str = cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'] + " (" + \
+                       str(len(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs'])) + ")"
             item = self.groups_list.currentItem()
             item.setText(name_str)
             item.setForeground(QColor(edit_group_dlg.color.hex[0]))
@@ -334,12 +335,12 @@ class ManageGroupsDialog(QDialog):
         # Get the group name
         if edit_group_dlg.name_widget.text() == "":
             # Add an error popup
-            group_name = cfg.groups_dict[self.group_by][group_ID]['name']
+            group_name = cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name']
         else:
             group_name = edit_group_dlg.name_widget.text()
 
         # Get the selected size
-        group_size = edit_group_dlg.group_size.currentText()
+        group_size = int(edit_group_dlg.group_size.currentText())
 
         # Get the group color
         group_color = edit_group_dlg.color
@@ -349,7 +350,7 @@ class ManageGroupsDialog(QDialog):
         outline_color = edit_group_dlg.outline_color.rgba[0]
 
         # Get the selected group-name size
-        group_name_size = edit_group_dlg.group_name_size.currentText()
+        group_name_size = int(edit_group_dlg.group_name_size.currentText())
 
         # Get the bold and italic states
         is_bold = edit_group_dlg.bold_checkbox.isChecked()
@@ -365,7 +366,7 @@ class ManageGroupsDialog(QDialog):
 
         group_index = self.groups_list.currentRow()
         group_ID = self.group_IDs_list[group_index]
-        seq_dict = cfg.groups_dict[self.group_by][group_ID]['seqIDs'].copy()
+        seq_dict = cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs'].copy()
 
         # 1. Remove the sequences assigned to this group (they get '-1' assignment)
         gr.remove_from_group(seq_dict)
@@ -380,8 +381,8 @@ class ManageGroupsDialog(QDialog):
         self.groups_list.takeItem(group_index)
 
         # Update the group_IDs list after the deletion
-        self.group_IDs_list = sorted(cfg.groups_dict[self.group_by].keys(),
-                                     key=lambda k: cfg.groups_dict[self.group_by][k]['order'])
+        self.group_IDs_list = sorted(cfg.groups_by_categories[self.group_by]['groups'].keys(),
+                                     key=lambda k: cfg.groups_by_categories[self.group_by]['groups'][k]['order'])
 
     def move_up_group(self):
 
@@ -404,8 +405,8 @@ class ManageGroupsDialog(QDialog):
         self.groups_list.setCurrentItem(current_item)
 
         # Update the order of the groups in the main groups dict
-        cfg.groups_dict[self.group_by][group_ID]['order'] -= 1
-        cfg.groups_dict[self.group_by][second_group_ID]['order'] += 1
+        cfg.groups_by_categories[self.group_by]['groups'][group_ID]['order'] -= 1
+        cfg.groups_by_categories[self.group_by]['groups'][second_group_ID]['order'] += 1
 
         self.changed_order_flag = 1
 
@@ -429,8 +430,8 @@ class ManageGroupsDialog(QDialog):
         self.groups_list.setCurrentItem(current_item)
 
         # Update the order of the groups in the main groups dict
-        cfg.groups_dict[self.group_by][group_ID]['order'] += 1
-        cfg.groups_dict[self.group_by][second_group_ID]['order'] -= 1
+        cfg.groups_by_categories[self.group_by]['groups'][group_ID]['order'] += 1
+        cfg.groups_by_categories[self.group_by]['groups'][second_group_ID]['order'] -= 1
 
         self.changed_order_flag = 1
 
@@ -453,15 +454,15 @@ class EditGroupDialog(QDialog):
         # Edit the group name
         self.name_label = QLabel("Group name:")
         self.name_widget = QLineEdit()
-        self.name_widget.setPlaceholderText(cfg.groups_dict[group_by][group_ID]['name'])
+        self.name_widget.setPlaceholderText(cfg.groups_by_categories[group_by]['groups'][group_ID]['name'])
 
         self.grid_layout.addWidget(self.name_label, 0, 0)
         self.grid_layout.addWidget(self.name_widget, 0, 1, 1, 2)
 
         # Set the size of the group names
         self.group_name_size_label = QLabel("Group name text size:")
-        if cfg.groups_dict[group_by][group_ID]['name_size'] != "":
-            default_size = cfg.groups_dict[group_by][group_ID]['name_size']
+        if cfg.groups_by_categories[group_by]['groups'][group_ID]['name_size'] != "":
+            default_size = cfg.groups_by_categories[group_by]['groups'][group_ID]['name_size']
         else:
             default_size = net_plot_object.text_size
         self.group_name_size = QComboBox()
@@ -480,7 +481,7 @@ class EditGroupDialog(QDialog):
         # Add Bold and Italic options
         self.bold_label = QLabel("Bold")
         self.bold_checkbox = QCheckBox()
-        if net_plot_object.groups_text_visual[group_ID].bold is True:
+        if cfg.groups_by_categories[group_by]['groups'][group_ID]['is_bold'] is True:
             self.bold_checkbox.setChecked(True)
         self.bold_layout = QHBoxLayout()
         self.bold_layout.addWidget(self.bold_checkbox)
@@ -489,7 +490,7 @@ class EditGroupDialog(QDialog):
 
         self.italic_label = QLabel("Italic")
         self.italic_checkbox = QCheckBox()
-        if net_plot_object.groups_text_visual[group_ID].italic is True:
+        if cfg.groups_by_categories[group_by]['groups'][group_ID]['is_italic'] is True:
             self.italic_checkbox.setChecked(True)
         self.italic_layout = QHBoxLayout()
         self.italic_layout.addWidget(self.italic_checkbox)
@@ -502,7 +503,7 @@ class EditGroupDialog(QDialog):
         # Set the color of the group's nodes and names
         self.color_label = QLabel("Group color:")
         self.color_box = QLabel(" ")
-        self.color = ColorArray(cfg.groups_dict[group_by][group_ID]['color_array'])
+        self.color = ColorArray(cfg.groups_by_categories[group_by]['groups'][group_ID]['color_array'])
         self.color_box.setStyleSheet("background-color: " + self.color.hex[0])
 
         self.change_color_button = QPushButton("Change color")
@@ -514,7 +515,7 @@ class EditGroupDialog(QDialog):
 
         # Set the size of the group nodes
         self.size_label = QLabel("Data points size:")
-        default_size = cfg.groups_dict[group_by][group_ID]['size']
+        default_size = cfg.groups_by_categories[group_by]['groups'][group_ID]['size']
         self.group_size = QComboBox()
 
         i = 0
@@ -531,7 +532,7 @@ class EditGroupDialog(QDialog):
         # Set the outline color of the group's nodes
         self.outline_color_label = QLabel("Data-points outline color:")
         self.outline_color_box = QLabel(" ")
-        self.outline_color = ColorArray(cfg.groups_dict[group_by][group_ID]['outline_color'])
+        self.outline_color = ColorArray(cfg.groups_by_categories[group_by]['groups'][group_ID]['outline_color'])
         self.outline_color_box.setStyleSheet("background-color: " + self.outline_color.hex[0])
 
         self.change_outline_color_button = QPushButton("Change color")
@@ -552,7 +553,7 @@ class EditGroupDialog(QDialog):
         self.members_label = QLabel("Group members:")
         self.members_list = QListWidget()
 
-        self.sorted_seq_list = sorted(cfg.groups_dict[group_by][group_ID]['seqIDs'])
+        self.sorted_seq_list = sorted(cfg.groups_by_categories[group_by]['groups'][group_ID]['seqIDs'])
 
         for i in range(len(self.sorted_seq_list)):
             name_str = str(self.sorted_seq_list[i]) + "  " + cfg.sequences_array['seq_title'][self.sorted_seq_list[i]][1:]
@@ -625,15 +626,15 @@ class EditGroupNameDialog(QDialog):
         # Edit the group name
         self.name_label = QLabel("Group name:")
         self.name_widget = QLineEdit()
-        self.name_widget.setPlaceholderText(cfg.groups_dict[self.group_by][group_ID]['name'])
+        self.name_widget.setPlaceholderText(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'])
 
         self.grid_layout.addWidget(self.name_label, 0, 0)
         self.grid_layout.addWidget(self.name_widget, 0, 1, 1, 2)
 
         # Set the size of the group names
         self.group_name_size_label = QLabel("Text size:")
-        if cfg.groups_dict[self.group_by][group_ID]['name_size'] != "":
-            default_size = cfg.groups_dict[self.group_by][group_ID]['name_size']
+        if cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name_size'] != "":
+            default_size = cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name_size']
         else:
             default_size = net_plot_object.text_size
         self.group_name_size = QComboBox()
@@ -652,9 +653,9 @@ class EditGroupNameDialog(QDialog):
         # Set the color of the group's nodes
         self.color_label = QLabel("Color:")
         self.color_box = QLabel(" ")
-        self.color = QColor(cfg.groups_dict[self.group_by][group_ID]['color_array'][0]*255,
-                            cfg.groups_dict[self.group_by][group_ID]['color_array'][1]*255,
-                            cfg.groups_dict[self.group_by][group_ID]['color_array'][2]*255)
+        self.color = QColor(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color_array'][0] * 255,
+                            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color_array'][1] * 255,
+                            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color_array'][2] * 255)
 
         self.color_box.setStyleSheet("background-color: " + self.color.name())
 
@@ -708,12 +709,12 @@ class EditGroupNameDialog(QDialog):
         # Get the group name
         if self.name_widget.text() == "":
             # Add an error popup
-            group_name = cfg.groups_dict[self.group_by][self.group_ID]['name']
+            group_name = cfg.groups_by_categories[self.group_by]['groups'][self.group_ID]['name']
         else:
             group_name = self.name_widget.text()
 
         # Get the selected group-name size
-        group_name_size = self.group_name_size.currentText()
+        group_name_size = int(self.group_name_size.currentText())
 
         # Get the group color
         group_color = self.color
@@ -725,6 +726,320 @@ class EditGroupNameDialog(QDialog):
         is_italic = self.italic_checkbox.isChecked()
 
         return group_name, group_name_size, clans_color, color_array, is_bold, is_italic
+
+
+class EditCategoriesDialog(QDialog):
+
+    def __init__(self, net_plot_object, dim_num, z_index_mode, color_by, group_by):
+        super().__init__()
+
+        self.net_plot_object = net_plot_object
+        self.dim_num = dim_num
+        self.z_index_mode = z_index_mode
+        self.color_by = color_by
+        self.group_by = group_by
+
+        self.setWindowTitle("Edit grouping categories")
+
+        self.main_layout = QVBoxLayout()
+
+        # Add a list widget of all the groups
+        self.categories_list = QListWidget()
+
+        for category_index in range(1, len(cfg.groups_by_categories)):
+            item = QListWidgetItem(cfg.groups_by_categories[category_index]['name'])
+            self.categories_list.insertItem(category_index, item)
+
+        self.main_layout.addWidget(self.categories_list)
+
+        # Add a layout for buttons
+        self.buttons_layout = QHBoxLayout()
+
+        self.edit_button = QPushButton("Edit category")
+        self.edit_button.released.connect(self.edit_category)
+
+        self.move_up_button = QPushButton("Move up")
+        self.move_up_button.released.connect(self.move_up_category)
+
+        self.move_down_button = QPushButton("Move down")
+        self.move_down_button.released.connect(self.move_down_category)
+
+        self.delete_category_button = QPushButton("Delete category")
+        self.delete_category_button.released.connect(self.delete_category)
+
+        self.buttons_layout.addWidget(self.edit_button)
+        self.buttons_layout.addWidget(self.move_up_button)
+        self.buttons_layout.addWidget(self.move_down_button)
+        self.buttons_layout.addWidget(self.delete_category_button)
+        self.buttons_layout.addStretch()
+
+        self.main_layout.addLayout(self.buttons_layout)
+
+        # Add the OK/Cancel standard buttons
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+        self.main_layout.addWidget(self.button_box)
+
+        self.setLayout(self.main_layout)
+
+    def edit_category(self):
+        category_in_list_index = self.categories_list.currentRow()  # The index of the category in the list
+        category_index = category_in_list_index + 1  # The list doesn't include the default entry ('Manual definition')
+
+        edit_category_dlg = EditCategoryDialog(category_index)
+
+        if edit_category_dlg.exec_():
+
+            category_name, points_size, outline_color, outline_width, names_size, is_bold, is_italic = \
+                edit_category_dlg.get_info()
+
+            if category_name != "":
+
+                # Update the category name in the QListWidget
+                item = self.categories_list.currentItem()
+                item.setText(category_name)
+
+                # Update the category name in the main list
+                cfg.groups_by_categories[category_index]['name'] = category_name
+
+            is_changed_points_size = 0
+            is_changed_names_size = 0
+            is_changed_outline_color = 0
+            is_changed_bold = 0
+            is_changed_italic= 0
+
+            if points_size != cfg.groups_by_categories[category_index]['nodes_size']:
+                is_changed_points_size = 1
+            cfg.groups_by_categories[category_index]['nodes_size'] = points_size
+
+            if names_size != cfg.groups_by_categories[category_index]['text_size']:
+                is_changed_names_size = 1
+            cfg.groups_by_categories[category_index]['text_size'] = names_size
+
+            if ColorArray(outline_color).hex != \
+                    ColorArray(cfg.groups_by_categories[category_index]['nodes_outline_color']).hex:
+                is_changed_outline_color = 1
+            cfg.groups_by_categories[category_index]['nodes_outline_color'] = outline_color
+
+            if is_bold != cfg.groups_by_categories[category_index]['is_bold']:
+                is_changed_bold = 1
+            cfg.groups_by_categories[category_index]['is_bold'] = is_bold
+
+            if is_italic != cfg.groups_by_categories[category_index]['is_italic']:
+                is_changed_italic = 1
+            cfg.groups_by_categories[category_index]['is_italic'] = is_italic
+
+            cfg.groups_by_categories[category_index]['nodes_outline_width'] = outline_width
+
+            # Update only the changed parameters in the group definitions
+            for group_ID in cfg.groups_by_categories[category_index]['groups']:
+
+                if is_changed_points_size:
+                    cfg.groups_by_categories[category_index]['groups'][group_ID]['size'] = points_size
+
+                if is_changed_names_size:
+                    cfg.groups_by_categories[category_index]['groups'][group_ID]['name_size'] = names_size
+
+                if is_changed_outline_color:
+                    cfg.groups_by_categories[category_index]['groups'][group_ID]['outline_color'] = outline_color
+
+                if is_changed_bold:
+                    cfg.groups_by_categories[category_index]['groups'][group_ID]['is_bold'] = is_bold
+
+                if is_changed_italic:
+                    cfg.groups_by_categories[category_index]['groups'][group_ID]['is_italic'] = is_italic
+
+            # If the edited category is currently presented -> update the graph
+            if category_index == self.group_by:
+                self.net_plot_object.hide_group_names()
+                self.net_plot_object.update_group_by(self.dim_num, self.z_index_mode, self.color_by, self.group_by)
+
+    def delete_category(self):
+
+        category_in_list_index = self.categories_list.currentRow()  # The index of the category in the list
+        category_index = category_in_list_index + 1  # The list doesn't include the default entry ('Manual definition')
+
+        gr.delete_grouping_category(category_index)
+
+        # Remove the group from the presented list
+        self.categories_list.takeItem(category_in_list_index)
+
+        #self.deleted_categories[category_index] = 1
+
+    def move_up_category(self):
+        category_in_list_index = self.categories_list.currentRow()  # The index of the category in the list
+        category_index = category_in_list_index + 1  # The list doesn't include the default entry ('Manual definition')
+
+        # The category is already the first -> nothing to do
+        if category_in_list_index == 0:
+            return
+
+        # Swap the lines in the ListWidget
+        current_item = self.categories_list.takeItem(category_in_list_index)
+        self.categories_list.insertItem(category_in_list_index-1, current_item)
+        self.categories_list.setCurrentItem(current_item)
+
+        # Swap the categories in the main list
+        popped_dict = cfg.groups_by_categories.pop(category_index)
+        cfg.groups_by_categories.insert(category_index-1, popped_dict)
+
+    def move_down_category(self):
+        category_in_list_index = self.categories_list.currentRow()  # The index of the category in the list
+        category_index = category_in_list_index + 1  # The list doesn't include the default entry ('Manual definition')
+
+        # The category is already the last -> nothing to do
+        if category_index == len(cfg.groups_by_categories) - 1:
+            return
+
+        # Swap the lines in the ListWidget
+        current_item = self.categories_list.takeItem(category_in_list_index)
+        self.categories_list.insertItem(category_in_list_index+1, current_item)
+        self.categories_list.setCurrentItem(current_item)
+
+        # Swap the categories in the main list
+        popped_dict = cfg.groups_by_categories.pop(category_index)
+        cfg.groups_by_categories.insert(category_index+1, popped_dict)
+
+    def get_current_category(self):
+
+        category_index = self.categories_list.currentRow() + 1
+        return category_index
+
+
+class EditCategoryDialog(QDialog):
+
+    def __init__(self, category_index):
+        super().__init__()
+
+        self.setWindowTitle("Edit category name")
+
+        self.main_layout = QVBoxLayout()
+        self.grid_layout = QGridLayout()
+
+        # Edit the group name
+        self.name_label = QLabel("Grouping category name:")
+        self.name_widget = QLineEdit()
+        self.name_widget.setPlaceholderText(cfg.groups_by_categories[category_index]['name'])
+
+        self.grid_layout.addWidget(self.name_label, 0, 0)
+        self.grid_layout.addWidget(self.name_widget, 0, 1)
+
+        self.group_params_label = QLabel("General parameters for the groups:")
+        self.grid_layout.addWidget(self.group_params_label, 1, 0, 1, 3)
+
+        # Set the data points size
+        self.points_size_label = QLabel("Data-points size:")
+        default_size = cfg.groups_by_categories[category_index]['nodes_size']
+        self.points_size_combo = QComboBox()
+
+        i = 0
+        for size in range(4, 21):
+            self.points_size_combo.addItem(str(size))
+            if size == default_size:
+                default_index = i
+            i += 1
+        self.points_size_combo.setCurrentIndex(default_index)
+
+        self.grid_layout.addWidget(self.points_size_label, 2, 0)
+        self.grid_layout.addWidget(self.points_size_combo, 2, 1)
+
+        self.outline_color_label = QLabel("Outline color:")
+        self.outline_color = ColorArray(cfg.groups_by_categories[category_index]['nodes_outline_color'])
+        self.outline_color_box = QLabel(" ")
+        self.outline_color_box.setStyleSheet("background-color: " + self.outline_color.hex[0])
+        self.outline_color_button = QPushButton("Change color")
+        self.outline_color_button.pressed.connect(self.change_outline_color)
+
+        self.grid_layout.addWidget(self.outline_color_label, 3, 0)
+        self.grid_layout.addWidget(self.outline_color_box, 3, 1)
+        self.grid_layout.addWidget(self.outline_color_button, 3, 2)
+
+        self.outline_width_label = QLabel("Outline width:")
+        self.outline_width_combo = QComboBox()
+
+        i = 0
+        width_options = np.arange(0, 3.5, 0.5)
+        for size in width_options:
+            self.outline_width_combo.addItem(str(size))
+            if size == cfg.groups_by_categories[category_index]['nodes_outline_width']:
+                default_index = i
+            i += 1
+        self.outline_width_combo.setCurrentIndex(default_index)
+
+        self.grid_layout.addWidget(self.outline_width_label, 4, 0)
+        self.grid_layout.addWidget(self.outline_width_combo, 4, 1)
+
+        # Set the size of the group names
+        self.group_name_size_label = QLabel("Group names text size:")
+        default_size = cfg.groups_by_categories[category_index]['text_size']
+        self.group_name_size = QComboBox()
+
+        i = 0
+        for size in range(5, 21):
+            self.group_name_size.addItem(str(size))
+            if size == int(default_size):
+                default_index = i
+            i += 1
+        self.group_name_size.setCurrentIndex(default_index)
+
+        self.grid_layout.addWidget(self.group_name_size_label, 5, 0)
+        self.grid_layout.addWidget(self.group_name_size, 5, 1)
+
+        # Add Bold and Italic options
+        self.bold_label = QLabel("Bold")
+        self.bold_checkbox = QCheckBox()
+        self.bold_checkbox.setChecked(cfg.groups_by_categories[category_index]['is_bold'])
+        self.bold_layout = QHBoxLayout()
+        self.bold_layout.addWidget(self.bold_checkbox)
+        self.bold_layout.addWidget(self.bold_label)
+        self.bold_layout.addStretch()
+
+        self.italic_label = QLabel("Italic")
+        self.italic_checkbox = QCheckBox()
+        self.italic_checkbox.setChecked(cfg.groups_by_categories[category_index]['is_italic'])
+        self.italic_layout = QHBoxLayout()
+        self.italic_layout.addWidget(self.italic_checkbox)
+        self.italic_layout.addWidget(self.italic_label)
+        self.italic_layout.addStretch()
+
+        self.grid_layout.addLayout(self.bold_layout, 6, 0)
+        self.grid_layout.addLayout(self.italic_layout, 6, 1)
+
+        # Add the OK/Cancel standard buttons
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+        self.main_layout.addLayout(self.grid_layout)
+        self.main_layout.addWidget(self.button_box)
+
+        self.setLayout(self.main_layout)
+
+    def change_outline_color(self):
+
+        dialog = QColorDialog()
+
+        if dialog.exec_():
+            color = dialog.currentColor()
+            hex_color = color.name()
+
+            self.outline_color = ColorArray(hex_color)
+            self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+
+    def get_info(self):
+
+        name = self.name_widget.text()
+        points_size = int(self.points_size_combo.currentText())
+        outline_color = self.outline_color.rgba[0]
+        outline_width = float(self.outline_width_combo.currentText())
+        group_names_size = int(self.group_name_size.currentText())
+        is_bold = self.bold_checkbox.isChecked()
+        is_italic = self.italic_checkbox.isChecked()
+
+        return name, points_size, outline_color, outline_width, group_names_size, is_bold, is_italic
+
 
 
 

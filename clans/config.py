@@ -21,6 +21,14 @@ max_param_color = ColorArray([1.0, 0.0, 0.0, 1.0])
 short_color = ColorArray([1.0, 1.0, 0.0, 1.0])
 long_color = ColorArray([1.0, 0.0, 0.0, 1.0])
 
+# Sizes
+nodes_size_large = 10
+nodes_size_medium = 8
+nodes_size_small = 6
+nodes_size_tiny = 4
+text_size = 10
+text_size_small = 8
+
 # Layout-related default parameters
 layouts = {'FR':
                {'name': 'Fruchterman-Reingold', 'is_default': 1, 'params':
@@ -61,7 +69,10 @@ run_params = {  # a dict to hold all the running parameters (given by the user /
     'nodes_size': 8,
     'nodes_color': [0.0, 0.0, 0.0, 1.0],
     'nodes_outline_color': [0.0, 0.0, 0.0, 1.0],
-    'nodes_outline_width': 0.5
+    'nodes_outline_width': 0.5,
+    'text_size': 10,
+    'is_bold': True,
+    'is_italic': False
 }
 
 ## Data-related variables
@@ -84,24 +95,33 @@ sequences_ID_to_index = dict()
 # A dictionary of lists containing numeric parameters (for example: 'sequence length') for each sequence
 sequences_numeric_params = dict()
 
-# an hierarchic dictionary containing several levels, for holding all the groups information
-# Upper level: grouping type (input_file, manual, taxonomy, user-defined)
-# Second level: Group_ID
-# Inner level (holding the following info for each group):
-# - 'name', 'size', 'name_size', 'seqIDs', 'order', 'color', 'color_array', 'is_bold', 'is_italic'
+# A list of grouping categories, holding all the information about the groups and their settings.
+# Each category index is a dictionary holding the following information for each grouping-category:
+# name, groups, sequences, nodes_size, nodes_outline_width, text_size, is_bold, is_italic
+# - 'name': category name
+# - 'sequences': a list of sequences, holding the group_ID to which the sequence belongs in a specific category
+# (in case it belongs to no group, it gets -1)
+# - 'groups': a dictionary, containing the following levels of information about each group:
+# First level: Group_ID
+# Second level (holding the following info for each group):
+# - 'name', 'size', 'name_size', 'seqIDs', 'order', 'color', 'color_array', 'outline_color', 'is_bold', 'is_italic'
 # - 'seqIDs' is a dictionary holding the indices of the sequences belonging to each group
 # - 'order' (starting from -1) determines which group is displayed in front of the other (-1 = the most front)
 # - 'color' is the old clans format: 225;32;100;255
 # - 'color_array' is an array of size 4 to be used by Vispy
 # - 'outline_color': array of size 4 for the group node's outline color
-groups_dict = dict()
-groups_dict['input_file'] = dict()
-groups_dict['manual'] = dict()
-
-# A dictionary of lists to hold for each group-type and sequence, the group_ID it belongs to (-1 if belongs to no group)
-sequences_in_groups = dict()
-sequences_in_groups['input_file'] = []
-sequences_in_groups['manual'] = []
+groups_by_categories = list()
+groups_by_categories.append({
+    'name': 'Manual definition',
+    'groups': dict(),
+    'sequences': list(),
+    'nodes_size': run_params['nodes_size'],
+    'text_size': run_params['text_size'],
+    'nodes_outline_color': run_params['nodes_outline_color'],
+    'nodes_outline_width': run_params['nodes_outline_width'],
+    'is_bold': True,
+    'is_italic': False
+})
 
 similarity_values_list = []  # a list of the non-redundant significant HSPs ('seq1_index', 'seq2_index', 'Evalue')
 similarity_values_mtx = []  # a 2D matrix filled with Evalues for all pairs (redundant). The diagonal and non-significant pairs = 1

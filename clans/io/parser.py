@@ -9,8 +9,8 @@ def parse_arguments():
                         help="Load a network file containing at least pairs of sequences and similarity-scores",
                         type=str)
     parser.add_argument("-format", metavar="input_file_format",
-                        help="Input file format (clans/mini-clans/delimited. Default is 'clans' format)",
-                        type=str, choices=['clans', 'mini-clans', 'delimited'], default=cfg.input_format)
+                        help="Input file format (clans/delimited. Default is 'clans' format)",
+                        type=str, choices=['clans', 'delimited'], default=cfg.input_format)
 
     ## Clustering parameters
     parser.add_argument("-dorounds", metavar="rounds", help="Number of clustering rounds to perform (default=0)",
@@ -51,13 +51,13 @@ def parse_arguments_cmd():
     parser.add_argument("-load", metavar="network_file_path", help="Load an existing network file in CLANS "
                                                                  "or tab-delimited formats", type=str)
     parser.add_argument("-input_format", metavar="input_file_format",
-                        help="Input file format (default is CLANS format)", type=str,
-                        choices=['clans', 'mini-clans', 'delimited'], default=cfg.input_format)
+                        help="Input file format (clans/delimited. default is 'clans' format)", type=str,
+                        choices=['clans', 'delimited'], default=cfg.input_format)
     parser.add_argument("-saveto", metavar="destination_file_path", required=True,
                         help="A destination path for saving the output file (in CLANS format, by default)", type=str)
     parser.add_argument("-output_format", metavar="output_file_format",
-                        help="Output file format (default is CLANS format)", type=str,
-                        choices=['clans', 'mini-clans', 'delimited'], default=cfg.output_format)
+                        help="Output file format (clans/delimited. default is 'clans' format)", type=str,
+                        choices=['clans', 'delimited'], default=cfg.output_format)
 
     ## Blast search parameters
     parser.add_argument("-eval", metavar="E-value_threshold", help="E-value threshold for extracting BLAST HSPs "
