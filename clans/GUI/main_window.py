@@ -1,11 +1,13 @@
-from PyQt5.QtCore import QThreadPool
+from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 from vispy import app, scene
 from vispy.color import ColorArray
 import numpy as np
 from PIL import Image
 import time
 import re
+import os
 import clans.config as cfg
 import clans.io.io_gui as io
 import clans.io.file_formats.clans_format as clans_format
@@ -99,26 +101,18 @@ class MainWindow(QMainWindow):
         self.main_menu = QMenuBar()
         self.setMenuBar(self.main_menu)
         self.main_menu.setNativeMenuBar(False)
-        #self.main_menu.setStyleSheet("border-bottom: 1px solid black; background-color: gray;")
 
         # Create the File menu
         self.file_menu = self.main_menu.addMenu("File")
 
         self.load_file_submenu = self.file_menu.addMenu("Load file")
-        #self.load_clans_file_sumenu = self.load_file_submenu.addMenu("CLANS format")
 
-        #self.load_clans_file_action = QAction("Standard CLANS (compatible)", self)
         self.load_clans_file_action = QAction("CLANS format", self)
         self.load_clans_file_action.triggered.connect(self.load_clans_file)
-
-        #self.load_mini_clans_file_action = QAction("Minimal CLANS (without sequences)", self)
-        #self.load_mini_clans_file_action.triggered.connect(self.load_mini_clans_file)
 
         self.load_delimited_file_action = QAction("Tab-delimited format", self)
         self.load_delimited_file_action.triggered.connect(self.load_delimited_file)
 
-        #self.load_clans_file_sumenu.addAction(self.load_clans_file_action)
-        #self.load_clans_file_sumenu.addAction(self.load_mini_clans_file_action)
         self.load_file_submenu.addAction(self.load_clans_file_action)
         self.load_file_submenu.addAction(self.load_delimited_file_action)
 
@@ -146,12 +140,6 @@ class MainWindow(QMainWindow):
 
         self.file_menu.addAction(self.save_image_action)
         self.file_menu.addAction(self.quit_action)
-
-        # Create the Edit menu
-        #self.edit_menu = self.main_menu.addMenu("Edit")
-
-        # Create the View menu
-        #self.view_menu = self.main_menu.addMenu("View")
 
         # Create the Configuration menu
         self.conf_menu = self.main_menu.addMenu("Configure")
@@ -197,6 +185,18 @@ class MainWindow(QMainWindow):
         self.color_by_param_action.triggered.connect(self.open_color_by_param_dialog)
 
         self.color_by_submenu.addAction(self.color_by_param_action)
+
+        # Create the Help menu
+        self.help_menu = self.main_menu.addMenu("Help")
+
+        self.about_action = QAction("About CLANS-Python", self)
+        self.about_action.triggered.connect(self.open_about_window)
+
+        self.manual_action = QAction("Open manual", self)
+        self.manual_action.triggered.connect(self.open_manual)
+
+        self.help_menu.addAction(self.about_action)
+        self.help_menu.addAction(self.manual_action)
 
         # Create the canvas (the graph area)
         self.canvas = scene.SceneCanvas(size=(800, 750), keys='interactive', show=True, bgcolor='w')
@@ -714,11 +714,9 @@ class MainWindow(QMainWindow):
                         message = "The Number of groups in the \'" + cfg.groups_by_categories[category_index]['name'] + \
                                   "\' grouping-category exceeds 300 " \
                                   "(" + str(groups_num) + " groups).\nContinue without loading groups in this category."
-                        print(message)
-                        dlg = mes_dialogs.MessageDialog(message)
 
-                        if dlg.exec_():
-                            groups.delete_grouping_category(category_index)
+                        QMessageBox.warning(self, "", message)
+                        groups.delete_grouping_category(category_index)
 
                     # The number of groups is ok
                     else:
@@ -2053,6 +2051,18 @@ class MainWindow(QMainWindow):
                     self.edit_categories_button.setEnabled(True)
 
                 self.group_by = category_index
+
+    def open_about_window(self):
+        pass
+
+    def open_manual(self):
+
+        manual_path = os.path.abspath(cfg.manual_path)
+        url = QUrl.fromLocalFile(manual_path)
+
+        if not QDesktopServices.openUrl(url):
+            warn_message = "Cannot open " + manual_path
+            QMessageBox.warning(self, 'Open Url', warn_message)
 
     ## Callback functions to deal with mouse and key events
 

@@ -154,6 +154,8 @@ seq_by_tax_level_dict = {
 taxonomy_names_file = "clans/taxonomy/names.dmp"
 taxonomy_lineage_file = "clans/taxonomy/rankedlineage.dmp"
 
+manual_path = "manual/Manual.pdf"
+
 
 
 
