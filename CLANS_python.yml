@@ -2,6 +2,7 @@ name: CLANS_python
 channels:
   - defaults
   - conda-forge
+  - bioconda
 dependencies:
   - python=3.9.6
   - conda-forge::numpy=1.20.3
@@ -10,3 +11,4 @@ dependencies:
   - pyqt=5.9.2
   - biopython=1.77
   - pillow=8.3.1
+  - blast

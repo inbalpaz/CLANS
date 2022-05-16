@@ -28,15 +28,6 @@ import clans.GUI.conf_dialogs as cd
 import clans.graphics.colors as colors
 
 
-class Button(QPushButton):
-
-    def __init__(self, title):
-        super().__init__()
-
-        self.setText(title)
-        self.setStyleSheet("font-size: 11px; height: 15px")
-
-
 class MainWindow(QMainWindow):
 
     def __init__(self):
@@ -192,7 +183,7 @@ class MainWindow(QMainWindow):
         self.about_action = QAction("About CLANS-Python", self)
         self.about_action.triggered.connect(self.open_about_window)
 
-        self.manual_action = QAction("Open manual", self)
+        self.manual_action = QAction("CLANS-Python manual", self)
         self.manual_action.triggered.connect(self.open_manual)
 
         self.help_menu.addAction(self.about_action)
@@ -462,6 +453,7 @@ class MainWindow(QMainWindow):
         self.groups_layout.addWidget(self.group_by_label)
         self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.groups_layout.addWidget(self.group_by_combo)
+        self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.groups_layout.addWidget(self.edit_categories_button)
         self.groups_layout.addSpacerItem(self.horizontal_spacer_long)
         self.groups_layout.addWidget(self.groups_label)
