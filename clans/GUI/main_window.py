@@ -1,6 +1,6 @@
-from PyQt5.QtCore import *
+from PyQt5.QtCore import QThreadPool, QUrl
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
+from PyQt5.QtGui import QDesktopServices
 from vispy import app, scene
 from vispy.color import ColorArray
 import numpy as np
@@ -22,10 +22,21 @@ import clans.data.groups as groups
 import clans.GUI.group_dialogs as gd
 import clans.GUI.windows as windows
 import clans.GUI.metadata_dialogs as md
-import clans.GUI.message_dialogs as mes_dialogs
 #import clans.GUI.text_dialogs as td
 import clans.GUI.conf_dialogs as cd
 import clans.graphics.colors as colors
+
+
+def error_occurred(method, method_name, exception_err, error_msg):
+
+    if cfg.run_params['is_debug_mode']:
+        print("\nError in " + method.__globals__['__file__']+ " (" + method_name + "):")
+        print(exception_err)
+
+    msg_box = QMessageBox()
+    msg_box.setText(error_msg)
+    if msg_box.exec_():
+        return
 
 
 class MainWindow(QMainWindow):
@@ -702,13 +713,21 @@ class MainWindow(QMainWindow):
                 if groups_num > 0:
 
                     # Pop up an error message
-                    if groups_num > 300:
+                    if groups_num > cfg.max_groups_num:
+                        msg_box = QMessageBox()
                         message = "The Number of groups in the \'" + cfg.groups_by_categories[category_index]['name'] + \
-                                  "\' grouping-category exceeds 300 " \
-                                  "(" + str(groups_num) + " groups).\nContinue without loading groups in this category."
+                                  "\' grouping-category exceeds " + str(cfg.max_groups_num) + " (" + str(groups_num) + \
+                                  " groups).\nContinue without loading groups in this category."
 
-                        QMessageBox.warning(self, "", message)
-                        groups.delete_grouping_category(category_index)
+                        msg_box.setText(message)
+                        if msg_box.exec_():
+                            return
+
+                        try:
+                            groups.delete_grouping_category(category_index)
+                        except Exception as err:
+                            error_msg = "An error occurred: cannot delete the grouping category"
+                            error_occurred(groups.delete_grouping_category, 'delete_grouping_category', err, error_msg)
 
                     # The number of groups is ok
                     else:
@@ -734,7 +753,13 @@ class MainWindow(QMainWindow):
             self.selected_seq_window.update_window_title(self.file_name)
 
             # Create and display the FR layout as scatter plot
-            self.network_plot.init_data(self.fr_object, self.group_by)
+            try:
+                self.network_plot.init_data(self.fr_object, self.group_by)
+            except Exception as err:
+                error_msg = "An error occurred: cannot initialize the data.\n" \
+                            "Try to reload the input file or load another file."
+                error_occurred(self.network_plot.init_data, 'init_data', err, error_msg)
+                return
 
             # Update the number of rounds label
             self.rounds_done = cfg.run_params['rounds_done']
@@ -763,8 +788,11 @@ class MainWindow(QMainWindow):
         else:
             # Remove the 'loading file' message from the scene and put an error message instead
             self.load_file_label.parent = None
-            self.file_error_label.text = cfg.run_params['error'] + "\n\nPlease load a new file and select the correct format"
-            self.canvas.central_widget.add_widget(self.file_error_label)
+            msg_box = QMessageBox()
+            error_msg = cfg.run_params['error'] + "\nPlease load a new file and select the correct format."
+            msg_box.setText(error_msg)
+            if msg_box.exec_():
+                return
 
         self.is_init = 0
 
@@ -779,7 +807,12 @@ class MainWindow(QMainWindow):
             self.reset_window()
 
             # Clear the canvas
-            self.network_plot.reset_data()
+            try:
+                self.network_plot.reset_data()
+            except Exception as err:
+                error_msg = "An error occurred: cannot reset the graph"
+                error_occurred(self.network_plot.reset_data, 'reset_data', err, error_msg)
+                return
 
             # Initialize all the global data-structures
             self.reset_variables()
@@ -803,7 +836,12 @@ class MainWindow(QMainWindow):
             self.reset_window()
 
             # Clear the canvas
-            self.network_plot.reset_data()
+            try:
+                self.network_plot.reset_data()
+            except Exception as err:
+                error_msg = "An error occurred: cannot reset the graph"
+                error_occurred(self.network_plot.reset_data, 'reset_data', err, error_msg)
+                return
 
             # Initialize all the global data-structures
             self.reset_variables()
@@ -827,7 +865,12 @@ class MainWindow(QMainWindow):
             self.reset_window()
 
             # Clear the canvas
-            self.network_plot.reset_data()
+            try:
+                self.network_plot.reset_data()
+            except Exception as err:
+                error_msg = "An error occurred: cannot reset the graph"
+                error_occurred(self.network_plot.reset_data, 'reset_data', err, error_msg)
+                return
 
             # Initialize all the global data-structures
             self.reset_variables()
@@ -884,13 +927,23 @@ class MainWindow(QMainWindow):
             # Hide the selected names
             self.show_selected_names_button.setChecked(False)
             self.is_show_selected_names = 0
-            self.network_plot.hide_sequences_names()
+
+            try:
+                self.network_plot.hide_sequences_names()
+            except Exception as err:
+                error_msg = "An error occurred: cannot clear the seuences names"
+                error_occurred(self.network_plot.hide_sequences_names, 'hide_sequences_names', err, error_msg)
 
             # Hide the group names
             self.show_group_names_button.setChecked(False)
             self.reset_group_names_button.setEnabled(False)
             self.is_show_group_names = 0
-            self.network_plot.hide_group_names()
+
+            try:
+                self.network_plot.hide_group_names()
+            except Exception as err:
+                error_msg = "An error occurred: cannot clear the group names"
+                error_occurred(self.network_plot.hide_group_names, 'hide_group_names', err, error_msg)
 
             # Disable the 'Add text' button
             #self.add_text_button.setEnabled(False)
@@ -936,7 +989,12 @@ class MainWindow(QMainWindow):
 
     def update_plot(self):
 
-        self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by)
+        try:
+            self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by)
+        except Exception as err:
+            error_msg = "An error occurred: cannot update the graph"
+            error_occurred(self.network_plot.update_data, 'update_data', err, error_msg)
+            return
 
         # Full data mode
         if self.is_subset_mode == 0:
@@ -958,7 +1016,7 @@ class MainWindow(QMainWindow):
         if self.is_running_calc == 1:
             self.run_calc_worker.stop()
 
-    def stopped_state(self):
+    def stopped_state(self, error):
         if self.is_subset_mode == 0:
             self.after = time.time()
             duration = (self.after - self.before)
@@ -1016,18 +1074,41 @@ class MainWindow(QMainWindow):
 
         # Whole data calculation mode
         if self.is_subset_mode == 0:
-            # Update the coordinates saved in the sequences_array
-            seq.update_positions(self.fr_object.coordinates.T, 'full')
 
-            self.network_plot.reset_group_names_positions(self.group_by)
+            # Update the coordinates saved in the sequences_array
+            try:
+                seq.update_positions(self.fr_object.coordinates.T, 'full')
+            except Exception as err:
+                error_msg = "An error occurred: cannot update the coordinates"
+                error_occurred(seq.update_positions, 'update_positions', err, error_msg)
+                return
+
+            # Reset the group-names positions
+            try:
+                self.network_plot.reset_group_names_positions(self.group_by)
+            except Exception as err:
+                error_msg = "An error occurred: cannot reset the group-names positions"
+                error_occurred(self.network_plot.reset_group_names_positions, 'reset_group_names_positions', err,
+                               error_msg)
 
         # Subset calculation mode
         else:
+
             # Update the subset-coordinates saved in the sequences_array
-            seq.update_positions(self.fr_object.coordinates.T, 'subset')
+            try:
+                seq.update_positions(self.fr_object.coordinates.T, 'subset')
+            except Exception as err:
+                error_msg = "An error occurred: cannot update the coordinates"
+                error_occurred(seq.update_positions, 'update_positions', err, error_msg)
+                return
 
         # Calculate the azimuth and elevation angles of the new points positions
-        self.network_plot.calculate_initial_angles()
+        try:
+            self.network_plot.calculate_initial_angles()
+        except Exception as err:
+            error_msg = "An error occurred: cannot calculate angles"
+            error_occurred(self.network_plot.calculate_initial_angles, 'calculate_initial_angles', err, error_msg)
+            return
 
         # Update the global variable of number of rounds
         cfg.run_params['rounds_done'] = self.rounds_done
@@ -1055,9 +1136,14 @@ class MainWindow(QMainWindow):
                 cfg.sequences_array['z_coor_subset'] = seq.init_positions(cfg.run_params['total_sequences_num'])
 
                 # Update the coordinates in the fruchterman-reingold object
-                self.fr_object.init_calculation(cfg.sequences_array['x_coor_subset'],
-                                                cfg.sequences_array['y_coor_subset'],
-                                                cfg.sequences_array['z_coor_subset'])
+                try:
+                    self.fr_object.init_calculation(cfg.sequences_array['x_coor_subset'],
+                                                    cfg.sequences_array['y_coor_subset'],
+                                                    cfg.sequences_array['z_coor_subset'])
+                except Exception as err:
+                    error_msg = "An error occurred: cannot initialize the coordinates"
+                    error_occurred(self.fr_object.init_calculation, 'init_calculation', err, error_msg)
+                    return
 
             # Full mode -> Init the whole dataset
             else:
@@ -1065,13 +1151,29 @@ class MainWindow(QMainWindow):
                     seq.init_positions(cfg.run_params['total_sequences_num'])
 
                 # Update the coordinates in the fruchterman-reingold object
-                self.fr_object.init_calculation(cfg.sequences_array['x_coor'],
-                                                cfg.sequences_array['y_coor'],
-                                                cfg.sequences_array['z_coor'])
+                try:
+                    self.fr_object.init_calculation(cfg.sequences_array['x_coor'],
+                                                    cfg.sequences_array['y_coor'],
+                                                    cfg.sequences_array['z_coor'])
+                except Exception as err:
+                    error_msg = "An error occurred: cannot initialize the coordinates"
+                    error_occurred(self.fr_object.init_calculation, 'init_calculation', err, error_msg)
+                    return
 
-            self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by)
+            try:
+                self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by)
+            except Exception as err:
+                error_msg = "An error occurred: cannot update the graph"
+                error_occurred(self.network_plot.update_data, 'update_data', err, error_msg)
+                return
+
             # Calculate the angles of each point for future use when having rotations
-            self.network_plot.calculate_initial_angles()
+            try:
+                self.network_plot.calculate_initial_angles()
+            except Exception as err:
+                error_msg = "An error occurred: cannot calculate angles"
+                error_occurred(self.network_plot.calculate_initial_angles, 'calculate_initial_angles', err, error_msg)
+                return
 
             print("Coordinates were initiated.")
 
@@ -1086,8 +1188,18 @@ class MainWindow(QMainWindow):
                 if self.z_indexing_mode == 'groups':
                     self.z_index_mode_combo.setCurrentIndex(0)
 
-            self.network_plot.reset_rotation()
-            self.network_plot.reset_group_names_positions(self.group_by)
+            try:
+                self.network_plot.reset_rotation()
+            except Exception as err:
+                error_msg = "An error occurred: cannot reset the rotation of the graph"
+                error_occurred(self.network_plot.reset_rotation, 'reset_rotation', err, error_msg)
+
+            try:
+                self.network_plot.reset_group_names_positions(self.group_by)
+            except Exception as err:
+                error_msg = "An error occurred: cannot reset the positions of the group names"
+                error_occurred(self.network_plot.reset_group_names_positions, 'reset_group_names_positions', err,
+                               error_msg)
 
     def manage_connections(self):
 
@@ -1096,12 +1208,21 @@ class MainWindow(QMainWindow):
             self.is_show_connections = 1
 
             # Display the connecting lines
-            self.network_plot.show_connections()
+            try:
+                self.network_plot.show_connections()
+            except Exception as err:
+                error_msg = "An error occurred: cannot display the connecting lines"
+                error_occurred(self.network_plot.show_connections, 'show_connections', err, error_msg)
 
         # Hide the connections
         else:
             self.is_show_connections = 0
-            self.network_plot.hide_connections()
+
+            try:
+                self.network_plot.hide_connections()
+            except Exception as err:
+                error_msg = "An error occurred: cannot hide the connecting lines"
+                error_occurred(self.network_plot.hide_connections, 'hide_connections', err, error_msg)
 
     def update_cutoff(self):
 
@@ -1123,30 +1244,86 @@ class MainWindow(QMainWindow):
 
                 print("Similairy cutoff has changed to: " + entered_pval)
                 cfg.run_params['similarity_cutoff'] = float(entered_pval)
-                sp.define_connected_sequences(cfg.run_params['type_of_values'])
-                sp.define_connected_sequences_list()
-                self.network_plot.create_connections_by_bins()
+
+                # Update the main matrix of connected pairs
+                try:
+                    sp.define_connected_sequences(cfg.run_params['type_of_values'])
+                except Exception as err:
+                    error_msg = "An error occurred: cannot update the connected sequences"
+                    error_occurred(sp.define_connected_sequences, 'define_connected_sequences', err, error_msg)
+                    return
+
+                # Update the main list of connected pairs
+                try:
+                    sp.define_connected_sequences_list()
+                except Exception as err:
+                    error_msg = "An error occurred: cannot update the list of connected sequences"
+                    error_occurred(sp.define_connected_sequences_list, 'define_connected_sequences_list', err, error_msg)
+                    return
+
+                # Update the connections-by-bins visual
+                try:
+                    self.network_plot.create_connections_by_bins()
+                except Exception as err:
+                    error_msg = "An error occurred: cannot update the connecting lines"
+                    error_occurred(self.network_plot.create_connections_by_bins, 'create_connections_by_bins', err,
+                                   error_msg)
+                    return
 
                 # If in subset mode, update the connections also for the subset
                 if self.is_subset_mode:
-                    sp.define_connected_sequences_list_subset()
-                    self.network_plot.create_connections_by_bins_subset()
+
+                    try:
+                        sp.define_connected_sequences_list_subset()
+                    except Exception as err:
+                        error_msg = "An error occurred: cannot update the list of connected sequences in the subset"
+                        error_occurred(sp.define_connected_sequences_list_subset,
+                                       'define_connected_sequences_list_subset', err, error_msg)
+                        return
+
+                    try:
+                        self.network_plot.create_connections_by_bins_subset()
+                    except Exception as err:
+                        error_msg = "An error occurred: cannot update the connecting lines of the subset"
+                        error_occurred(self.network_plot.create_connections_by_bins_subset,
+                                       'create_connections_by_bins_subset', err, error_msg)
+                        return
 
                 # Update the connections matrix in the fruchterman-reingold object
-                self.fr_object.update_connections()
+                try:
+                    self.fr_object.update_connections()
+                except Exception as err:
+                    error_msg = "An error occurred: cannot update the connections for the FR calculation"
+                    error_occurred(self.fr_object.update_connections, 'update_connections', err, error_msg)
+                    return
 
                 # 3D view
                 if self.view_in_dimensions_num == 3:
-                    self.network_plot.update_connections(3)
+
+                    try:
+                        self.network_plot.update_connections(3)
+                    except Exception as err:
+                        error_msg = "An error occurred: cannot update the connecting lines in the graph"
+                        error_occurred(self.network_plot.update_connections, 'update_connections', err, error_msg)
 
                 # 2D view
                 else:
                     # 3D clustering -> need to present the rotated-coordinates
                     if cfg.run_params['dimensions_num_for_clustering'] == 3:
-                        self.network_plot.update_view(2, self.color_by)
+
+                        try:
+                            self.network_plot.update_view(2, self.color_by)
+                        except Exception as err:
+                            error_msg = "An error occurred: cannot update the graph view to 2D"
+                            error_occurred(self.network_plot.update_view, 'update_view', err, error_msg)
+
                     # 2D clustering
                     else:
-                        self.network_plot.update_connections(2)
+                        try:
+                            self.network_plot.update_connections(2)
+                        except Exception as err:
+                            error_msg = "An error occurred: cannot update the connecting lines in the graph"
+                            error_occurred(self.network_plot.update_connections, 'update_connections', err, error_msg)
 
         # The user entered invalid characters
         else:
@@ -1154,27 +1331,38 @@ class MainWindow(QMainWindow):
             self.pval_widget.setText("")
             self.pval_widget.setFocus()
 
-    # Save a standard (full) clans file
+    # Save a compatible clans file
     def save_clans_file(self):
         saved_file, _ = QFileDialog.getSaveFileName()
 
         if saved_file:
             file_object = clans_format.ClansFormat()
-            file_object.write_file(saved_file, True, self.group_by)
 
-            if cfg.run_params['is_debug_mode']:
-                print("Session is successfully saved to " + saved_file + " in CLANS format")
+            try:
+                file_object.write_file(saved_file, True, self.group_by)
+            except Exception as err:
+                error_msg = "An error occurred: cannot write the clans file."
+                error_occurred(file_object.write_file, 'write_file', err, error_msg)
+                return
 
+            print("Session is successfully saved to " + saved_file + " in CLANS format")
+
+    # Save a full clans file
     def save_full_clans_file(self):
 
         saved_file, _ = QFileDialog.getSaveFileName()
 
         if saved_file:
             file_object = clans_format.ClansFormat()
-            file_object.write_full_file(saved_file)
 
-            if cfg.run_params['is_debug_mode']:
-                print("Session is successfully saved to " + saved_file + " in full-CLANS format")
+            try:
+                file_object.write_full_file(saved_file)
+            except Exception as err:
+                error_msg = "An error occurred: cannot write the clans file."
+                error_occurred(file_object.write_full_file, 'write_full_file', err, error_msg)
+                return
+
+            print("Session is successfully saved to " + saved_file + " in full-CLANS format")
 
     def save_delimited_file(self):
 
@@ -1182,58 +1370,84 @@ class MainWindow(QMainWindow):
 
         if saved_file:
             file_object = tab_format.DelimitedFormat()
-            file_object.write_file(saved_file)
 
-            if cfg.run_params['is_debug_mode']:
-                print("Session is successfully saved to " + saved_file + " in tab-delimited format")
+            try:
+                file_object.write_file(saved_file)
+            except Exception as err:
+                error_msg = "An error occurred: cannot write the tab-delimited file."
+                error_occurred(file_object.write_file, 'write_file', err, error_msg)
+                return
+
+            print("Session is successfully saved to " + saved_file + " in tab-delimited format")
 
     def save_image(self):
 
-        # Convert the canvas to numpy image array
-        img_array = self.canvas.render(alpha=False)
+        try:
+            # Convert the canvas to numpy image array
+            img_array = self.canvas.render(alpha=False)
 
-        # Create a PIL.Image object from the array
-        img = Image.fromarray(img_array)
+            # Create a PIL.Image object from the array
+            img = Image.fromarray(img_array)
 
-        # Open a save file dialog with the following format options:  png, tiff, jpeg, eps
-        saved_file, _ = QFileDialog.getSaveFileName(self, "Save image", "", "PNG (*.png);; Tiff (*.tiff);; "
+            # Open a save file dialog with the following format options:  png, tiff, jpeg, eps
+            saved_file, _ = QFileDialog.getSaveFileName(self, "Save image", "", "PNG (*.png);; Tiff (*.tiff);; "
                                                                             "Jpeg (*.jpg);; EPS (*.eps)")
 
-        if saved_file:
+            if saved_file:
 
-            # Save the image array in the format specified by the file extension
-            img.save(saved_file)
+                # Save the image array in the format specified by the file extension
+                img.save(saved_file)
 
-            print("Image was saved in file " + str(saved_file))
+                print("Image was saved in file " + str(saved_file))
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot save the session as an image."
+            error_occurred(self.save_image, 'save_image', err, error_msg)
 
     def conf_FR_layout(self):
 
-        conf_dlg = cd.FruchtermanReingoldConfig()
+        try:
+            conf_dlg = cd.FruchtermanReingoldConfig()
 
-        if conf_dlg.exec_():
-            cfg.run_params['att_val'], cfg.run_params['att_exp'], cfg.run_params['rep_val'], \
-            cfg.run_params['rep_exp'], cfg.run_params['gravity'], cfg.run_params['dampening'], \
-            cfg.run_params['maxmove'], cfg.run_params['cooling'] = conf_dlg.get_parameters()
+            if conf_dlg.exec_():
+                cfg.run_params['att_val'], cfg.run_params['att_exp'], cfg.run_params['rep_val'], \
+                cfg.run_params['rep_exp'], cfg.run_params['gravity'], cfg.run_params['dampening'], \
+                cfg.run_params['maxmove'], cfg.run_params['cooling'] = conf_dlg.get_parameters()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot update the Fruchterman-Reingold layout parameters."
+            error_occurred(self.conf_FR_layout, 'conf_FR_layout', err, error_msg)
 
     def conf_nodes(self):
 
-        conf_nodes_dlg = cd.NodesConfig()
+        try:
 
-        if conf_nodes_dlg.exec_():
-            size, color, outline_color, outline_width = conf_nodes_dlg.get_parameters()
+            conf_nodes_dlg = cd.NodesConfig()
 
-            cfg.run_params['nodes_size'] = size
-            cfg.run_params['nodes_color'] = color
-            cfg.run_params['nodes_outline_color'] = outline_color
-            cfg.run_params['nodes_outline_width'] = outline_width
+            if conf_nodes_dlg.exec_():
+                size, color, outline_color, outline_width = conf_nodes_dlg.get_parameters()
 
-            # Update also the parameters of the 'Manual definition' grouping-category
-            cfg.groups_by_categories[0]['nodes_size'] = size
-            cfg.groups_by_categories[0]['nodes_color'] = color
-            cfg.groups_by_categories[0]['nodes_outline_color'] = outline_color
-            cfg.groups_by_categories[0]['nodes_outline_width'] = outline_width
+                cfg.run_params['nodes_size'] = size
+                cfg.run_params['nodes_color'] = color
+                cfg.run_params['nodes_outline_color'] = outline_color
+                cfg.run_params['nodes_outline_width'] = outline_width
 
-            self.network_plot.set_defaults(self.dim_num, self.color_by, self.group_by)
+                # Update also the parameters of the 'Manual definition' grouping-category
+                cfg.groups_by_categories[0]['nodes_size'] = size
+                cfg.groups_by_categories[0]['nodes_color'] = color
+                cfg.groups_by_categories[0]['nodes_outline_color'] = outline_color
+                cfg.groups_by_categories[0]['nodes_outline_width'] = outline_width
+
+                try:
+                    self.network_plot.set_defaults(self.dim_num, self.color_by, self.group_by)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot update the default nodes parameters."
+                    error_occurred(self.network_plot.set_defaults, 'set_defaults', err, error_msg)
+                    return
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot update the nodes parameters."
+            error_occurred(self.conf_nodes, 'conf_nodes', err, error_msg)
 
     def change_dimensions_view(self):
 
@@ -1249,7 +1463,11 @@ class MainWindow(QMainWindow):
 
             # Not in init file mode
             if self.is_init == 0:
-                self.network_plot.set_3d_view(self.fr_object, self.color_by)
+                try:
+                    self.network_plot.set_3d_view(self.fr_object, self.color_by)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot set the graph to 3D view."
+                    error_occurred(self.network_plot.set_3d_view, 'set_3d_view', err, error_msg)
 
         # 2D view
         else:
@@ -1266,7 +1484,11 @@ class MainWindow(QMainWindow):
 
             # Not in init file mode
             if self.is_init == 0:
-                self.network_plot.set_2d_view(self.z_indexing_mode, self.fr_object, self.color_by, self.group_by)
+                try:
+                    self.network_plot.set_2d_view(self.z_indexing_mode, self.fr_object, self.color_by, self.group_by)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot set the graph to 2D view."
+                    error_occurred(self.network_plot.set_2d_view, 'set_2d_view', err, error_msg)
 
     def change_dimensions_num_for_clustering(self):
 
@@ -1277,14 +1499,23 @@ class MainWindow(QMainWindow):
             # Update the coordinates in the Fruchterman-Reingold object
             # Full data mode
             if self.is_subset_mode == 0:
-                self.fr_object.init_coordinates(cfg.sequences_array['x_coor'],
-                                                cfg.sequences_array['y_coor'],
-                                                cfg.sequences_array['z_coor'])
+                try:
+                    self.fr_object.init_coordinates(cfg.sequences_array['x_coor'],
+                                                    cfg.sequences_array['y_coor'],
+                                                    cfg.sequences_array['z_coor'])
+                except Exception as err:
+                    error_msg = "An error occurred: cannot change the clustering to 3D"
+                    error_occurred(self.fr_object.init_coordinates, 'init_coordinates', err, error_msg)
+
             # Subset mode
             else:
-                self.fr_object.init_coordinates(cfg.sequences_array['x_coor_subset'],
-                                                cfg.sequences_array['y_coor_subset'],
-                                                cfg.sequences_array['z_coor_subset'])
+                try:
+                    self.fr_object.init_coordinates(cfg.sequences_array['x_coor_subset'],
+                                                    cfg.sequences_array['y_coor_subset'],
+                                                    cfg.sequences_array['z_coor_subset'])
+                except Exception as err:
+                    error_msg = "An error occurred: cannot change the clustering to 3D"
+                    error_occurred(self.fr_object.init_coordinates, 'init_coordinates', err, error_msg)
 
             self.dimensions_view_combo.setCurrentIndex(0)
             self.dimensions_view_combo.setEnabled(True)
@@ -1297,7 +1528,12 @@ class MainWindow(QMainWindow):
 
             # The view was already in 2D -> update the rotated positions
             if self.view_in_dimensions_num == 2:
-                self.network_plot.save_rotated_coordinates(2, self.fr_object, self.color_by)
+                try:
+                    self.network_plot.save_rotated_coordinates(2, self.fr_object, self.color_by)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot save the rotation"
+                    error_occurred(self.network_plot.save_rotated_coordinates, 'save_rotated_coordinates', err,
+                                   error_msg)
 
             # Set 2D view
             else:
@@ -1314,7 +1550,11 @@ class MainWindow(QMainWindow):
             self.z_indexing_mode = 'groups'
 
         if self.z_index_mode_combo.isEnabled():
-            self.network_plot.update_2d_view(self.z_indexing_mode, self.color_by, self.group_by)
+            try:
+                self.network_plot.update_2d_view(self.z_indexing_mode, self.color_by, self.group_by)
+            except Exception as err:
+                error_msg = "An error occurred: cannot update the view"
+                error_occurred(self.network_plot.update_2d_view, 'update_2d_view', err, error_msg)
 
     def change_mode(self):
 
@@ -1329,8 +1569,13 @@ class MainWindow(QMainWindow):
 
             # Not in init file mode
             if self.is_init == 0:
-                self.network_plot.set_interactive_mode(self.view_in_dimensions_num, self.fr_object,
-                                                       self.color_by)
+                try:
+                    self.network_plot.set_interactive_mode(self.view_in_dimensions_num, self.fr_object,
+                                                           self.color_by)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot change the mode to \'Rotate/Pan graph\'"
+                    error_occurred(self.network_plot.set_interactive_mode, 'set_interactive_mode', err, error_msg)
+                    return
 
             self.init_button.setEnabled(True)
             self.start_button.setEnabled(True)
@@ -1345,12 +1590,15 @@ class MainWindow(QMainWindow):
 
             # Disconnect the selection-special special mouse-events and connect back the default behaviour of the
             # viewbox when the mouse moves
-            self.canvas.events.mouse_release.disconnect(self.on_canvas_mouse_release)
-            self.view.camera._viewbox.events.mouse_move.connect(self.view.camera.viewbox_mouse_event)
-            self.view.camera._viewbox.events.mouse_press.connect(self.view.camera.viewbox_mouse_event)
+            try:
+                self.canvas.events.mouse_release.disconnect(self.on_canvas_mouse_release)
+                self.view.camera._viewbox.events.mouse_move.connect(self.view.camera.viewbox_mouse_event)
+                self.view.camera._viewbox.events.mouse_press.connect(self.view.camera.viewbox_mouse_event)
+            except Exception as err:
+                error_msg = "An error occurred: cannot set the mouse default behaviour"
+                error_occurred(self.change_mode, 'change_mode', err, error_msg)
 
         else:
-
             self.dim_num = 2
 
             # Selection mode
@@ -1372,8 +1620,13 @@ class MainWindow(QMainWindow):
                 if cfg.run_params['is_debug_mode']:
                     print("move_visuals mode")
 
-            self.network_plot.set_selection_mode(self.view_in_dimensions_num, self.z_indexing_mode,
-                                                 self.fr_object, self.color_by, self.group_by)
+            try:
+                self.network_plot.set_selection_mode(self.view_in_dimensions_num, self.z_indexing_mode,
+                                                     self.fr_object, self.color_by, self.group_by)
+            except Exception as err:
+                error_msg = "An error occurred: cannot set the selection mode"
+                error_occurred(self.network_plot.set_selection_mode, 'set_selection_mode', err, error_msg)
+                return
 
             self.init_button.setEnabled(False)
             self.start_button.setEnabled(False)
@@ -1387,15 +1640,27 @@ class MainWindow(QMainWindow):
 
             # Disconnect the default behaviour of the viewbox when the mouse moves
             # and connect special callbacks for mouse_move and mouse_release
-            self.view.camera._viewbox.events.mouse_move.disconnect(self.view.camera.viewbox_mouse_event)
-            self.view.camera._viewbox.events.mouse_press.disconnect(self.view.camera.viewbox_mouse_event)
-            self.canvas.events.mouse_release.connect(self.on_canvas_mouse_release)
+            try:
+                self.view.camera._viewbox.events.mouse_move.disconnect(self.view.camera.viewbox_mouse_event)
+                self.view.camera._viewbox.events.mouse_press.disconnect(self.view.camera.viewbox_mouse_event)
+                self.canvas.events.mouse_release.connect(self.on_canvas_mouse_release)
+            except Exception as err:
+                error_msg = "An error occurred: cannot set the mouse moves of the selection mode"
+                error_occurred(self.change_mode, 'change_mode', err, error_msg)
 
     def color_by_groups(self):
 
-        self.network_plot.color_by_groups(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+        try:
+            self.network_plot.color_by_groups(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+        except Exception as err:
+            error_msg = "An error occurred: cannot color the graph by groups"
+            error_occurred(self.network_plot.color_by_groups, 'color_by_groups', err, error_msg)
 
-        self.colorbar_plot.hide_colorbar()
+        try:
+            self.colorbar_plot.hide_colorbar()
+        except Exception as err:
+            error_msg = "An error occurred: cannot hide the colorbar"
+            error_occurred(self.colorbar_plot.hide_colorbar, 'hide_colorbar', err, error_msg)
 
     def color_by_seq_length(self):
 
@@ -1407,21 +1672,41 @@ class MainWindow(QMainWindow):
             self.color_by_combo.setEnabled(True)
 
         else:
-            gradient_colormap = colors.generate_colormap_gradient_2_colors(cfg.short_color, cfg.long_color)
+            try:
+                gradient_colormap = colors.generate_colormap_gradient_2_colors(cfg.short_color, cfg.long_color)
+            except Exception as err:
+                error_msg = "An error occurred: cannot generate colormap"
+                error_occurred(colors.generate_colormap_gradient_2_colors, 'generate_colormap_gradient_2_colors', err,
+                               error_msg)
+                return
 
-            self.network_plot.color_by_param(gradient_colormap, cfg.sequences_array['norm_seq_length'],
-                                             self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+            try:
+                self.network_plot.color_by_param(gradient_colormap, cfg.sequences_array['norm_seq_length'],
+                                                 self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+            except Exception as err:
+                error_msg = "An error occurred: cannot color the data by sequence-length"
+                error_occurred(self.network_plot.color_by_param, 'color_by_param', err, error_msg)
+                return
 
-            self.colorbar_plot.show_colorbar(gradient_colormap, cfg.sequences_array['seq_length'], 'Sequences length')
+            try:
+                self.colorbar_plot.show_colorbar(gradient_colormap, cfg.sequences_array['seq_length'], 'Sequences length')
+            except Exception as err:
+                error_msg = "An error occurred: cannot display the colorbar"
+                error_occurred(self.colorbar_plot.show_colorbar, 'show_colorbar', err, error_msg)
 
     def open_color_by_length_dialog(self):
 
-        dlg = md.ColorByLengthDialog()
+        try:
+            dlg = md.ColorByLengthDialog()
 
-        if dlg.exec_():
-            cfg.short_color, cfg.long_color = dlg.get_colors()
+            if dlg.exec_():
+                cfg.short_color, cfg.long_color = dlg.get_colors()
 
-            self.color_by_seq_length()
+                self.color_by_seq_length()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot color the data by sequence-length"
+            error_occurred(self.open_color_by_length_dialog, 'open_color_by_length_dialog', err, error_msg)
 
     def change_coloring(self):
 
@@ -1490,36 +1775,57 @@ class MainWindow(QMainWindow):
 
         min_param_color = cfg.sequences_numeric_params[param]['min_color']
         max_param_color = cfg.sequences_numeric_params[param]['max_color']
-        gradient_colormap = colors.generate_colormap_gradient_2_colors(min_param_color, max_param_color)
 
-        self.network_plot.color_by_param(gradient_colormap, cfg.sequences_numeric_params[param]['norm'],
-                                         self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+        try:
+            gradient_colormap = colors.generate_colormap_gradient_2_colors(min_param_color, max_param_color)
+        except Exception as err:
+            error_msg = "An error occurred: cannot generate colormap"
+            error_occurred(colors.generate_colormap_gradient_2_colors, 'generate_colormap_gradient_2_colors', err,
+                           error_msg)
+            return
 
-        self.colorbar_plot.show_colorbar(gradient_colormap, cfg.sequences_numeric_params[param]['raw'], param)
+        try:
+            self.network_plot.color_by_param(gradient_colormap, cfg.sequences_numeric_params[param]['norm'],
+                                             self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+        except Exception as err:
+            error_msg = "An error occurred: cannot color the data by the custom parameter"
+            error_occurred(self.network_plot.color_by_param, 'color_by_param', err, error_msg)
+            return
+
+        try:
+            self.colorbar_plot.show_colorbar(gradient_colormap, cfg.sequences_numeric_params[param]['raw'], param)
+        except Exception as err:
+            error_msg = "An error occurred: cannot display the colorbar"
+            error_occurred(self.colorbar_plot.show_colorbar, 'show_colorbar', err, error_msg)
 
     def open_color_by_param_dialog(self):
 
-        dlg = md.ColorByParamDialog()
+        try:
+            dlg = md.ColorByParamDialog()
 
-        if dlg.exec_():
-            selected_param, added_params_list, min_param_color, max_param_color = dlg.get_param()
+            if dlg.exec_():
+                selected_param, added_params_list, min_param_color, max_param_color = dlg.get_param()
 
-            if selected_param:
+                if selected_param:
 
-                # At least one new parameter was added
-                if len(added_params_list) > 0:
+                    # At least one new parameter was added
+                    if len(added_params_list) > 0:
 
-                    for param_name in added_params_list:
-                        self.color_by_combo.addItem(param_name)
+                        for param_name in added_params_list:
+                            self.color_by_combo.addItem(param_name)
 
-                self.color_by_combo.setCurrentText(selected_param)
-                self.color_by_combo.setEnabled(True)
+                    self.color_by_combo.setCurrentText(selected_param)
+                    self.color_by_combo.setEnabled(True)
 
-                # Update the colors of the selected parameter
-                cfg.sequences_numeric_params[selected_param]['min_color'] = min_param_color
-                cfg.sequences_numeric_params[selected_param]['max_color'] = max_param_color
+                    # Update the colors of the selected parameter
+                    cfg.sequences_numeric_params[selected_param]['min_color'] = min_param_color
+                    cfg.sequences_numeric_params[selected_param]['max_color'] = max_param_color
 
-                self.color_by_user_param(selected_param)
+                    self.color_by_user_param(selected_param)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot color the data by custom parameter"
+            error_occurred(self.open_color_by_param_dialog, 'open_color_by_param_dialog', err, error_msg)
 
     def change_grouping(self):
 
@@ -1534,14 +1840,22 @@ class MainWindow(QMainWindow):
                 else:
                     self.z_index_mode_combo.setEnabled(False)
 
-            self.network_plot.hide_group_names()
+            try:
+                self.network_plot.hide_group_names()
+            except Exception as err:
+                error_msg = "An error occurred: cannot hide the group names"
+                error_occurred(self.network_plot.hide_group_names, 'hide_group_names', err, error_msg)
 
             # Clear the groups-selection
             if len(self.network_plot.selected_groups) > 0:
                 self.network_plot.selected_groups_text_visual = {}
                 self.network_plot.selected_groups = {}
 
-            self.network_plot.update_group_by(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+            try:
+                self.network_plot.update_group_by(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+            except Exception as err:
+                error_msg = "An error occurred: cannot change grouping category"
+                error_occurred(self.network_plot.update_group_by, 'update_group_by', err, error_msg)
 
             # Enable all groups-related controls (in case there are groups)
             if len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
@@ -1555,7 +1869,12 @@ class MainWindow(QMainWindow):
                 if self.is_show_group_names:
                     self.show_groups_combo.setCurrentIndex(0)
                     self.show_groups_combo.setEnabled(False)
-                    self.network_plot.show_group_names('all')
+
+                    try:
+                        self.network_plot.show_group_names('all')
+                    except Exception as err:
+                        error_msg = "An error occurred: cannot display the group names"
+                        error_occurred(self.network_plot.show_group_names, 'show_group_names', err, error_msg)
 
             # If there are no group (in 'Manual definition' group-by, for example)
             else:
@@ -1579,11 +1898,21 @@ class MainWindow(QMainWindow):
 
     def select_all(self):
 
-        self.network_plot.select_all(self.selection_type, self.dim_num, self.z_indexing_mode, self.color_by,
-                                     self.group_by, self.is_show_group_names, self.group_names_display)
+        try:
+            self.network_plot.select_all(self.selection_type, self.dim_num, self.z_indexing_mode, self.color_by,
+                                         self.group_by, self.is_show_group_names, self.group_names_display)
+        except Exception as err:
+            error_msg = "An error occurred: cannot perform the selection"
+            error_occurred(self.network_plot.select_all, 'select_all', err, error_msg)
+            return
 
         # Update the selected sequences window
-        self.selected_seq_window.update_sequences()
+        try:
+            self.selected_seq_window.update_sequences()
+        except Exception as err:
+            error_msg = "An error occurred: cannot update the selected sequences window"
+            error_occurred(self.selected_seq_window.update_sequences, 'update_sequences', err, error_msg)
+            return
 
         # Enable the selection-related buttons
         self.show_selected_names_button.setEnabled(True)
@@ -1596,11 +1925,21 @@ class MainWindow(QMainWindow):
 
     def clear_selection(self):
 
-        self.network_plot.reset_selection(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by,
-                                          self.is_show_group_names, self.group_names_display)
+        try:
+            self.network_plot.reset_selection(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by,
+                                              self.is_show_group_names, self.group_names_display)
+        except Exception as err:
+            error_msg = "An error occurred: cannot clear the selection"
+            error_occurred(self.network_plot.reset_selection, 'reset_selection', err, error_msg)
+            return
 
         # Update the selected sequences window
-        self.selected_seq_window.update_sequences()
+        try:
+            self.selected_seq_window.update_sequences()
+        except Exception as err:
+            error_msg = "An error occurred: cannot update the selected sequences window"
+            error_occurred(self.selected_seq_window.update_sequences, 'update_sequences', err, error_msg)
+            return
 
         # Hide the sequences names and release the button (if was checked)
         self.show_selected_names_button.setChecked(False)
@@ -1611,7 +1950,12 @@ class MainWindow(QMainWindow):
         self.add_to_group_button.setEnabled(False)
         self.remove_selected_button.setEnabled(False)
         self.is_show_selected_names = 0
-        self.network_plot.hide_sequences_names()
+
+        try:
+            self.network_plot.hide_sequences_names()
+        except Exception as err:
+            error_msg = "An error occurred: cannot hide the sequences names"
+            error_occurred(self.network_plot.hide_sequences_names, 'hide_sequences_names', err, error_msg)
 
         # Disable the show all/selected group names combo
         if self.is_show_group_names:
@@ -1623,22 +1967,41 @@ class MainWindow(QMainWindow):
             self.is_show_selected_names = 1
 
             # Display the names
-            self.network_plot.show_sequences_names()
+            try:
+                self.network_plot.show_sequences_names()
+            except Exception as err:
+                error_msg = "An error occurred: cannot display the sequences names"
+                error_occurred(self.network_plot.show_sequences_names, 'show_sequences_names', err, error_msg)
 
         else:
             self.is_show_selected_names = 0
-            self.network_plot.hide_sequences_names()
+
+            try:
+                self.network_plot.hide_sequences_names()
+            except Exception as err:
+                error_msg = "An error occurred: cannot hide the sequences names"
+                error_occurred(self.network_plot.hide_sequences_names, 'hide_sequences_names', err, error_msg)
 
     def open_selected_window(self):
 
-        self.selected_seq_window.update_sequences()
+        try:
+            self.selected_seq_window.update_sequences()
 
-        if self.selected_seq_window.is_visible == 0:
-            self.selected_seq_window.open_window()
+            if self.selected_seq_window.is_visible == 0:
+                self.selected_seq_window.open_window()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot open the selected sequences window"
+            error_occurred(self.open_selected_window, 'open_selected_window', err, error_msg)
 
     def select_by_name(self):
 
-        self.search_window.open_window()
+        try:
+            self.search_window.open_window()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot open the search window"
+            error_occurred(self.select_by_name, 'select_by_name', err, error_msg)
 
     def manage_subset_presentation(self):
 
@@ -1661,10 +2024,19 @@ class MainWindow(QMainWindow):
             self.z_index_mode_combo.setCurrentIndex(0)
             self.z_index_mode_combo.setEnabled(False)
 
-            self.network_plot.set_subset_view(self.view_in_dimensions_num, self.color_by, self.group_by)
+            try:
+                self.network_plot.set_subset_view(self.view_in_dimensions_num, self.color_by, self.group_by)
+            except Exception as err:
+                error_msg = "An error occurred: cannot set the subset view"
+                error_occurred(self.network_plot.set_subset_view, 'set_subset_view', err, error_msg)
+                return
 
             if self.is_show_group_names:
-                self.network_plot.show_group_names('selected')
+                try:
+                    self.network_plot.show_group_names('selected')
+                except Exception as err:
+                    error_msg = "An error occurred: cannot display the group names"
+                    error_occurred(self.network_plot.show_group_names, 'show_group_names', err, error_msg)
 
         # Full data mode
         else:
@@ -1688,14 +2060,28 @@ class MainWindow(QMainWindow):
                 self.z_index_mode_combo.setEnabled(True)
 
             # Update the coordinates in the fruchterman-reingold object
-            self.fr_object.init_coordinates(cfg.sequences_array['x_coor'],
-                                            cfg.sequences_array['y_coor'],
-                                            cfg.sequences_array['z_coor'])
+            try:
+                self.fr_object.init_coordinates(cfg.sequences_array['x_coor'],
+                                                cfg.sequences_array['y_coor'],
+                                                cfg.sequences_array['z_coor'])
+            except Exception as err:
+                error_msg = "An error occurred: cannot initialize the coordinates"
+                error_occurred(self.fr_object.init_coordinates, 'init_coordinates', err, error_msg)
+                return
 
-            self.network_plot.set_full_view(self.view_in_dimensions_num, self.color_by)
+            try:
+                self.network_plot.set_full_view(self.view_in_dimensions_num, self.color_by)
+            except Exception as err:
+                error_msg = "An error occurred: cannot set the full-data view"
+                error_occurred(self.network_plot.set_full_view, 'set_full_view', err, error_msg)
+                return
 
             if self.is_show_group_names:
-                self.network_plot.show_group_names('all')
+                try:
+                    self.network_plot.show_group_names('all')
+                except Exception as err:
+                    error_msg = "An error occurred: cannot display the group names"
+                    error_occurred(self.network_plot.show_group_names, 'show_group_names', err, error_msg)
 
     def change_group_names_display(self):
 
@@ -1707,11 +2093,25 @@ class MainWindow(QMainWindow):
         else:
             self.group_names_display = 'selected'
 
-        self.network_plot.hide_group_names()
-        self.network_plot.show_group_names(self.group_names_display)
+        try:
+            self.network_plot.hide_group_names()
+        except Exception as err:
+            error_msg = "An error occurred: cannot hide the group names"
+            error_occurred(self.network_plot.hide_group_names, 'hide_group_names', err, error_msg)
+
+        try:
+            self.network_plot.show_group_names(self.group_names_display)
+        except Exception as err:
+            error_msg = "An error occurred: cannot display the group names"
+            error_occurred(self.network_plot.show_group_names, 'show_group_names', err, error_msg)
 
     def reset_group_names_positions(self):
-        self.network_plot.reset_group_names_positions(self.group_by)
+
+        try:
+            self.network_plot.reset_group_names_positions(self.group_by)
+        except Exception as err:
+            error_msg = "An error occurred: cannot initialize the group names positions"
+            error_occurred(self.network_plot.reset_group_names_positions, 'reset_group_names_positions', err, error_msg)
 
     def manage_group_names(self):
 
@@ -1735,7 +2135,12 @@ class MainWindow(QMainWindow):
             self.is_show_group_names = 0
             self.show_groups_combo.setEnabled(False)
             self.reset_group_names_button.setEnabled(False)
-            self.network_plot.hide_group_names()
+
+            try:
+                self.network_plot.hide_group_names()
+            except Exception as err:
+                error_msg = "An error occurred: cannot hide the group names"
+                error_occurred(self.network_plot.hide_group_names, 'hide_group_names', err, error_msg)
 
     #def add_text(self):
 
@@ -1749,65 +2154,95 @@ class MainWindow(QMainWindow):
 
     def edit_categories(self):
 
-        dlg = gd.EditCategoriesDialog(self.network_plot, self.dim_num, self.z_indexing_mode, self.color_by,
-                                      self.group_by)
+        try:
+            dlg = gd.EditCategoriesDialog(self.network_plot, self.dim_num, self.z_indexing_mode, self.color_by,
+                                          self.group_by)
 
-        if dlg.exec_():
+            if dlg.exec_():
 
-            selected_category_index = dlg.get_current_category()
+                selected_category_index = dlg.get_current_category()
 
-            self.group_by_combo.clear()
+                self.group_by_combo.clear()
 
-            for category_index in range(len(cfg.groups_by_categories)):
-                self.group_by_combo.addItem(cfg.groups_by_categories[category_index]['name'])
+                for category_index in range(len(cfg.groups_by_categories)):
+                    self.group_by_combo.addItem(cfg.groups_by_categories[category_index]['name'])
 
-            self.group_by_combo.setCurrentIndex(selected_category_index)
+                self.group_by_combo.setCurrentIndex(selected_category_index)
 
-            # No categories left except from 'Manual definition'
-            if selected_category_index == 0:
-                self.edit_categories_button.setEnabled(False)
+                # No categories left except from 'Manual definition'
+                if selected_category_index == 0:
+                    self.edit_categories_button.setEnabled(False)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot edit the grouping-categories"
+            error_occurred(self.edit_categories, 'edit_categories', err, error_msg)
 
     def edit_groups(self):
 
-        dlg = gd.ManageGroupsDialog(self.network_plot, self.view, self.dim_num, self.z_indexing_mode, self.color_by,
-                                    self.group_by)
+        try:
+            dlg = gd.ManageGroupsDialog(self.network_plot, self.view, self.dim_num, self.z_indexing_mode, self.color_by,
+                                        self.group_by)
 
-        if dlg.exec_():
+            if dlg.exec_():
 
-            # The order of the groups has changed
-            if dlg.changed_order_flag:
-                self.network_plot.update_groups_order(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+                # The order of the groups has changed
+                if dlg.changed_order_flag:
+
+                    try:
+                        self.network_plot.update_groups_order(self.dim_num, self.z_indexing_mode, self.color_by,
+                                                              self.group_by)
+                    except Exception as err:
+                        error_msg = "An error occurred: cannot update the groups order"
+                        error_occurred(self.network_plot.update_groups_order, 'update_groups_order', err, error_msg)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot edit the groups"
+            error_occurred(self.edit_groups, 'edit_groups', err, error_msg)
 
     def open_add_to_group_dialog(self):
 
-        dlg = gd.AddToGroupDialog(self.group_by)
+        try:
+            dlg = gd.AddToGroupDialog(self.group_by)
 
-        if dlg.exec_():
-            choice, group_ID = dlg.get_choice()
+            if dlg.exec_():
+                choice, group_ID = dlg.get_choice()
 
-            if choice == 'new':
+                if choice == 'new':
 
-                print("Creating a new group")
-                self.create_group_from_selected()
+                    print("Creating a new group")
+                    self.create_group_from_selected()
 
-            # The user chose to add the selected sequences to an existing group
-            else:
-                print("Adding the sequences to group " + cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'])
-                self.add_sequences_to_group(group_ID)
+                # The user chose to add the selected sequences to an existing group
+                else:
+                    print("Adding the sequences to group " + cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'])
+                    self.add_sequences_to_group(group_ID)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot add the sequences to group"
+            error_occurred(self.open_add_to_group_dialog, 'open_add_to_group_dialog', err, error_msg)
 
     def add_sequences_to_group(self, group_ID):
 
         # Add the sequences to the main group_list array
-        groups.add_to_group(self.group_by, self.network_plot.selected_points, group_ID)
+        try:
+            groups.add_to_group(self.group_by, self.network_plot.selected_points, group_ID)
+        except Exception as err:
+            error_msg = "An error occurred: cannot add the sequences to group"
+            error_occurred(groups.add_to_group, 'add_to_group', err, error_msg)
+            return
 
         # Update the look of the selected data-points according to the new group definitions
-        self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, self.dim_num,
-                                       self.z_indexing_mode, self.color_by, self.group_by)
+        try:
+            self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, self.dim_num,
+                                           self.z_indexing_mode, self.color_by, self.group_by)
+        except Exception as err:
+            error_msg = "An error occurred: cannot add the sequences to group"
+            error_occurred(self.network_plot.add_to_group, 'add_to_group', err, error_msg)
 
     def create_group_from_selected(self):
 
         # Open the 'Create group from selected' dialog
-        dlg = gd.CreateGroupDialog(self.network_plot, self.group_by)
+        dlg = gd.CreateGroupDialog(self.group_by)
 
         # The user defined a new group
         if dlg.exec_():
@@ -1826,18 +2261,34 @@ class MainWindow(QMainWindow):
             group_dict['is_italic'] = is_italic
             group_dict['order'] = len(cfg.groups_by_categories[self.group_by]['groups']) - 1
             group_dict['outline_color'] = outline_color
-            group_ID = groups.add_group_with_sequences(self.group_by, self.network_plot.selected_points.copy(),
+
+            try:
+                group_ID = groups.add_group_with_sequences(self.group_by, self.network_plot.selected_points.copy(),
                                                        group_dict)
+            except Exception as err:
+                error_msg = "An error occurred: cannot add a group"
+                error_occurred(groups.add_group_with_sequences, 'add_group_with_sequences', err, error_msg)
+                return
 
             # Add the new group to the graph
-            self.network_plot.add_group(self.group_by, group_ID)
+            try:
+                self.network_plot.add_group(self.group_by, group_ID)
+            except Exception as err:
+                error_msg = "An error occurred: cannot add a group"
+                error_occurred(self.network_plot.add_group, 'add_group', err, error_msg)
+                return
 
             # Update the look of the selected data-points according to the new group definitions
             if self.dim_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 1:
                 self.z_index_mode_combo.setEnabled(True)
 
-            self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, self.dim_num,
-                                           self.z_indexing_mode, self.color_by, self.group_by)
+            try:
+                self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, self.dim_num,
+                                               self.z_indexing_mode, self.color_by, self.group_by)
+            except Exception as err:
+                error_msg = "An error occurred: cannot add sequences to the group"
+                error_occurred(self.network_plot.add_to_group, 'add_to_group', err, error_msg)
+                return
 
             self.edit_groups_button.setEnabled(True)
             self.show_group_names_button.setEnabled(True)
@@ -1847,27 +2298,50 @@ class MainWindow(QMainWindow):
 
             # The group names are displayed -> update them including the new group
             if self.is_show_group_names:
-                self.network_plot.show_group_names('all')
+                try:
+                    self.network_plot.show_group_names('all')
+                except Exception as err:
+                    error_msg = "An error occurred: cannot display the group names"
+                    error_occurred(self.network_plot.show_group_names, 'show_group_names', err, error_msg)
 
     def remove_selected_from_group(self):
 
         # Remove the selected sequences group-assignment in the main group_list array
-        groups_with_deleted_members = groups.remove_from_group(self.group_by, self.network_plot.selected_points.copy())
+        try:
+            groups_with_deleted_members = groups.remove_from_group(self.group_by, self.network_plot.selected_points.copy())
+        except Exception as err:
+            error_msg = "An error occurred: cannot remove the sequences from the group"
+            error_occurred(groups.remove_from_group, 'remove_from_group', err, error_msg)
+            return
 
         # Update the look of the selected data-points to the default look (without group assignment)
-        self.network_plot.remove_from_group(self.network_plot.selected_points, self.dim_num, self.z_indexing_mode,
-                                            self.color_by, self.group_by)
+        try:
+            self.network_plot.remove_from_group(self.network_plot.selected_points, self.dim_num, self.z_indexing_mode,
+                                                self.color_by, self.group_by)
+        except Exception as err:
+            error_msg = "An error occurred: cannot remove the sequences from the group"
+            error_occurred(self.network_plot.remove_from_group, 'remove_from_group', err, error_msg)
+            return
 
         # Check if there is an empty group among the groups with removed members
         for group_ID in groups_with_deleted_members:
             if len(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs']) == 0:
 
                 # 1. Delete it from the group_names visual and other graph-related data-structures
-                self.network_plot.delete_empty_group(group_ID, self.dim_num, self.z_indexing_mode, self.color_by,
-                                                     self.group_by)
+                try:
+                    self.network_plot.delete_empty_group(group_ID, self.dim_num, self.z_indexing_mode, self.color_by,
+                                                         self.group_by)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot delete the empty group"
+                    error_occurred(self.network_plot.delete_empty_group, 'delete_empty_group', err, error_msg)
+                    return
 
                 # 2. Delete the group
-                groups.delete_group(self.group_by, group_ID)
+                try:
+                    groups.delete_group(self.group_by, group_ID)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot delete the group"
+                    error_occurred(groups.delete_group, 'delete_group', err, error_msg)
 
         # Check if there are groups left. If not, disable the related groups controls
         if len(cfg.groups_by_categories[self.group_by]['groups']) == 0:
@@ -1917,7 +2391,12 @@ class MainWindow(QMainWindow):
                 cfg.groups_by_categories[self.group_by]['sequences'] = np.full(cfg.run_params['total_sequences_num'], -1)
 
                 # Generate distinct colors according to the number of groups in the chosen level
-                color_map = colors.generate_distinct_colors(len(cfg.seq_by_tax_level_dict[tax_level])-1)
+                try:
+                    color_map = colors.generate_distinct_colors(len(cfg.seq_by_tax_level_dict[tax_level])-1)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot generate colormap"
+                    error_occurred(colors.generate_distinct_colors, 'generate_distinct_colors', err, error_msg)
+
                 color_index = 0
 
                 # Sort the groups alphabetically and move the 'Not assigned' group to the end
@@ -1954,7 +2433,13 @@ class MainWindow(QMainWindow):
                     group_dict['is_italic'] = is_italic
                     group_dict['order'] = len(cfg.groups_by_categories[self.group_by]['groups']) - 1
                     seq_dict = cfg.seq_by_tax_level_dict[tax_level][tax_group].copy()
-                    group_ID = groups.add_group_with_sequences(self.group_by, seq_dict, group_dict)
+
+                    try:
+                        group_ID = groups.add_group_with_sequences(self.group_by, seq_dict, group_dict)
+                    except Exception as err:
+                        error_msg = "An error occurred: cannot add group " + tax_group
+                        error_occurred(groups.add_group_with_sequences, 'add_group_with_sequences', err, error_msg)
+                        return
 
                 # Add the new group-type to the group-by combo-box, enable it and update the grouping
                 self.group_by_combo.addItem(category_name)
@@ -1994,7 +2479,13 @@ class MainWindow(QMainWindow):
                         colors_num = len(groups_dict[category]) - 1
                     else:
                         colors_num = len(groups_dict[category])
-                    color_map = colors.generate_distinct_colors(colors_num)
+
+                    try:
+                        color_map = colors.generate_distinct_colors(colors_num)
+                    except Exception as err:
+                        error_msg = "An error occurred: cannot generate colormap"
+                        error_occurred(colors.generate_distinct_colors, 'generate_distinct_colors', err, error_msg)
+
                     color_index = 0
 
                     # Sort the groups alphabetically and move the 'Not assigned' group to the end
@@ -2034,7 +2525,13 @@ class MainWindow(QMainWindow):
                         group_dict['is_italic'] = is_italic
                         group_dict['order'] = len(cfg.groups_by_categories[category_index]['groups']) - 1
                         seq_dict = groups_dict[category][group].copy()
-                        group_ID = groups.add_group_with_sequences(category_index, seq_dict, group_dict)
+
+                        try:
+                            group_ID = groups.add_group_with_sequences(category_index, seq_dict, group_dict)
+                        except Exception as err:
+                            error_msg = "An error occurred: cannot add group " + group_dict['name']
+                            error_occurred(groups.add_group_with_sequences, 'add_group_with_sequences', err, error_msg)
+                            return
 
                     # Add the new group-type to the group-by combo-box, enable it and update the grouping
                     self.group_by_combo.addItem(category)
@@ -2049,12 +2546,18 @@ class MainWindow(QMainWindow):
 
     def open_manual(self):
 
-        manual_path = os.path.abspath(cfg.manual_path)
-        url = QUrl.fromLocalFile(manual_path)
+        try:
 
-        if not QDesktopServices.openUrl(url):
-            warn_message = "Cannot open " + manual_path
-            QMessageBox.warning(self, 'Open Url', warn_message)
+            manual_path = os.path.abspath(cfg.manual_path)
+            url = QUrl.fromLocalFile(manual_path)
+
+            if not QDesktopServices.openUrl(url):
+                warn_message = "Cannot open " + manual_path
+                QMessageBox.warning(self, 'Open Url', warn_message)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot open the manual"
+            error_occurred(self.open_manual, 'open_manual', err, error_msg)
 
     ## Callback functions to deal with mouse and key events
 
@@ -2088,16 +2591,32 @@ class MainWindow(QMainWindow):
             # One-click event -> find the selected point
             if len(pos_array) == 1 or len(pos_array) == 2 and pos_array[0][0] == pos_array[1][0] \
                     and pos_array[0][1] == pos_array[1][1]:
-                self.network_plot.find_selected_point(self.selection_type, event.pos, self.z_indexing_mode,
-                                                      self.color_by, self.group_by, self.is_show_group_names,
-                                                      self.group_names_display)
+
+                try:
+                    self.network_plot.find_selected_point(self.selection_type, event.pos, self.z_indexing_mode,
+                                                          self.color_by, self.group_by, self.is_show_group_names,
+                                                          self.group_names_display)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot select point"
+                    error_occurred(self.network_plot.find_selected_point, 'find_selected_point', err, error_msg)
+                    return
 
             # Drag event
             else:
-                self.network_plot.remove_dragging_rectangle()
-                self.network_plot.find_selected_area(self.selection_type, pos_array[0], event.pos, self.z_indexing_mode,
-                                                     self.color_by, self.group_by, self.is_show_group_names,
-                                                     self.group_names_display)
+                try:
+                    self.network_plot.remove_dragging_rectangle()
+                except Exception as err:
+                    error_msg = "An error occurred"
+                    error_occurred(self.network_plot.remove_dragging_rectangle, 'remove_dragging_rectangle', err, error_msg)
+
+                try:
+                    self.network_plot.find_selected_area(self.selection_type, pos_array[0], event.pos, self.z_indexing_mode,
+                                                         self.color_by, self.group_by, self.is_show_group_names,
+                                                         self.group_names_display)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot select area"
+                    error_occurred(self.network_plot.find_selected_area, 'find_selected_area', err, error_msg)
+                    return
 
             # If at least one point is selected -> enable all buttons related to actions on selected points
             if self.network_plot.selected_points != {}:
@@ -2117,14 +2636,22 @@ class MainWindow(QMainWindow):
                     self.show_groups_combo.setEnabled(False)
 
             # Update the selected sequences window
-            self.selected_seq_window.update_sequences()
+            try:
+                self.selected_seq_window.update_sequences()
+            except Exception as err:
+                error_msg = "An error occurred: cannot update the selected sequences window"
+                error_occurred(self.selected_seq_window.update_sequences, 'update_sequences', err, error_msg)
 
         # The event is done in the 'Move visuals' mode
         elif self.mode == 'move_visuals':
 
             # Finish the move of a group name
             if self.visual_to_move == "text":
-                self.network_plot.finish_group_name_move()
+                try:
+                    self.network_plot.finish_group_name_move()
+                except Exception as err:
+                    error_msg = "An error occurred: cannot move the group name"
+                    error_occurred(self.network_plot.finish_group_name_move, 'finish_group_name_move', err, error_msg)
 
             ## Disabled currently
             #elif self.visual_to_move == "data":
@@ -2141,13 +2668,23 @@ class MainWindow(QMainWindow):
 
             # Initiation of dragging -> create a rectangle visual
             if len(pos_array) == 3:
-                self.network_plot.start_dragging_rectangle(pos_array[0])
+                try:
+                    self.network_plot.start_dragging_rectangle(pos_array[0])
+                except Exception as err:
+                    error_msg = "An error occurred: cannot start drag event"
+                    error_occurred(self.network_plot.start_dragging_rectangle, 'start_dragging_rectangle', err,
+                                   error_msg)
 
             # Mouse dragging continues -> update the rectangle
             elif len(pos_array) > 3:
                 # Update the rectangle if the mouse position was actually changed
                 if pos_array[-1][0] != pos_array[-2][0] and pos_array[-1][1] != pos_array[-2][1]:
-                    self.network_plot.update_dragging_rectangle(pos_array[0], pos_array[-1])
+                    try:
+                        self.network_plot.update_dragging_rectangle(pos_array[0], pos_array[-1])
+                    except Exception as err:
+                        error_msg = "An error occurred: cannot mark drag event"
+                        error_occurred(self.network_plot.update_dragging_rectangle, 'update_dragging_rectangle', err,
+                                       error_msg)
 
         # Interactive mode
         elif self.mode == "interactive":
@@ -2158,20 +2695,34 @@ class MainWindow(QMainWindow):
                 # Update points location if the mouse position was changed above a certain distance
                 distance = np.linalg.norm(pos_array[-1] - pos_array[-2])
                 if distance >= 1:
-                    self.network_plot.move_selected_points(self.view_in_dimensions_num, pos_array[-2],
-                                                           pos_array[-1], self.z_indexing_mode, self.color_by,
-                                                           self.group_by)
+                    try:
+                        self.network_plot.move_selected_points(self.view_in_dimensions_num, pos_array[-2],
+                                                               pos_array[-1], self.z_indexing_mode, self.color_by,
+                                                               self.group_by)
+                    except Exception as err:
+                        error_msg = "An error occurred: cannot move the selected points"
+                        error_occurred(self.network_plot.move_selected_points, 'move_selected_points', err, error_msg)
 
         # Move visuals mode
         else:
 
             # Initiation of dragging -> find the visual to move
             if len(pos_array) == 3:
-                self.visual_to_move = self.network_plot.find_visual(self.canvas, pos_array[0])
+                try:
+                    self.visual_to_move = self.network_plot.find_visual(self.canvas, pos_array[0])
+                except Exception as err:
+                    error_msg = "An error occurred: cannot find a visual to move"
+                    error_occurred(self.network_plot.find_visual, 'find_visual', err, error_msg)
+                    return
 
                 # The visual to move is a group name
                 if self.visual_to_move == "text":
-                    self.network_plot.find_group_name_to_move(pos_array[0], self.group_by, self.group_names_display)
+                    try:
+                        self.network_plot.find_group_name_to_move(pos_array[0], self.group_by, self.group_names_display)
+                    except Exception as err:
+                        error_msg = "An error occurred: cannot find a group name to move"
+                        error_occurred(self.network_plot.find_group_name_to_move, 'find_group_name_to_move', err,
+                                       error_msg)
 
                 ## Disabled currently
                 # The visual to move is a data-point(s)
@@ -2187,7 +2738,11 @@ class MainWindow(QMainWindow):
 
                     # Move group name
                     if self.visual_to_move == "text":
-                        self.network_plot.move_group_name(pos_array[-1], self.group_names_display)
+                        try:
+                            self.network_plot.move_group_name(pos_array[-1], self.group_names_display)
+                        except Exception as err:
+                            error_msg = "An error occurred: cannot move group name"
+                            error_occurred(self.network_plot.move_group_name, 'move_group_name', err, error_msg)
 
                     ## Disabled currently
                     # Move data-point(s)
@@ -2202,13 +2757,23 @@ class MainWindow(QMainWindow):
         #print(pos_array[0])
 
         if self.mode == 'move_visuals':
-            visual_to_edit = self.network_plot.find_visual(self.canvas, pos_array)
+            try:
+                visual_to_edit = self.network_plot.find_visual(self.canvas, pos_array)
+            except Exception as err:
+                error_msg = "An error occurred: cannot find a visual to move"
+                error_occurred(self.network_plot.find_visual, 'find_visual', err, error_msg)
+                return
 
             # The visual to move is a group name
             if visual_to_edit == "text":
-                group_ID = self.network_plot.find_group_name_to_edit(pos_array, self.group_by)
+                try:
+                    group_ID = self.network_plot.find_group_name_to_edit(pos_array, self.group_by)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot find group name to edit"
+                    error_occurred(self.network_plot.find_group_name_to_edit, 'find_group_name_to_edit', err, error_msg)
+                    return
 
-                edit_group_name_dlg = gd.EditGroupNameDialog(self.group_by, group_ID, self.network_plot)
+                edit_group_name_dlg = gd.EditGroupNameDialog(self.group_by, group_ID)
 
                 if edit_group_name_dlg.exec_():
                     group_name, group_name_size, clans_color, color_array, is_bold, is_italic = \
@@ -2223,19 +2788,33 @@ class MainWindow(QMainWindow):
                     cfg.groups_by_categories[self.group_by]['groups'][group_ID]['is_italic'] = is_italic
 
                     # Update the plot with the new group parameters
-                    self.network_plot.edit_group_parameters(group_ID, 2, self.z_indexing_mode, self.color_by,
-                                                            self.group_by)
+                    try:
+                        self.network_plot.edit_group_parameters(group_ID, 2, self.z_indexing_mode, self.color_by,
+                                                                self.group_by)
+                    except Exception as err:
+                        error_msg = "An error occurred: cannot edit the group parameters"
+                        error_occurred(self.network_plot.edit_group_parameters, 'edit_group_parameters', err,
+                                       error_msg)
 
     def canvas_CTRL_release(self, event):
         self.ctrl_key_pressed = 0
 
         if self.mode == "interactive":
-            self.network_plot.update_moved_positions(self.network_plot.selected_points, self.view_in_dimensions_num)
+            try:
+                self.network_plot.update_moved_positions(self.network_plot.selected_points, self.view_in_dimensions_num)
+            except Exception as err:
+                error_msg = "An error occurred: cannot update the positions of the data-points"
+                error_occurred(self.network_plot.update_moved_positions, 'update_moved_positions', err, error_msg)
+                return
 
             # Update the coordinates in the fruchterman-reingold object
-            self.fr_object.init_coordinates(cfg.sequences_array['x_coor'],
-                                            cfg.sequences_array['y_coor'],
-                                            cfg.sequences_array['z_coor'])
+            try:
+                self.fr_object.init_coordinates(cfg.sequences_array['x_coor'],
+                                                cfg.sequences_array['y_coor'],
+                                                cfg.sequences_array['z_coor'])
+            except Exception as err:
+                error_msg = "An error occurred: cannot initialize the coordinates"
+                error_occurred(self.fr_object.init_coordinates, 'init_coordinates', err, error_msg)
 
 
 

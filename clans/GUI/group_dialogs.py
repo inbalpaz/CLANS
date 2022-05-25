@@ -1,9 +1,21 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
+from PyQt5.QtGui import QColor
 from vispy.color import ColorArray
 import numpy as np
 import clans.config as cfg
 import clans.data.groups as gr
+
+
+def error_occurred(method, method_name, exception_err, error_msg):
+
+    if cfg.run_params['is_debug_mode']:
+        print("\nError in " + method.__globals__['__file__'] + " (" + method_name + "):")
+        print(exception_err)
+
+    msg_box = QMessageBox()
+    msg_box.setText(error_msg)
+    if msg_box.exec_():
+        return
 
 
 class AddToGroupDialog(QDialog):
@@ -11,215 +23,250 @@ class AddToGroupDialog(QDialog):
     def __init__(self, group_by):
         super().__init__()
 
-        self.setWindowTitle("Add selected sequences")
+        try:
 
-        self.layout = QVBoxLayout()
+            self.setWindowTitle("Add selected sequences")
 
-        self.title = QLabel("Add the selected sequences to:")
+            self.layout = QVBoxLayout()
 
-        self.new_group_button = QRadioButton("Create a new group")
-        self.new_group_button.setChecked(True)
+            self.title = QLabel("Add the selected sequences to:")
 
-        self.existing_group_button = QRadioButton("Choose an existing group")
-        if len(cfg.groups_by_categories[group_by]['groups']) == 0:
-            self.existing_group_button.setEnabled(False)
+            self.new_group_button = QRadioButton("Create a new group")
+            self.new_group_button.setChecked(True)
 
-        self.groups_combo = QComboBox()
-        self.groups_combo.addItem("Select group")
-        self.group_IDs_list = sorted(cfg.groups_by_categories[group_by]['groups'].keys(),
-                                     key=lambda k: cfg.groups_by_categories[group_by]['groups'][k]['order'])
+            self.existing_group_button = QRadioButton("Choose an existing group")
+            if len(cfg.groups_by_categories[group_by]['groups']) == 0:
+                self.existing_group_button.setEnabled(False)
 
-        for i in range(len(self.group_IDs_list)):
-            group_ID = self.group_IDs_list[i]
-            self.groups_combo.addItem(cfg.groups_by_categories[group_by]['groups'][group_ID]['name'])
-        self.groups_combo.setEnabled(False)
+            self.groups_combo = QComboBox()
+            self.groups_combo.addItem("Select group")
+            self.group_IDs_list = sorted(cfg.groups_by_categories[group_by]['groups'].keys(),
+                                        key=lambda k: cfg.groups_by_categories[group_by]['groups'][k]['order'])
 
-        self.new_group_button.toggled.connect(self.on_radio_button_change)
-        self.existing_group_button.toggled.connect(self.on_radio_button_change)
-
-        # Add the OK/Cancel standard buttons
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.button_box.accepted.connect(self.accept)
-        self.button_box.rejected.connect(self.reject)
-
-        self.layout.addWidget(self.title)
-        self.layout.addWidget(self.new_group_button)
-        self.layout.addWidget(self.existing_group_button)
-        self.layout.addWidget(self.groups_combo)
-        self.layout.addWidget(self.button_box)
-        self.setLayout(self.layout)
-
-    def on_radio_button_change(self):
-        if self.existing_group_button.isChecked():
-            self.groups_combo.setEnabled(True)
-        else:
+            for i in range(len(self.group_IDs_list)):
+                group_ID = self.group_IDs_list[i]
+                self.groups_combo.addItem(cfg.groups_by_categories[group_by]['groups'][group_ID]['name'])
             self.groups_combo.setEnabled(False)
 
+            self.new_group_button.toggled.connect(self.on_radio_button_change)
+            self.existing_group_button.toggled.connect(self.on_radio_button_change)
+
+            # Add the OK/Cancel standard buttons
+            self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            self.button_box.accepted.connect(self.accept)
+            self.button_box.rejected.connect(self.reject)
+
+            self.layout.addWidget(self.title)
+            self.layout.addWidget(self.new_group_button)
+            self.layout.addWidget(self.existing_group_button)
+            self.layout.addWidget(self.groups_combo)
+            self.layout.addWidget(self.button_box)
+            self.setLayout(self.layout)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot init AddToGroupDialog"
+            error_occurred(self.__init__, 'init', err, error_msg)
+
+    def on_radio_button_change(self):
+        try:
+            if self.existing_group_button.isChecked():
+                self.groups_combo.setEnabled(True)
+            else:
+                self.groups_combo.setEnabled(False)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change selection"
+            error_occurred(self.on_radio_button_change, 'on_radio_button_change', err, error_msg)
+
     def get_choice(self):
-        if self.new_group_button.isChecked():
-            return 'new', ''
-        else:
-            index = int(self.groups_combo.currentIndex() - 1)
-            group_ID = self.group_IDs_list[index]
-            return 'existing', group_ID
+        try:
+            if self.new_group_button.isChecked():
+                return 'new', ''
+            else:
+                index = int(self.groups_combo.currentIndex() - 1)
+                group_ID = self.group_IDs_list[index]
+                return 'existing', group_ID
+        except Exception as err:
+            error_msg = "An error occurred: cannot get user selection"
+            error_occurred(self.get_choice, 'get_choice', err, error_msg)
 
 
 class CreateGroupDialog(QDialog):
 
-    def __init__(self, net_plot_object, group_by):
+    def __init__(self, group_by):
         super().__init__()
 
-        self.setWindowTitle("Create group from selected")
+        try:
+            self.setWindowTitle("Create group from selected")
 
-        self.main_layout = QVBoxLayout()
-        self.layout = QGridLayout()
+            self.main_layout = QVBoxLayout()
+            self.layout = QGridLayout()
 
-        # Set the group name
-        self.name_label = QLabel("Group name:")
-        self.name_widget = QLineEdit()
+            # Set the group name
+            self.name_label = QLabel("Group name:")
+            self.name_widget = QLineEdit()
 
-        if len(cfg.groups_by_categories[group_by]['groups']) == 0:
-            group_num = 1
-        else:
-            group_num = max(cfg.groups_by_categories[group_by]['groups'].keys()) + 1
-        self.default_group_name = "Group_" + str(group_num)
-        self.name_widget.setPlaceholderText(self.default_group_name)
+            if len(cfg.groups_by_categories[group_by]['groups']) == 0:
+                group_num = 1
+            else:
+                group_num = max(cfg.groups_by_categories[group_by]['groups'].keys()) + 1
+            self.default_group_name = "Group_" + str(group_num)
+            self.name_widget.setPlaceholderText(self.default_group_name)
 
-        self.layout.addWidget(self.name_label, 0, 0)
-        self.layout.addWidget(self.name_widget, 0, 1, 1, 2)
+            self.layout.addWidget(self.name_label, 0, 0)
+            self.layout.addWidget(self.name_widget, 0, 1, 1, 2)
 
-        # Set the size of the group names
-        self.group_name_size_label = QLabel("Group name text size:")
-        default_size = net_plot_object.text_size
-        self.group_name_size = QComboBox()
+            # Set the size of the group names
+            self.group_name_size_label = QLabel("Group name text size:")
+            default_size = cfg.groups_by_categories[group_by]['text_size']
+            self.group_name_size = QComboBox()
 
-        i = 0
-        for size in range(5, 21):
-            self.group_name_size.addItem(str(size))
-            if size == int(default_size):
-                default_index = i
-            i += 1
-        self.group_name_size.setCurrentIndex(default_index)
+            i = 0
+            for size in range(5, 21):
+                self.group_name_size.addItem(str(size))
+                if size == int(default_size):
+                    default_index = i
+                i += 1
+            self.group_name_size.setCurrentIndex(default_index)
 
-        self.layout.addWidget(self.group_name_size_label, 1, 0)
-        self.layout.addWidget(self.group_name_size, 1, 1)
+            self.layout.addWidget(self.group_name_size_label, 1, 0)
+            self.layout.addWidget(self.group_name_size, 1, 1)
 
-        # Add Bold and Italic options
-        self.bold_label = QLabel("Bold")
-        self.bold_checkbox = QCheckBox()
-        self.bold_checkbox.setChecked(True)
-        self.bold_layout = QHBoxLayout()
-        self.bold_layout.addWidget(self.bold_checkbox)
-        self.bold_layout.addWidget(self.bold_label)
-        self.bold_layout.addStretch()
+            # Add Bold and Italic options
+            self.bold_label = QLabel("Bold")
+            self.bold_checkbox = QCheckBox()
+            self.bold_checkbox.setChecked(True)
+            self.bold_layout = QHBoxLayout()
+            self.bold_layout.addWidget(self.bold_checkbox)
+            self.bold_layout.addWidget(self.bold_label)
+            self.bold_layout.addStretch()
 
-        self.italic_label = QLabel("Italic")
-        self.italic_checkbox = QCheckBox()
-        self.italic_checkbox.setChecked(False)
-        self.italic_layout = QHBoxLayout()
-        self.italic_layout.addWidget(self.italic_checkbox)
-        self.italic_layout.addWidget(self.italic_label)
-        self.italic_layout.addStretch()
+            self.italic_label = QLabel("Italic")
+            self.italic_checkbox = QCheckBox()
+            self.italic_checkbox.setChecked(False)
+            self.italic_layout = QHBoxLayout()
+            self.italic_layout.addWidget(self.italic_checkbox)
+            self.italic_layout.addWidget(self.italic_label)
+            self.italic_layout.addStretch()
 
-        self.layout.addLayout(self.bold_layout, 2, 0)
-        self.layout.addLayout(self.italic_layout, 2, 1)
+            self.layout.addLayout(self.bold_layout, 2, 0)
+            self.layout.addLayout(self.italic_layout, 2, 1)
 
-        # Set the color of the group's nodes
-        self.color_label = QLabel("Color:")
-        self.selected_color_label = QLabel(" ")
-        self.selected_color = "black"
-        self.clans_color = "0;0;0;255"
-        self.color_array = [0.0, 0.0, 0.0, 1.0]
-        self.selected_color_label.setStyleSheet("background-color: " + self.selected_color)
-
-        self.change_color_button = QPushButton("Change color")
-        self.change_color_button.pressed.connect(self.change_color)
-
-        self.layout.addWidget(self.color_label, 3, 0)
-        self.layout.addWidget(self.selected_color_label, 3, 1)
-        self.layout.addWidget(self.change_color_button, 3, 2)
-
-        # Set the size of the group nodes
-        self.size_label = QLabel("Data-points size:")
-        default_size = net_plot_object.nodes_size
-        self.group_size = QComboBox()
-
-        i = 0
-        for size in range(4, 21):
-            self.group_size.addItem(str(size))
-            if size == default_size:
-                default_index = i
-            i += 1
-        self.group_size.setCurrentIndex(default_index)
-
-        self.layout.addWidget(self.size_label, 4, 0)
-        self.layout.addWidget(self.group_size, 4, 1)
-
-        # Set the outline color of the group's nodes
-        self.outline_color_label = QLabel("Data-points outline color:")
-        self.outline_color_box = QLabel(" ")
-        self.outline_color = ColorArray('black')
-        self.outline_color_box.setStyleSheet("background-color: " + self.outline_color.hex[0])
-
-        self.change_outline_color_button = QPushButton("Change color")
-        self.change_outline_color_button.pressed.connect(self.change_outline_color)
-
-        self.layout.addWidget(self.outline_color_label, 5, 0)
-        self.layout.addWidget(self.outline_color_box, 5, 1)
-        self.layout.addWidget(self.change_outline_color_button, 5, 2)
-
-        # Add the OK/Cancel standard buttons
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.button_box.accepted.connect(self.accept)
-        self.button_box.rejected.connect(self.reject)
-
-        self.main_layout.addLayout(self.layout)
-        self.main_layout.addWidget(self.button_box)
-        self.setLayout(self.main_layout)
-
-    def change_color(self):
-        dialog = QColorDialog()
-        if dialog.exec_():
-            color = dialog.currentColor()
-            red = color.red()
-            green = color.green()
-            blue = color.blue()
-            hex = color.name()
-            self.clans_color = str(red) + ";" + str(green) + ";" + str(blue) + ";255"
-            self.color_array = [red/255, green/255, blue/255, 1.0]
-            self.selected_color = hex
+            # Set the color of the group's nodes
+            self.color_label = QLabel("Color:")
+            self.selected_color_label = QLabel(" ")
+            self.selected_color = "black"
+            self.clans_color = "0;0;0;255"
+            self.color_array = [0.0, 0.0, 0.0, 1.0]
             self.selected_color_label.setStyleSheet("background-color: " + self.selected_color)
 
+            self.change_color_button = QPushButton("Change color")
+            self.change_color_button.pressed.connect(self.change_color)
+
+            self.layout.addWidget(self.color_label, 3, 0)
+            self.layout.addWidget(self.selected_color_label, 3, 1)
+            self.layout.addWidget(self.change_color_button, 3, 2)
+
+            # Set the size of the group nodes
+            self.size_label = QLabel("Data-points size:")
+            default_size = cfg.groups_by_categories[group_by]['nodes_size']
+            self.group_size = QComboBox()
+
+            i = 0
+            for size in range(4, 21):
+                self.group_size.addItem(str(size))
+                if size == default_size:
+                    default_index = i
+                i += 1
+            self.group_size.setCurrentIndex(default_index)
+
+            self.layout.addWidget(self.size_label, 4, 0)
+            self.layout.addWidget(self.group_size, 4, 1)
+
+            # Set the outline color of the group's nodes
+            self.outline_color_label = QLabel("Data-points outline color:")
+            self.outline_color_box = QLabel(" ")
+            self.outline_color = ColorArray('black')
+            self.outline_color_box.setStyleSheet("background-color: " + self.outline_color.hex[0])
+
+            self.change_outline_color_button = QPushButton("Change color")
+            self.change_outline_color_button.pressed.connect(self.change_outline_color)
+
+            self.layout.addWidget(self.outline_color_label, 5, 0)
+            self.layout.addWidget(self.outline_color_box, 5, 1)
+            self.layout.addWidget(self.change_outline_color_button, 5, 2)
+
+            # Add the OK/Cancel standard buttons
+            self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            self.button_box.accepted.connect(self.accept)
+            self.button_box.rejected.connect(self.reject)
+
+            self.main_layout.addLayout(self.layout)
+            self.main_layout.addWidget(self.button_box)
+            self.setLayout(self.main_layout)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot init CreateGroupDialog"
+            error_occurred(self.__init__, 'init', err, error_msg)
+
+    def change_color(self):
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                red = color.red()
+                green = color.green()
+                blue = color.blue()
+                hex = color.name()
+                self.clans_color = str(red) + ";" + str(green) + ";" + str(blue) + ";255"
+                self.color_array = [red/255, green/255, blue/255, 1.0]
+                self.selected_color = hex
+                self.selected_color_label.setStyleSheet("background-color: " + self.selected_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_color, 'change_color', err, error_msg)
+
     def change_outline_color(self):
+        try:
+            dialog = QColorDialog()
 
-        dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
 
-        if dialog.exec_():
-            color = dialog.currentColor()
-            hex_color = color.name()
+                self.outline_color = ColorArray(hex_color)
+                self.outline_color_box.setStyleSheet("background-color: " + hex_color)
 
-            self.outline_color = ColorArray(hex_color)
-            self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_outline_color, 'change_outline_color', err, error_msg)
 
     def get_group_info(self):
 
-        # Get the group name
-        if self.name_widget.text() == "":
-            group_name = self.default_group_name
-        else:
-            group_name = self.name_widget.text()
+        try:
 
-        # Get the selected size
-        size = int(self.group_size.currentText())
+            # Get the group name
+            if self.name_widget.text() == "":
+                group_name = self.default_group_name
+            else:
+                group_name = self.name_widget.text()
 
-        # Get the group name size
-        group_name_size = int(self.group_name_size.currentText())
+            # Get the selected size
+            size = int(self.group_size.currentText())
 
-        is_bold = self.bold_checkbox.isChecked()
-        is_italic = self.italic_checkbox.isChecked()
+            # Get the group name size
+            group_name_size = int(self.group_name_size.currentText())
 
-        return group_name, group_name_size, size, self.clans_color, self.color_array, is_bold, is_italic, \
-               self.outline_color.rgba[0]
+            is_bold = self.bold_checkbox.isChecked()
+            is_italic = self.italic_checkbox.isChecked()
+
+            return group_name, group_name_size, size, self.clans_color, self.color_array, is_bold, is_italic, \
+                   self.outline_color.rgba[0]
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot get the group's parameters"
+            error_occurred(self.get_group_info, 'get_group_info', err, error_msg)
 
 
 class ManageGroupsDialog(QDialog):
@@ -242,18 +289,24 @@ class ManageGroupsDialog(QDialog):
         # Add a list widget of all the groups
         self.groups_list = QListWidget()
 
-        self.group_IDs_list = sorted(cfg.groups_by_categories[self.group_by]['groups'].keys(),
-                                     key=lambda k: cfg.groups_by_categories[self.group_by]['groups'][k]['order'])
+        try:
+            self.group_IDs_list = sorted(cfg.groups_by_categories[self.group_by]['groups'].keys(),
+                                         key=lambda k: cfg.groups_by_categories[self.group_by]['groups'][k]['order'])
 
-        for i in range(len(self.group_IDs_list)):
-            group_ID = self.group_IDs_list[i]
-            name_str = cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'] + " (" + \
-                       str(len(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs'])) + ")"
-            item = QListWidgetItem(name_str)
-            group_color = ColorArray(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color_array'])
-            item_color = QColor(group_color.hex[0])
-            item.setForeground(item_color)
-            self.groups_list.insertItem(i, item)
+            for i in range(len(self.group_IDs_list)):
+                group_ID = self.group_IDs_list[i]
+                name_str = cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'] + " (" + \
+                           str(len(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs'])) + ")"
+                item = QListWidgetItem(name_str)
+                group_color = ColorArray(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color_array'])
+                item_color = QColor(group_color.hex[0])
+                item.setForeground(item_color)
+                self.groups_list.insertItem(i, item)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot init ManageGroupsDialog"
+            error_occurred(self.__init__, 'init', err, error_msg)
+            return
 
         self.main_layout.addWidget(self.groups_list)
 
@@ -293,42 +346,67 @@ class ManageGroupsDialog(QDialog):
         group_index = self.groups_list.currentRow()
         group_ID = self.group_IDs_list[group_index]
 
-        edit_group_dlg = EditGroupDialog(self.group_by, group_ID, self.network_plot)
+        try:
+            edit_group_dlg = EditGroupDialog(self.group_by, group_ID)
+        except Exception as err:
+            error_msg = "An error occurred: cannot create EditGroupDialog object"
+            error_occurred(self.edit_group, 'edit_group', err, error_msg)
+            return
 
         if edit_group_dlg.exec_():
-            group_name, group_size, group_name_size, clans_color, color_array, outline_color, is_bold, is_italic, \
-            removed_dict = self.get_group_info(edit_group_dlg, group_ID)
 
-            # Update the group information in the main dict
-            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'] = group_name
-            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['size'] = group_size
-            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name_size'] = group_name_size
-            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color'] = clans_color
-            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color_array'] = color_array
-            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['outline_color'] = outline_color
-            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['is_bold'] = is_bold
-            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['is_italic'] = is_italic
+            try:
+                group_name, group_size, group_name_size, clans_color, color_array, outline_color, is_bold, is_italic, \
+                removed_dict = self.get_group_info(edit_group_dlg, group_ID)
+            except Exception as err:
+                error_msg = "An error occurred: cannot get group's parameters"
+                error_occurred(self.get_group_info, 'get_group_info', err, error_msg)
+                return
 
-            # Update the removed sequences in the main dict
-            for seq_index in removed_dict:
-                if seq_index in cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs']:
-                    del cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs'][seq_index]
+            try:
+                # Update the group information in the main dict
+                cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'] = group_name
+                cfg.groups_by_categories[self.group_by]['groups'][group_ID]['size'] = group_size
+                cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name_size'] = group_name_size
+                cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color'] = clans_color
+                cfg.groups_by_categories[self.group_by]['groups'][group_ID]['color_array'] = color_array
+                cfg.groups_by_categories[self.group_by]['groups'][group_ID]['outline_color'] = outline_color
+                cfg.groups_by_categories[self.group_by]['groups'][group_ID]['is_bold'] = is_bold
+                cfg.groups_by_categories[self.group_by]['groups'][group_ID]['is_italic'] = is_italic
 
-            # Update the name and color of the list-item
-            name_str = cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'] + " (" + \
-                       str(len(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs'])) + ")"
-            item = self.groups_list.currentItem()
-            item.setText(name_str)
-            item.setForeground(QColor(edit_group_dlg.color.hex[0]))
+                # Update the removed sequences in the main dict
+                for seq_index in removed_dict:
+                    if seq_index in cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs']:
+                        del cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs'][seq_index]
+
+                # Update the name and color of the list-item
+                name_str = cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'] + " (" + \
+                        str(len(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs'])) + ")"
+                item = self.groups_list.currentItem()
+                item.setText(name_str)
+                item.setForeground(QColor(edit_group_dlg.color.hex[0]))
+
+            except Exception as err:
+                error_msg = "An error occurred while updating the group's parameters"
+                error_occurred(self.edit_group, 'edit_group', err, error_msg)
+                return
 
             # Update the plot with the removed sequences
             if len(removed_dict) > 0:
-                self.network_plot.remove_from_group(removed_dict, self.dim_num, self.z_index_mode, self.color_by,
-                                                    self.group_by)
+                try:
+                    self.network_plot.remove_from_group(removed_dict, self.dim_num, self.z_index_mode, self.color_by,
+                                                        self.group_by)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot remove sequences from group"
+                    error_occurred(self.network_plot.remove_from_group, 'remove_from_group', err, error_msg)
 
             # Update the plot with the new group parameters
-            self.network_plot.edit_group_parameters(group_ID, self.dim_num, self.z_index_mode, self.color_by,
-                                                    self.group_by)
+            try:
+                self.network_plot.edit_group_parameters(group_ID, self.dim_num, self.z_index_mode, self.color_by,
+                                                        self.group_by)
+            except Exception as err:
+                error_msg = "An error occurred: cannot update group parameters"
+                error_occurred(self.network_plot.edit_group_parameters, 'edit_group_parameters', err, error_msg)
 
     def get_group_info(self, edit_group_dlg, group_ID):
 
@@ -369,76 +447,107 @@ class ManageGroupsDialog(QDialog):
         seq_dict = cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs'].copy()
 
         # 1. Remove the sequences assigned to this group (they get '-1' assignment)
-        gr.remove_from_group(seq_dict)
+        try:
+            gr.remove_from_group(seq_dict)
+        except Exception as err:
+            error_msg = "An error occurred: cannot remove sequences from group"
+            error_occurred(gr.remove_from_group, 'remove_from_group', err, error_msg)
+            return
 
         # 2. Remove the group from the plot
-        self.network_plot.delete_group(group_ID, seq_dict, self.dim_num, self.z_index_mode, self.color_by, self.group_by)
+        try:
+            self.network_plot.delete_group(group_ID, seq_dict, self.dim_num, self.z_index_mode, self.color_by,
+                                           self.group_by)
+        except Exception as err:
+            error_msg = "An error occurred: cannot delete the group from the graph"
+            error_occurred(self.network_plot.delete_group, 'delete_group', err, error_msg)
+            return
 
         # 3. Delete the group from the main groups dictionary
-        gr.delete_group(self.group_by, group_ID)
+        try:
+            gr.delete_group(self.group_by, group_ID)
+        except Exception as err:
+            error_msg = "An error occurred: cannot delete the group"
+            error_occurred(gr.delete_group, 'delete_group', err, error_msg)
+            return
 
-        # Remove the group from the presented list
-        self.groups_list.takeItem(group_index)
+        try:
+            # Remove the group from the presented list
+            self.groups_list.takeItem(group_index)
 
-        # Update the group_IDs list after the deletion
-        self.group_IDs_list = sorted(cfg.groups_by_categories[self.group_by]['groups'].keys(),
-                                     key=lambda k: cfg.groups_by_categories[self.group_by]['groups'][k]['order'])
+            # Update the group_IDs list after the deletion
+            self.group_IDs_list = sorted(cfg.groups_by_categories[self.group_by]['groups'].keys(),
+                                         key=lambda k: cfg.groups_by_categories[self.group_by]['groups'][k]['order'])
+        except Exception as err:
+            error_msg = "An error occurred: cannot delete the group"
+            error_occurred(self.delete_group, 'delete_group', err, error_msg)
 
     def move_up_group(self):
 
-        group_index = self.groups_list.currentRow()
-        group_ID = self.group_IDs_list[group_index]
+        try:
+            group_index = self.groups_list.currentRow()
+            group_ID = self.group_IDs_list[group_index]
 
-        # The group is already the first ->nothing to do
-        if group_index == 0:
-            return
+            # The group is already the first ->nothing to do
+            if group_index == 0:
+                return
 
-        second_group_ID = self.group_IDs_list[group_index - 1]
+            second_group_ID = self.group_IDs_list[group_index - 1]
 
-        # Swap the groups in the groups list
-        self.group_IDs_list[group_index - 1] = group_ID
-        self.group_IDs_list[group_index] = second_group_ID
+            # Swap the groups in the groups list
+            self.group_IDs_list[group_index - 1] = group_ID
+            self.group_IDs_list[group_index] = second_group_ID
 
-        # Swap the lines in the ListWidget
-        current_item = self.groups_list.takeItem(group_index)
-        self.groups_list.insertItem(group_index - 1, current_item)
-        self.groups_list.setCurrentItem(current_item)
+            # Swap the lines in the ListWidget
+            current_item = self.groups_list.takeItem(group_index)
+            self.groups_list.insertItem(group_index - 1, current_item)
+            self.groups_list.setCurrentItem(current_item)
 
-        # Update the order of the groups in the main groups dict
-        cfg.groups_by_categories[self.group_by]['groups'][group_ID]['order'] -= 1
-        cfg.groups_by_categories[self.group_by]['groups'][second_group_ID]['order'] += 1
+            # Update the order of the groups in the main groups dict
+            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['order'] -= 1
+            cfg.groups_by_categories[self.group_by]['groups'][second_group_ID]['order'] += 1
 
-        self.changed_order_flag = 1
+            self.changed_order_flag = 1
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot move the group up"
+            error_occurred(self.move_up_group, 'move_up_group', err, error_msg)
 
     def move_down_group(self):
-        group_index = self.groups_list.currentRow()
-        group_ID = self.group_IDs_list[group_index]
 
-        # The group is already the first ->nothing to do
-        if group_index == len(self.group_IDs_list)-1:
-            return
+        try:
+            group_index = self.groups_list.currentRow()
+            group_ID = self.group_IDs_list[group_index]
 
-        second_group_ID = self.group_IDs_list[group_index + 1]
+            # The group is already the first ->nothing to do
+            if group_index == len(self.group_IDs_list)-1:
+                return
 
-        # Swap the groups in the groups list
-        self.group_IDs_list[group_index + 1] = group_ID
-        self.group_IDs_list[group_index] = second_group_ID
+            second_group_ID = self.group_IDs_list[group_index + 1]
 
-        # Swap the lines in the ListWidget
-        current_item = self.groups_list.takeItem(group_index)
-        self.groups_list.insertItem(group_index + 1, current_item)
-        self.groups_list.setCurrentItem(current_item)
+            # Swap the groups in the groups list
+            self.group_IDs_list[group_index + 1] = group_ID
+            self.group_IDs_list[group_index] = second_group_ID
 
-        # Update the order of the groups in the main groups dict
-        cfg.groups_by_categories[self.group_by]['groups'][group_ID]['order'] += 1
-        cfg.groups_by_categories[self.group_by]['groups'][second_group_ID]['order'] -= 1
+            # Swap the lines in the ListWidget
+            current_item = self.groups_list.takeItem(group_index)
+            self.groups_list.insertItem(group_index + 1, current_item)
+            self.groups_list.setCurrentItem(current_item)
 
-        self.changed_order_flag = 1
+            # Update the order of the groups in the main groups dict
+            cfg.groups_by_categories[self.group_by]['groups'][group_ID]['order'] += 1
+            cfg.groups_by_categories[self.group_by]['groups'][second_group_ID]['order'] -= 1
+
+            self.changed_order_flag = 1
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot move the group down"
+            error_occurred(self.move_down_group, 'move_down_group', err, error_msg)
 
 
 class EditGroupDialog(QDialog):
 
-    def __init__(self, group_by, group_ID, net_plot_object):
+    def __init__(self, group_by, group_ID):
         super().__init__()
 
         self.setWindowTitle("Edit group")
@@ -464,7 +573,7 @@ class EditGroupDialog(QDialog):
         if cfg.groups_by_categories[group_by]['groups'][group_ID]['name_size'] != "":
             default_size = cfg.groups_by_categories[group_by]['groups'][group_ID]['name_size']
         else:
-            default_size = net_plot_object.text_size
+            default_size = cfg.groups_by_categories[group_by]['text_size']
         self.group_name_size = QComboBox()
 
         i = 0
@@ -556,7 +665,8 @@ class EditGroupDialog(QDialog):
         self.sorted_seq_list = sorted(cfg.groups_by_categories[group_by]['groups'][group_ID]['seqIDs'])
 
         for i in range(len(self.sorted_seq_list)):
-            name_str = str(self.sorted_seq_list[i]) + "  " + cfg.sequences_array['seq_title'][self.sorted_seq_list[i]][1:]
+            name_str = str(self.sorted_seq_list[i]) + "  " + \
+                       cfg.sequences_array['seq_title'][self.sorted_seq_list[i]][1:]
             item = QListWidgetItem(name_str)
             self.members_list.insertItem(i, item)
 
@@ -582,35 +692,50 @@ class EditGroupDialog(QDialog):
         self.setLayout(self.main_layout)
 
     def change_color(self):
-        dialog = QColorDialog()
-        if dialog.exec_():
-            color = dialog.currentColor()
-            hex_color = color.name()
-            self.color = ColorArray(hex_color)
-            self.color_box.setStyleSheet("background-color: " + hex_color)
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
+                self.color = ColorArray(hex_color)
+                self.color_box.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_color, 'change_color', err, error_msg)
 
     def change_outline_color(self):
-        dialog = QColorDialog()
-        if dialog.exec_():
-            color = dialog.currentColor()
-            hex_color = color.name()
-            self.outline_color = ColorArray(hex_color)
-            self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
+                self.outline_color = ColorArray(hex_color)
+                self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change outline color"
+            error_occurred(self.change_outline_color, 'change_outline_color', err, error_msg)
 
     def remove_from_group(self):
-        row_index = self.members_list.currentRow()
-        seq_index = self.sorted_seq_list[row_index]
+        try:
+            row_index = self.members_list.currentRow()
+            seq_index = self.sorted_seq_list[row_index]
 
-        # Add the seq index to the removed dict
-        self.removed_seq_dict[seq_index] = 1
+            # Add the seq index to the removed dict
+            self.removed_seq_dict[seq_index] = 1
 
-        self.sorted_seq_list.remove(seq_index)
-        self.members_list.takeItem(row_index)
+            self.sorted_seq_list.remove(seq_index)
+            self.members_list.takeItem(row_index)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot remove sequence from group"
+            error_occurred(self.remove_from_group, 'remove_from_group', err, error_msg)
 
 
 class EditGroupNameDialog(QDialog):
 
-    def __init__(self, group_by, group_ID, net_plot_object):
+    def __init__(self, group_by, group_ID):
         super().__init__()
 
         self.group_ID = group_ID
@@ -636,7 +761,7 @@ class EditGroupNameDialog(QDialog):
         if cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name_size'] != "":
             default_size = cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name_size']
         else:
-            default_size = net_plot_object.text_size
+            default_size = cfg.groups_by_categories[self.group_by]['text_size']
         self.group_name_size = QComboBox()
 
         i = 0
@@ -669,7 +794,7 @@ class EditGroupNameDialog(QDialog):
         # Add Bold and Italic options
         self.bold_label = QLabel("Bold")
         self.bold_checkbox = QCheckBox()
-        if net_plot_object.groups_text_visual[group_ID].bold is True:
+        if cfg.groups_by_categories[self.group_by]['groups'][group_ID]['is_bold']:
             self.bold_checkbox.setChecked(True)
         self.bold_layout = QHBoxLayout()
         self.bold_layout.addWidget(self.bold_checkbox)
@@ -678,7 +803,7 @@ class EditGroupNameDialog(QDialog):
 
         self.italic_label = QLabel("Italic")
         self.italic_checkbox = QCheckBox()
-        if net_plot_object.groups_text_visual[group_ID].italic is True:
+        if cfg.groups_by_categories[self.group_by]['groups'][group_ID]['is_italic']:
             self.italic_checkbox.setChecked(True)
         self.italic_layout = QHBoxLayout()
         self.italic_layout.addWidget(self.italic_checkbox)
@@ -788,12 +913,22 @@ class EditCategoriesDialog(QDialog):
         category_in_list_index = self.categories_list.currentRow()  # The index of the category in the list
         category_index = category_in_list_index + 1  # The list doesn't include the default entry ('Manual definition')
 
-        edit_category_dlg = EditCategoryDialog(category_index)
+        try:
+            edit_category_dlg = EditCategoryDialog(category_index)
+        except Exception as err:
+            error_msg = "An error occurred: cannot create EditCategoryDialog object"
+            error_occurred(self.edit_category, 'edit_category', err, error_msg)
+            return
 
         if edit_category_dlg.exec_():
 
-            category_name, points_size, outline_color, outline_width, names_size, is_bold, is_italic = \
-                edit_category_dlg.get_info()
+            try:
+                category_name, points_size, outline_color, outline_width, names_size, is_bold, is_italic = \
+                    edit_category_dlg.get_info()
+            except Exception as err:
+                error_msg = "An error occurred: cannot get category parameters"
+                error_occurred(edit_category_dlg.get_info, 'get_info', err, error_msg)
+                return
 
             if category_name != "":
 
@@ -853,54 +988,79 @@ class EditCategoriesDialog(QDialog):
 
             # If the edited category is currently presented -> update the graph
             if category_index == self.group_by:
-                self.net_plot_object.hide_group_names()
-                self.net_plot_object.update_group_by(self.dim_num, self.z_index_mode, self.color_by, self.group_by)
+                try:
+                    self.net_plot_object.hide_group_names()
+                except Exception as err:
+                    error_msg = "An error occurred: cannot hide the group names"
+                    error_occurred(self.net_plot_object.hide_group_names, 'hide_group_names', err, error_msg)
+                    return
+
+                try:
+                    self.net_plot_object.update_group_by(self.dim_num, self.z_index_mode, self.color_by, self.group_by)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot update the grouping-category"
+                    error_occurred(self.net_plot_object.update_group_by, 'update_group_by', err, error_msg)
 
     def delete_category(self):
 
         category_in_list_index = self.categories_list.currentRow()  # The index of the category in the list
         category_index = category_in_list_index + 1  # The list doesn't include the default entry ('Manual definition')
 
-        gr.delete_grouping_category(category_index)
+        try:
+            gr.delete_grouping_category(category_index)
+        except Exception as err:
+            error_msg = "An error occurred: cannot delete the grouping-category"
+            error_occurred(gr.delete_grouping_category, 'delete_grouping_category', err, error_msg)
+            return
 
         # Remove the group from the presented list
         self.categories_list.takeItem(category_in_list_index)
 
-        #self.deleted_categories[category_index] = 1
-
     def move_up_category(self):
-        category_in_list_index = self.categories_list.currentRow()  # The index of the category in the list
-        category_index = category_in_list_index + 1  # The list doesn't include the default entry ('Manual definition')
 
-        # The category is already the first -> nothing to do
-        if category_in_list_index == 0:
-            return
+        try:
+            category_in_list_index = self.categories_list.currentRow()  # The index of the category in the list
+            category_index = category_in_list_index + 1  # The list doesn't include the default entry ('Manual definition')
 
-        # Swap the lines in the ListWidget
-        current_item = self.categories_list.takeItem(category_in_list_index)
-        self.categories_list.insertItem(category_in_list_index-1, current_item)
-        self.categories_list.setCurrentItem(current_item)
+            # The category is already the first -> nothing to do
+            if category_in_list_index == 0:
+                return
 
-        # Swap the categories in the main list
-        popped_dict = cfg.groups_by_categories.pop(category_index)
-        cfg.groups_by_categories.insert(category_index-1, popped_dict)
+            # Swap the lines in the ListWidget
+            current_item = self.categories_list.takeItem(category_in_list_index)
+            self.categories_list.insertItem(category_in_list_index-1, current_item)
+            self.categories_list.setCurrentItem(current_item)
+
+            # Swap the categories in the main list
+            popped_dict = cfg.groups_by_categories.pop(category_index)
+            cfg.groups_by_categories.insert(category_index-1, popped_dict)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot move the category up"
+            error_occurred(self.move_up_category, 'move_up_category', err, error_msg)
 
     def move_down_category(self):
-        category_in_list_index = self.categories_list.currentRow()  # The index of the category in the list
-        category_index = category_in_list_index + 1  # The list doesn't include the default entry ('Manual definition')
 
-        # The category is already the last -> nothing to do
-        if category_index == len(cfg.groups_by_categories) - 1:
-            return
+        try:
+            category_in_list_index = self.categories_list.currentRow()  # The index of the category in the list
+            category_index = category_in_list_index + 1  # The list doesn't include the default entry ('Manual definition')
 
-        # Swap the lines in the ListWidget
-        current_item = self.categories_list.takeItem(category_in_list_index)
-        self.categories_list.insertItem(category_in_list_index+1, current_item)
-        self.categories_list.setCurrentItem(current_item)
+            # The category is already the last -> nothing to do
+            if category_index == len(cfg.groups_by_categories) - 1:
+                return
 
-        # Swap the categories in the main list
-        popped_dict = cfg.groups_by_categories.pop(category_index)
-        cfg.groups_by_categories.insert(category_index+1, popped_dict)
+            # Swap the lines in the ListWidget
+            current_item = self.categories_list.takeItem(category_in_list_index)
+            self.categories_list.insertItem(category_in_list_index+1, current_item)
+            self.categories_list.setCurrentItem(current_item)
+
+            # Swap the categories in the main list
+            popped_dict = cfg.groups_by_categories.pop(category_index)
+            cfg.groups_by_categories.insert(category_index+1, popped_dict)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot move the category down"
+            error_occurred(self.move_down_category, 'move_down_category', err, error_msg)
 
     def get_current_category(self):
 
@@ -1019,14 +1179,19 @@ class EditCategoryDialog(QDialog):
 
     def change_outline_color(self):
 
-        dialog = QColorDialog()
+        try:
+            dialog = QColorDialog()
 
-        if dialog.exec_():
-            color = dialog.currentColor()
-            hex_color = color.name()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
 
-            self.outline_color = ColorArray(hex_color)
-            self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+                self.outline_color = ColorArray(hex_color)
+                self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change the outline color"
+            error_occurred(self.change_outline_color, 'change_outline_color', err, error_msg)
 
     def get_info(self):
 

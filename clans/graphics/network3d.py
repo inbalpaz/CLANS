@@ -153,9 +153,9 @@ class Network3D:
 
         # Initialise the coordinates array
         self.pos_array = fr_object.coordinates.copy()
-        self.rotated_pos_array = self.pos_array.copy()
         if self.pos_array.shape[1] == 2:
             self.pos_array = np.column_stack((self.pos_array, cfg.sequences_array['z_coor']))
+        self.rotated_pos_array = self.pos_array.copy()
 
         # Calculate and save the initial azimuth and elevation angles of all the points
         self.calculate_initial_angles()

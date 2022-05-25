@@ -1,11 +1,23 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
+from PyQt5.QtGui import QMovie, QIcon
 from PyQt5.QtCore import QThreadPool
 from vispy.color import ColorArray
 import numpy as np
 import clans.config as cfg
 import clans.io.io_gui as io
 import clans.data.sequences as seq
+
+
+def error_occurred(method, method_name, exception_err, error_msg):
+
+    if cfg.run_params['is_debug_mode']:
+        print("\nError in " + method.__globals__['__file__'] + " (" + method_name + "):")
+        print(exception_err)
+
+    msg_box = QMessageBox()
+    msg_box.setText(error_msg)
+    if msg_box.exec_():
+        return
 
 
 class GroupByTaxDialog(QDialog):
@@ -170,7 +182,7 @@ class GroupByTaxDialog(QDialog):
                 self.message_label.setText(text)
                 self.message_label.setStyleSheet("color: maroon; font-size: 14px;")
 
-                groups_num_str = str(len(cfg.seq_by_tax_level_dict['Family'])) + " groups"
+                groups_num_str = str(len(cfg.seq_by_tax_level_dict['Family']) - 1) + " groups"
                 self.groups_num_label.setText(groups_num_str)
 
                 # Add the OK/Cancel standard buttons
@@ -247,7 +259,7 @@ class GroupByTaxDialog(QDialog):
 
         else:
             self.message_label.setText(error)
-            self.message_label.setStyleSheet("color: maroon; font-size: 12px")
+            self.message_label.setStyleSheet("color: red; font-size: 12px")
 
             self.loading_gif.stop()
             self.loading_label.hide()
@@ -261,14 +273,19 @@ class GroupByTaxDialog(QDialog):
 
     def change_outline_color(self):
 
-        dialog = QColorDialog()
+        try:
+            dialog = QColorDialog()
 
-        if dialog.exec_():
-            color = dialog.currentColor()
-            hex_color = color.name()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
 
-            self.outline_color = ColorArray(hex_color)
-            self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+                self.outline_color = ColorArray(hex_color)
+                self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change the outline coor"
+            error_occurred(self.change_outline_color, 'change_outline_color', err, error_msg)
 
     def get_tax_level(self):
 
@@ -423,14 +440,20 @@ class GroupByParamDialog(QDialog):
         self.setLayout(self.main_layout)
 
     def upload_file(self):
-        opened_file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "All files (*.*)")
 
-        if opened_file:
-            file_worker = io.ReadMetadataGroupsWorker(opened_file)
-            file_worker.signals.finished.connect(self.update_categories)
+        try:
+            opened_file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "All files (*.*)")
 
-            # Execute worker
-            self.threadpool.start(file_worker)
+            if opened_file:
+                file_worker = io.ReadMetadataGroupsWorker(opened_file)
+                file_worker.signals.finished.connect(self.update_categories)
+
+                # Execute worker
+                self.threadpool.start(file_worker)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot upload file"
+            error_occurred(self.upload_file, 'upload_file', err, error_msg)
 
     def update_categories(self, groups_dict, error):
 
@@ -472,14 +495,19 @@ class GroupByParamDialog(QDialog):
 
     def change_outline_color(self):
 
-        dialog = QColorDialog()
+        try:
+            dialog = QColorDialog()
 
-        if dialog.exec_():
-            color = dialog.currentColor()
-            hex_color = color.name()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
 
-            self.outline_color = ColorArray(hex_color)
-            self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+                self.outline_color = ColorArray(hex_color)
+                self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change outline color"
+            error_occurred(self.change_outline_color, 'change_outline_color', err, error_msg)
 
     def get_categories(self):
 
@@ -548,22 +576,32 @@ class ColorByLengthDialog(QDialog):
         self.setLayout(self.main_layout)
 
     def change_short_color(self):
-        dialog = QColorDialog()
-        if dialog.exec_():
-            color = dialog.currentColor()
-            hex_color = color.name()
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
 
-            self.short_color = ColorArray(hex_color)
-            self.short_color_button.setStyleSheet("background-color: " + hex_color)
+                self.short_color = ColorArray(hex_color)
+                self.short_color_button.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_short_color, 'change_short_color', err, error_msg)
 
     def change_long_color(self):
-        dialog = QColorDialog()
-        if dialog.exec_():
-            color = dialog.currentColor()
-            hex_color = color.name()
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
 
-            self.long_color = ColorArray(hex_color)
-            self.long_color_button.setStyleSheet("background-color: " + hex_color)
+                self.long_color = ColorArray(hex_color)
+                self.long_color_button.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_long_color, 'change_long_color', err, error_msg)
 
     def switch_colors(self):
         short_color = self.short_color
@@ -652,7 +690,8 @@ class ColorByParamDialog(QDialog):
         self.colors_layout.addWidget(self.switch_button, 2, 1)
         self.colors_layout.addWidget(self.max_color_button, 2, 2)
 
-        self.layout.addLayout(self.colors_layout, 6, 0, 1, 2)
+        #self.layout.addLayout(self.colors_layout, 6, 0, 1, 2)
+        self.layout.addLayout(self.colors_layout, 6, 0)
 
         self.main_layout.addLayout(self.layout)
         #self.main_layout.addLayout(self.colors_layout)
@@ -699,21 +738,32 @@ class ColorByParamDialog(QDialog):
             self.max_color_button.hide()
 
     def upload_file(self):
-        opened_file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "All files (*.*)")
+        try:
+            opened_file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "All files (*.*)")
 
-        if opened_file:
-            file_worker = io.ReadMetadataWorker(opened_file)
-            file_worker.signals.finished.connect(self.update_metadata)
+            if opened_file:
+                file_worker = io.ReadMetadataWorker(opened_file)
+                file_worker.signals.finished.connect(self.update_metadata)
 
-            # Execute worker
-            self.threadpool.start(file_worker)
+                # Execute worker
+                self.threadpool.start(file_worker)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot upload file"
+            error_occurred(self.upload_file, 'upload_file', err, error_msg)
 
     def update_metadata(self, sequences_params_dict, error):
 
         # The parameter's values was added correctly - add the parameter to the list
         if error == "":
 
-            self.added_params = seq.add_numeric_params(sequences_params_dict)
+            try:
+                self.added_params = seq.add_numeric_params(sequences_params_dict)
+            except Exception as err:
+                error_msg = "An error has occurred: the uploaded metadata file has some problem or inconsistency.\n" \
+                        "Please correct the file and try to reload."
+                error_occurred(seq.add_numeric_params, 'add_numeric_params', err, error_msg)
+                return
 
             self.param_label.setText("Select a parameter from the list:")
             self.param_label.setStyleSheet("color: black;font-size: 12px")
@@ -736,25 +786,36 @@ class ColorByParamDialog(QDialog):
 
         else:
             self.message_label.setText(error)
+            self.message_label.setStyleSheet("color: red;font-size: 14px")
             self.message_label.show()
 
     def change_min_color(self):
-        dialog = QColorDialog()
-        if dialog.exec_():
-            color = dialog.currentColor()
-            hex_color = color.name()
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
 
-            self.min_color = ColorArray(hex_color)
-            self.min_color_button.setStyleSheet("background-color: " + hex_color)
+                self.min_color = ColorArray(hex_color)
+                self.min_color_button.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_min_color, 'change_min_color', err, error_msg)
 
     def change_max_color(self):
-        dialog = QColorDialog()
-        if dialog.exec_():
-            color = dialog.currentColor()
-            hex_color = color.name()
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
 
-            self.max_color = ColorArray(hex_color)
-            self.max_color_button.setStyleSheet("background-color: " + hex_color)
+                self.max_color = ColorArray(hex_color)
+                self.max_color_button.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_max_color, 'change_max_color', err, error_msg)
 
     def switch_colors(self):
         min_color = self.min_color

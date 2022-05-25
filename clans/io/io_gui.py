@@ -22,18 +22,29 @@ class ReadInputWorker(QRunnable):
         else:
             self.format_object = tab.DelimitedFormat()
 
+        self.file_name = self.format_object.file_name
+
         self.before = None
         self.after = None
 
     def load_complete(self):
 
-        file_name = self.format_object.file_name
-
         # If the file is valid without errors, fill the sequences information in the related global variables
         if self.format_object.file_is_valid == 1:
 
             self.before = time.time()
-            self.format_object.fill_values()
+
+            try:
+                self.format_object.fill_values()
+            except Exception as error:
+                if cfg.run_params['is_debug_mode']:
+                    print("\nError in " + self.format_object.fill_values.__globals__['__file__'] + " (fill_values):")
+                    print(error)
+                cfg.run_params['is_problem'] = True
+                cfg.run_params['error'] = "An error has occurred: the input file has some problem or inconsistency.\n" \
+                                          "Please correct the file and try to reload."
+                self.signals.finished.emit(1, self.file_name)
+                return
 
             if cfg.run_params['is_debug_mode']:
                 self.after = time.time()
@@ -42,32 +53,59 @@ class ReadInputWorker(QRunnable):
 
             # Build the list of connected pairs (non-redundant, [indexi][indexj]) for the edges display
             self.before = time.time()
-            sp.define_connected_sequences_list()
+
+            try:
+                sp.define_connected_sequences_list()
+
+            except Exception as error:
+                if cfg.run_params['is_debug_mode']:
+                    print("\nError in " + sp.define_connected_sequences_list.__globals__['__file__'] +
+                          " (define_connected_sequences_list):")
+                    print(error)
+                cfg.run_params['is_problem'] = True
+                cfg.run_params['error'] = "An error has occurred: the input file has some problem or inconsistency.\n" \
+                                          "Please correct the file and try to reload."
+                self.signals.finished.emit(1, self.file_name)
+                return
 
             if cfg.run_params['is_debug_mode']:
                 self.after = time.time()
                 duration = (self.after - self.before)
                 print("Building the list of connected pairs took " + str(duration) + " seconds")
 
-            self.signals.finished.emit(0, file_name)
+            self.signals.finished.emit(0, self.file_name)
 
         # The file has an error
         else:
             cfg.run_params['is_problem'] = True
             cfg.run_params['error'] = self.format_object.error
-            self.signals.finished.emit(1, file_name)
+            self.signals.finished.emit(1, self.file_name)
 
     @pyqtSlot()
     def run(self):
 
         self.before = time.time()
-        self.format_object.read_file(cfg.run_params['input_file'])
+
+        # Read the input file
+        try:
+            self.format_object.read_file(cfg.run_params['input_file'])
+
+        except Exception as error:
+            if cfg.run_params['is_debug_mode']:
+                print("\nError in " + self.format_object.read_file.__globals__['__file__'] + " (read_file):")
+                print(error)
+            cfg.run_params['is_problem'] = True
+            cfg.run_params['error'] = "An error has occurred: the input file has some problem or inconsistency.\n" \
+                                      "Please correct the file and try to reload."
+            self.signals.finished.emit(1, self.file_name)
+            return
 
         if cfg.run_params['is_debug_mode']:
             self.after = time.time()
             duration = (self.after - self.before)
             print("Reading the file took " + str(duration) + " seconds")
 
+        # Create and fill the the main data-structures
         self.load_complete()
 
 
@@ -85,7 +123,18 @@ class ReadMetadataWorker(QRunnable):
     def get_metadata(self):
 
         format_obj = tab.DelimitedFormat()
-        params_dict, error = format_obj.read_metadata(self.file)
+        params_dict = dict()
+
+        # Read the metadata file
+        try:
+            params_dict, error = format_obj.read_metadata(self.file)
+
+        except Exception as err:
+            if cfg.run_params['is_debug_mode']:
+                print("\nError in " + format_obj.read_metadata.__globals__['__file__'] + " (read_metadata):")
+                print(err)
+            error = "An error has occurred: the uploaded metadata file has some problem or inconsistency.\n" \
+                    "Please correct the file and try to reload."
 
         self.signals.finished.emit(params_dict, error)
 
@@ -108,7 +157,18 @@ class ReadMetadataGroupsWorker(QRunnable):
     def get_metadata(self):
 
         format_obj = tab.DelimitedFormat()
-        groups_dict, error = format_obj.read_metadata_groups(self.file)
+        groups_dict = dict()
+
+        # Read the groups file
+        try:
+            groups_dict, error = format_obj.read_metadata_groups(self.file)
+
+        except Exception as err:
+            if cfg.run_params['is_debug_mode']:
+                print("\nError in " + format_obj.read_metadata_groups.__globals__['__file__'] + " (read_metadata_groups):")
+                print(err)
+            error = "An error has occurred: the uploaded groups file has some problem or inconsistency.\n" \
+                    "Please correct the file and try to reload."
 
         self.signals.finished.emit(groups_dict, error)
 
@@ -133,7 +193,19 @@ class TaxonomyWorker(QRunnable):
     def get_hierarchy(self):
 
         # Search for organisms in the sequence headers and init the taxonomy dict
-        error = tax.init_taxonomy_dict()
+        try:
+            error = tax.init_taxonomy_dict()
+        except Exception as err:
+            if cfg.run_params['is_debug_mode']:
+                print("\nError in " + tax.init_taxonomy_dict.__globals__['__file__'] + " (init_taxonomy_dict):")
+                print(err)
+            error = "An error has occurred while searching for taxonomic information.\n" \
+                    "This feature cannot be applied on the current dataset."
+            cfg.run_params['finished_taxonomy_search'] = True
+            time.sleep(0.01)
+            self.signals.finished.emit(error)
+            return
+
         if not cfg.run_params['is_taxonomy_available']:
             cfg.run_params['finished_taxonomy_search'] = True
             time.sleep(0.01)
@@ -142,9 +214,23 @@ class TaxonomyWorker(QRunnable):
 
         # Get the taxonomic hierarchy for all the organism names that were found in the input file
         self.before = time.time()
-        error = tax.get_taxonomy_hierarchy()
+
+        try:
+            error = tax.get_taxonomy_hierarchy()
+        except Exception as err:
+            if cfg.run_params['is_debug_mode']:
+                print("\nError in " + tax.get_taxonomy_hierarchy.__globals__['__file__'] + " (get_taxonomy_hierarchy):")
+                print(err)
+            error = "An error has occurred while searching for taxonomic information.\n" \
+                    "This feature cannot be applied on the current dataset."
+            cfg.run_params['finished_taxonomy_search'] = True
+            time.sleep(0.01)
+            self.signals.finished.emit(error)
+            return
+
         if not cfg.run_params['is_taxonomy_available']:
             cfg.run_params['finished_taxonomy_search'] = True
+            time.sleep(0.01)
             self.signals.finished.emit(error)
             return
 
@@ -158,7 +244,19 @@ class TaxonomyWorker(QRunnable):
                 print("No organism was found in the taxonomy file - feature is not available")
 
         self.before = time.time()
-        tax.assign_sequences_to_tax_level()
+        try:
+            tax.assign_sequences_to_tax_level()
+        except Exception as err:
+            if cfg.run_params['is_debug_mode']:
+                print("\nError in " + tax.assign_sequences_to_tax_level.__globals__['__file__']
+                      + " (assign_sequences_to_tax_level):")
+                print(err)
+            error = "An error has occurred while searching for taxonomic information.\n" \
+                    "This feature cannot be applied on the current dataset."
+            cfg.run_params['finished_taxonomy_search'] = True
+            time.sleep(0.01)
+            self.signals.finished.emit(error)
+            return
 
         if cfg.run_params['is_debug_mode']:
             self.after = time.time()

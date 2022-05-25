@@ -7,7 +7,16 @@ import clans.GUI.main_window as gui
 # Parse the command-line arguments
 parser.parse_arguments()
 
-app = QApplication([])
-window = gui.MainWindow()
-window.app.run()
+try:
+    app = QApplication([])
+    window = gui.MainWindow()
+    window.app.run()
+
+except Exception as error:
+    print(error)
+    print("CLANS-Python application cannot be executed")
+
+finally:
+    print("Cleanup can go here")
+    #app.quit()
 

@@ -5,6 +5,18 @@ from vispy.color import ColorArray
 import clans.config as cfg
 
 
+def error_occurred(method, method_name, exception_err, error_msg):
+
+    if cfg.run_params['is_debug_mode']:
+        print("\nError in " + method.__globals__['__file__'] + " (" + method_name + "):")
+        print(exception_err)
+
+    msg_box = QMessageBox()
+    msg_box.setText(error_msg)
+    if msg_box.exec_():
+        return
+
+
 class FruchtermanReingoldConfig(QDialog):
 
     def __init__(self):

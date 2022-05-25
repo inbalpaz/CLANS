@@ -404,6 +404,22 @@ class ClansFormat:
                         seq_index = int(seq_num)
                         cfg.groups_by_categories[category_index]['sequences'][seq_index] = group_ID
 
+                # Add defaults for the category parameters (in case they are not written in the clans file)
+                if 'nodes_size' not in cfg.groups_by_categories[category_index]:
+                    cfg.groups_by_categories[category_index]['nodes_size'] = cfg.run_params['nodes_size']
+                if 'text_size' not in cfg.groups_by_categories[category_index]:
+                    cfg.groups_by_categories[category_index]['text_size'] = cfg.run_params['text_size']
+                if 'nodes_outline_color' not in cfg.groups_by_categories[category_index]:
+                    cfg.groups_by_categories[category_index]['nodes_outline_color'] = \
+                        cfg.run_params['nodes_outline_color']
+                if 'nodes_outline_width' not in cfg.groups_by_categories[category_index]:
+                    cfg.groups_by_categories[category_index]['nodes_outline_width'] = \
+                        cfg.run_params['nodes_outline_width']
+                if 'is_bold' not in cfg.groups_by_categories[category_index]:
+                    cfg.groups_by_categories[category_index]['is_bold'] = cfg.run_params['is_bold']
+                if 'is_italic' not in cfg.groups_by_categories[category_index]:
+                    cfg.groups_by_categories[category_index]['is_italic'] = cfg.run_params['is_italic']
+
         # calculate the sequence_length column
         seq.add_seq_length_param()
 

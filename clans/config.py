@@ -29,6 +29,8 @@ nodes_size_tiny = 4
 text_size = 10
 text_size_small = 8
 
+max_groups_num = 300
+
 # Layout-related default parameters
 layouts = {'FR':
                {'name': 'Fruchterman-Reingold', 'is_default': 1, 'params':
@@ -155,6 +157,7 @@ taxonomy_names_file = "clans/taxonomy/names.dmp"
 taxonomy_lineage_file = "clans/taxonomy/rankedlineage.dmp"
 
 manual_path = "manual/Manual.pdf"
+
 
 
 

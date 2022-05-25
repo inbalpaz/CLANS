@@ -252,6 +252,11 @@ class DelimitedFormat:
                 for i in range(1, col_num):
                     value = row[i]
 
+                    if not re.search("\d+\.?\d?", value):
+                        error = "Invalid values: the values must be int/float numbers.\n" \
+                                "Please correct the file and reload."
+                        return sequences_params_dict, error
+
                     # Sequence ID is given as serial number
                     if seq_ID == str(seq_index):
                         sequences_params_dict[params[i-1]][seq_index] = value
@@ -273,7 +278,8 @@ class DelimitedFormat:
 
         # Verify that the provided number of sequences equals the dataset
         if len(sequences_params_dict[params[0]]) != cfg.run_params['total_sequences_num']:
-            error = "The number of sequences in the metadata file does not match the number of sequences in the dataset."
+            error = "The number of sequences in the metadata file does not match\nthe number of sequences in the " \
+                    "dataset."
             return sequences_params_dict, error
 
         # The file is valid, no error
@@ -353,10 +359,11 @@ class DelimitedFormat:
                         "The number of povided sequences does not match the original dataset."
                 return groups_dict, error
 
-            # Verify that the number of groups does not exceed 100
+            # Verify that the number of groups does not exceed the allowed maximum
             for category in groups_dict:
-                if len(groups_dict[category]) > 100:
-                    error = "The number of groups for grouping-category \'" + category + "\' exceeds 100."
+                if len(groups_dict[category]) > cfg.max_groups_num:
+                    error = "The number of groups for grouping-category \'" + category + "\' exceeds " \
+                            + str(cfg.max_groups_num)
                     return groups_dict, error
 
         # The file is valid, no error
