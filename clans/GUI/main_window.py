@@ -121,10 +121,10 @@ class MainWindow(QMainWindow):
         self.save_file_submenu = self.file_menu.addMenu("Save to file")
         self.save_clans_submenu = self.save_file_submenu.addMenu("CLANS format")
 
-        self.save_full_clans_file_action = QAction("Full CLANS", self)
+        self.save_full_clans_file_action = QAction("CLANS", self)
         self.save_full_clans_file_action.triggered.connect(self.save_full_clans_file)
 
-        self.save_clans_file_action = QAction("Compatible CLANS", self)
+        self.save_clans_file_action = QAction("Legacy CLANS", self)
         self.save_clans_file_action.triggered.connect(self.save_clans_file)
 
         self.save_delimited_file_action = QAction("Tab-delimited format", self)
@@ -191,10 +191,10 @@ class MainWindow(QMainWindow):
         # Create the Help menu
         self.help_menu = self.main_menu.addMenu("Help")
 
-        self.about_action = QAction("About CLANS-Python", self)
+        self.about_action = QAction("About CLANS", self)
         self.about_action.triggered.connect(self.open_about_window)
 
-        self.manual_action = QAction("CLANS-Python manual", self)
+        self.manual_action = QAction("CLANS manual", self)
         self.manual_action.triggered.connect(self.open_manual)
 
         self.help_menu.addAction(self.about_action)

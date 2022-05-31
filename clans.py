@@ -14,6 +14,6 @@ try:
 
 except Exception as error:
     print(error)
-    print("CLANS-Python application cannot be executed")
+    print("CLANS application cannot be executed")
 
 

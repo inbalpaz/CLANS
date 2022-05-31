@@ -74,10 +74,10 @@ def get_taxonomy_hierarchy():
     # Verify that the names file exists
     if not os.path.isfile(cfg.taxonomy_names_file):
         cfg.run_params['is_taxonomy_available'] = False
-        error = "The file " + cfg.taxonomy_lineage_file + " does not exist in the specified path.\n" \
+        error = "The file " + cfg.taxonomy_names_file + " does not exist in the specified path.\n" \
                                                           "In order to use the \'Group by taxonomy\' feature, " \
                                                           "you should download the files \'rankedlineage.dmp\' and " \
-                                                          "\'names.dmp\' from: " \
+                                                          "\'names.dmp\' from: \n" \
                                                           "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/ " \
                                                           "and place them in the clans/taxonomy/ folder."
         if cfg.run_params['is_debug_mode']:
