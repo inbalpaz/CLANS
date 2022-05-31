@@ -16,7 +16,4 @@ except Exception as error:
     print(error)
     print("CLANS-Python application cannot be executed")
 
-finally:
-    print("Cleanup can go here")
-    #app.quit()
 

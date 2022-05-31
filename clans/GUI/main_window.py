@@ -16,6 +16,7 @@ import clans.layouts.layout_gui as lg
 import clans.layouts.fruchterman_reingold_class as fr_class
 import clans.graphics.network3d as net
 import clans.graphics.colorbar as colorbar
+import clans.graphics.colors as colors
 import clans.data.sequences as seq
 import clans.data.sequence_pairs as sp
 import clans.data.groups as groups
@@ -24,7 +25,6 @@ import clans.GUI.windows as windows
 import clans.GUI.metadata_dialogs as md
 #import clans.GUI.text_dialogs as td
 import clans.GUI.conf_dialogs as cd
-import clans.graphics.colors as colors
 
 
 def error_occurred(method, method_name, exception_err, error_msg):
