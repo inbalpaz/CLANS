@@ -324,7 +324,7 @@ class MainWindow(QMainWindow):
 
         # Add a combo-box to switch between sequences / groups selection
         self.selection_type_combo = QComboBox()
-        self.selection_type_combo.addItems(["Data-points", "Groups"])
+        self.selection_type_combo.addItems(["Sequences", "Groups"])
         self.selection_type_combo.setEnabled(False)
         self.selection_type_combo.currentIndexChanged.connect(self.change_selection_type)
 
@@ -344,9 +344,9 @@ class MainWindow(QMainWindow):
         self.open_selected_button.released.connect(self.open_selected_window)
 
         # Add a button to show the selected sequences/groups names on screen
-        self.select_by_name_button = QPushButton("Select by name")
-        self.select_by_name_button.setEnabled(False)
-        self.select_by_name_button.released.connect(self.select_by_name)
+        self.select_by_text_button = QPushButton("Select by text")
+        self.select_by_text_button.setEnabled(False)
+        self.select_by_text_button.released.connect(self.select_by_text)
 
         # Add the widgets to the selection_layout
         self.selection_layout.addWidget(self.selection_label)
@@ -356,7 +356,7 @@ class MainWindow(QMainWindow):
         self.selection_layout.addSpacerItem(self.horizontal_spacer_short)
         self.selection_layout.addWidget(self.select_all_button)
         self.selection_layout.addWidget(self.clear_selection_button)
-        self.selection_layout.addWidget(self.select_by_name_button)
+        self.selection_layout.addWidget(self.select_by_text_button)
         self.selection_layout.addWidget(self.open_selected_button)
         self.selection_layout.addStretch()
 
@@ -663,11 +663,11 @@ class MainWindow(QMainWindow):
         # Put a 'loading file' message
         self.canvas.central_widget.add_widget(self.load_file_label)
 
-    def receive_load_status(self, status, file_name):
+    def receive_load_status(self, status):
 
         self.is_init = 1
 
-        self.file_name = file_name
+        self.file_name = os.path.basename(cfg.run_params['input_file'])
 
         # Loaded file is valid
         if status == 0:
@@ -702,7 +702,7 @@ class MainWindow(QMainWindow):
             self.mode_combo.setEnabled(True)
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
-            self.select_by_name_button.setEnabled(True)
+            self.select_by_text_button.setEnabled(True)
             self.connections_button.setEnabled(True)
             #self.add_text_button.setEnabled(True)
 
@@ -975,7 +975,7 @@ class MainWindow(QMainWindow):
             self.selection_type_combo.setEnabled(False)
             self.select_all_button.setEnabled(False)
             self.clear_selection_button.setEnabled(False)
-            self.select_by_name_button.setEnabled(False)
+            self.select_by_text_button.setEnabled(False)
             self.edit_groups_button.setEnabled(False)
             self.add_to_group_button.setEnabled(False)
             self.remove_selected_button.setEnabled(False)
@@ -1053,7 +1053,7 @@ class MainWindow(QMainWindow):
             self.mode_combo.setEnabled(True)
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
-            self.select_by_name_button.setEnabled(True)
+            self.select_by_text_button.setEnabled(True)
 
         # If at least one point is selected -> enable all buttons related to actions on selected points
         if self.network_plot.selected_points != {}:
@@ -1994,14 +1994,14 @@ class MainWindow(QMainWindow):
             error_msg = "An error occurred: cannot open the selected sequences window"
             error_occurred(self.open_selected_window, 'open_selected_window', err, error_msg)
 
-    def select_by_name(self):
+    def select_by_text(self):
 
         try:
             self.search_window.open_window()
 
         except Exception as err:
             error_msg = "An error occurred: cannot open the search window"
-            error_occurred(self.select_by_name, 'select_by_name', err, error_msg)
+            error_occurred(self.select_by_text, 'select_by_text', err, error_msg)
 
     def manage_subset_presentation(self):
 
@@ -2018,7 +2018,7 @@ class MainWindow(QMainWindow):
             # Disable all selection-related buttons
             self.mode_combo.setEnabled(False)
             self.mode_combo.setCurrentIndex(0)
-            self.select_by_name_button.setEnabled(False)
+            self.select_by_text_button.setEnabled(False)
             self.select_all_button.setEnabled(False)
             self.clear_selection_button.setEnabled(False)
             self.z_index_mode_combo.setCurrentIndex(0)
@@ -2054,7 +2054,7 @@ class MainWindow(QMainWindow):
             self.mode_combo.setEnabled(True)
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
-            self.select_by_name_button.setEnabled(True)
+            self.select_by_text_button.setEnabled(True)
 
             if self.view_in_dimensions_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 1:
                 self.z_index_mode_combo.setEnabled(True)

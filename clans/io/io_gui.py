@@ -8,7 +8,7 @@ import time
 
 
 class ReadInputSignals(QObject):
-    finished = pyqtSignal(int, str)
+    finished = pyqtSignal(int)
 
 
 class ReadInputWorker(QRunnable):
@@ -22,7 +22,7 @@ class ReadInputWorker(QRunnable):
         else:
             self.format_object = tab.DelimitedFormat()
 
-        self.file_name = self.format_object.file_name
+        self.file_name = cfg.run_params['input_file']
 
         self.before = None
         self.after = None
@@ -43,7 +43,7 @@ class ReadInputWorker(QRunnable):
                 cfg.run_params['is_problem'] = True
                 cfg.run_params['error'] = "An error has occurred: the input file has some problem or inconsistency.\n" \
                                           "Please correct the file and try to reload."
-                self.signals.finished.emit(1, self.file_name)
+                self.signals.finished.emit(1)
                 return
 
             if cfg.run_params['is_debug_mode']:
@@ -65,7 +65,7 @@ class ReadInputWorker(QRunnable):
                 cfg.run_params['is_problem'] = True
                 cfg.run_params['error'] = "An error has occurred: the input file has some problem or inconsistency.\n" \
                                           "Please correct the file and try to reload."
-                self.signals.finished.emit(1, self.file_name)
+                self.signals.finished.emit(1)
                 return
 
             if cfg.run_params['is_debug_mode']:
@@ -73,13 +73,13 @@ class ReadInputWorker(QRunnable):
                 duration = (self.after - self.before)
                 print("Building the list of connected pairs took " + str(duration) + " seconds")
 
-            self.signals.finished.emit(0, self.file_name)
+            self.signals.finished.emit(0)
 
         # The file has an error
         else:
             cfg.run_params['is_problem'] = True
             cfg.run_params['error'] = self.format_object.error
-            self.signals.finished.emit(1, self.file_name)
+            self.signals.finished.emit(1)
 
     @pyqtSlot()
     def run(self):
@@ -97,7 +97,7 @@ class ReadInputWorker(QRunnable):
             cfg.run_params['is_problem'] = True
             cfg.run_params['error'] = "An error has occurred: the input file has some problem or inconsistency.\n" \
                                       "Please correct the file and try to reload."
-            self.signals.finished.emit(1, self.file_name)
+            self.signals.finished.emit(1)
             return
 
         if cfg.run_params['is_debug_mode']:
