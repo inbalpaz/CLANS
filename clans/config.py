@@ -2,6 +2,8 @@ import numpy as np
 from vispy.color import ColorArray
 
 ## Defaults
+version = "2.0.1"
+
 # i/o related parameters
 type_of_values = 'hsp'
 input_format = 'clans'

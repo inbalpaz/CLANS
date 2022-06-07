@@ -15,6 +15,50 @@ def error_occurred(method, method_name, exception_err, error_msg):
         return
 
 
+class AboutWindow(QWidget):
+
+    def __init__(self):
+        super().__init__()
+
+        self.is_visible = 0
+
+        self.layout = QVBoxLayout()
+
+        self.setWindowTitle("About CLANS")
+        self.setGeometry(400, 100, 300, 150)
+
+        self.version_label = QLabel("Version: " + cfg.version)
+        self.version_label.setStyleSheet("color: maroon")
+
+        self.overview_label = QLabel("CLANS is a Python-based program for visualizing the relationship between "
+                                     "proteins\nbased on their pairwise sequence similarities.\n"
+                                     "The program implements a version of the Fruchterman-Reingold force directed\n"
+                                     "graph layout algorithm to visualize the sequence similarities in a 2D or 3D "
+                                     "space.")
+
+        self.layout.addWidget(self.version_label)
+        self.layout.addWidget(self.overview_label)
+
+        self.setLayout(self.layout)
+
+    def open_window(self):
+        try:
+            self.is_visible = 1
+            self.show()
+        except Exception as err:
+            error_msg = "An error occurred: cannot open the 'About CLANS' window"
+            error_occurred(self.open_window, 'open_window', err, error_msg)
+
+    def close_window(self):
+        try:
+            self.is_visible = 0
+            self.close()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot close the 'About CLANS' window"
+            error_occurred(self.close_window, 'close_window', err, error_msg)
+
+
 class SelectedSeqWindow(QWidget):
 
     def __init__(self, main_window, net_plot):

@@ -491,6 +491,9 @@ class MainWindow(QMainWindow):
         # Create a window for the selected sequences (without showing it)
         self.selected_seq_window = windows.SelectedSeqWindow(self, self.network_plot)
 
+        # Create the 'about' window
+        self.about_window = windows.AboutWindow()
+
         # Create a window to display sequence search results (without showing it)
         self.search_window = windows.SearchResultsWindow(self, self.network_plot)
 
@@ -2542,12 +2545,15 @@ class MainWindow(QMainWindow):
                 self.group_by = category_index
 
     def open_about_window(self):
-        pass
+        try:
+            self.about_window.open_window()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot open the 'About CLANS' window"
+            error_occurred(self.open_about_window, 'open_about_window', err, error_msg)
 
     def open_manual(self):
-
         try:
-
             manual_path = os.path.abspath(cfg.manual_path)
             url = QUrl.fromLocalFile(manual_path)
 
