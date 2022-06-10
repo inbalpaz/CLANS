@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='CLANS',
+    name='clans',
     version='v2.0.1_beta',
     packages=['clans', 'clans.io', 'clans.io.file_formats', 'clans.GUI', 'clans.layouts', 'clans.graphics',
               'clans.taxonomy', 'clans.similarity_search'],

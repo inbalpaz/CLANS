@@ -13,14 +13,12 @@ package:
   version: {{ version }}
 
 source:
-  #url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  # If getting the source from GitHub, remove the line above,
-  # uncomment the line below, and modify as needed. Use releases if available:
-  # url: https://github.com/simplejson/simplejson/releases/download/{{ version }}/simplejson-{{ version }}.tar.gz
+  git_tag: v2.0.1_beta
+  #git_url: https://github.com/inbalpaz/CLANS/releases/download/{{ version }}/CLANS_{{ version }}.tar.gz
   url: https://github.com/inbalpaz/CLANS/releases/download/{{ version }}/CLANS_{{ version }}.tar.gz
   # and otherwise fall back to archive:
   # url: https://github.com/simplejson/simplejson/archive/v{{ version }}.tar.gz
-  sha256: 7d119db6ac562967c80a8b52d750eb36747d01d59b4afbba30820bf6bad03f64
+  sha256: 9f66cb32d741a7cfde26f28dc7378120a4a666744cdc2e341231c77fc00d7588
   # sha256 is the preferred checksum -- you can get it for a file with:
   #  `openssl sha256 <file name>`.
   # You may need the openssl package, available on conda-forge:
@@ -36,13 +34,10 @@ build:
   # Add the line "skip: True  # [py<35]" (for example) to limit to Python 3.5 and newer, or "skip: True  # [not win]" to limit to Windows.
   # More info about selectors can be found in the conda-build docs: 
   # https://docs.conda.io/projects/conda-build/en/latest/resources/define-metadata.html#preprocessing-selectors
-  #script: {{ PYTHON }} -m pip install . -vv
+  script: {{ PYTHON }} -m pip install . -vv
   number: 0
 
 requirements:
-  #build:
-    # If your project compiles code (such as a C extension) then add the required compilers as separate entries here.
-    # Compilers are named 'c', 'cxx' and 'fortran'.
   host:
     - python=3.9
     - numpy=1.20
