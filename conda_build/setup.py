@@ -3,8 +3,10 @@ from setuptools import setup
 setup(
     name='clans',
     version='v2.0.1_beta',
-    packages=['clans', 'clans.io', 'clans.io.file_formats', 'clans.GUI', 'clans.layouts', 'clans.graphics',
+    packages=['clans', 'clans.data', 'clans.io', 'clans.io.file_formats', 'clans.GUI', 'clans.layouts', 'clans.graphics',
               'clans.taxonomy', 'clans.similarity_search'],
+    package_data={'clans.taxonomy': ['names.dmp', 'rankedlineage.dmp']},
+    include_package_data=True,
     url='https://github.com/inbalpaz/CLANS',
     license='GPL',
     author='Inbal Paz',
