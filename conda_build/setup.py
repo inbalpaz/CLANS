@@ -5,7 +5,7 @@ setup(
     version='v2.0.1_beta',
     packages=['clans', 'clans.data', 'clans.io', 'clans.io.file_formats', 'clans.GUI', 'clans.layouts', 'clans.graphics',
               'clans.taxonomy', 'clans.similarity_search'],
-    package_data={'clans.taxonomy': ['names.dmp', 'rankedlineage.dmp']},
+    package_data={'clans': ['clans/taxonomy/names.dmp', 'clans/taxonomy/rankedlineage.dmp']},
     include_package_data=True,
     url='https://github.com/inbalpaz/CLANS',
     license='GPL',

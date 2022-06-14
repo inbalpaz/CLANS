@@ -8,12 +8,11 @@ package:
 source:
   git_tag: v2.0.1_beta
   url: https://github.com/inbalpaz/CLANS/releases/download/{{ version }}/CLANS_{{ version }}.tar.gz
-  sha256: 8e6b4f4af847596508adad0595a78f854881dd182233543f4232844825b0b84e
+  sha256: 1a7040db9b11d53b81be301141c5fff942d5c82d1da86379a2d223f7cede3d6e
 
 build:
   noarch: python
-  #script: {{ PYTHON }} -m pip install . -vv
-  script: python setup.py install --single-version-externally-managed --record=record.txt
+  script: {{ PYTHON }} -m pip install . -vv
   number: 0
 
 requirements:

@@ -1,1 +1,1 @@
-include clans/taxonomy/*.dmp
+recursive-include clans *.dmp
