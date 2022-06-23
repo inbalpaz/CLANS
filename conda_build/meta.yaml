@@ -8,7 +8,7 @@ package:
 source:
   git_tag: v2.0.1_beta
   url: https://github.com/inbalpaz/CLANS/releases/download/{{ version }}/CLANS_{{ version }}.tar.gz
-  sha256: d8997d34beb04ddf62b969957c228eb2be7490591c29070fe0781a7caaa9e51a
+  sha256: d8ec7721c600fbcb1e5c71ad137fe8af017d656cf987fae5e695c6c4008380d4
 
 build:
   noarch: python
@@ -33,13 +33,16 @@ test:
   imports:
     - clans
     - clans.config
-    - clans.io
-    - clans.GUI
-    - clans.data
-    - clans.graphics
-    - clans.layouts
-    - clans.similarity_search
-    - clans.taxonomy
+    - clans.clans_cmd
+    - clans.clans
+    - clans.clans.io
+    - clans.clans.io.file_formats
+    - clans.clans.GUI
+    - clans.clans.data
+    - clans.clans.graphics
+    - clans.clans.layouts
+    - clans.clans.similarity_search
+    - clans.clans.taxonomy
   requires:
     - pip
   commands:
