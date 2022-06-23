@@ -1,0 +1,2001 @@
+Sequence_ID	Category_1
+PKN60125 [Deltaproteobacteria bacterium HGW-Deltaproteobacteria-11]	group6
+PHX78185 [Planctomycetaceae bacterium]	group3
+OYY52705 [Polaromonas sp. 24-62-144]	group7
+RCL36828 [Puniceicoccaceae bacterium]	group5
+WP_106608680 [Shimia abyssi]	group2
+WP_015471260 [Bdellovibrio exovorus JSS]	group4
+OQY30225 [Candidatus Cloacimonetes bacterium 4572_55]	group6
+WP_018974549 [Rudaea cellulosilytica]	group1
+EAY62426 [Burkholderia cenocepacia PC184]	group4
+WP_090721560 [Nitrosomonas sp. Nm166]	group5
+WP_076939831 [Serratia oryzae]	group2
+RKX23051 [candidate division Zixibacteria bacterium]	group5
+WP_085051622 [Nitrospirae bacterium HCH-1]	group7
+WP_085544310 [Dethiosulfovibrio salsuginis]	group4
+WP_105244908 [Psychrobacter sp. Marseille-P5312]	group3
+OLE57625 [Chloroflexi bacterium 13_1_20CM_2_59_7]	group4
+PIE52739 [Candidatus Fermentibacteria bacterium]	group7
+PLX77716 [Desulfuromonas sp.]	group7
+WP_008487356 [Idiomarina xiamenensis 10-D-4]	group3
+WP_037015677 [Rhizobiales bacterium YIM 77505]	group3
+WP_016341329 [Idiomarina sp.]	group6
+WP_143151824 [Fibrobacter sp. UWR3]	group7
+WP_105298020 [Apibacter sp. wkB309]	group1
+WP_091458775 [Giesbergeria anulus]	group4
+WP_017759311 [Pseudacidovorax intermedius]	group3
+KXK41668 [Bacteroidetes bacterium OLB11]	group2
+WP_111351056 [Acuticoccus sp. PTG4-2]	group4
+WP_127056955 [Legionella sp. km524]	group2
+WP_027851822 [Marinospirillum insulare]	group2
+WP_022636570 [Chitinivibrio alkaliphilus ACht1]	group1
+WP_130597464 [Shewanella sp. D4-2]	group6
+WP_064048950 [Ralstonia solanacearum]	group1
+RYG26160 [bacterium]	group7
+OJX08149 [Burkholderiales bacterium 70-64]	group7
+WP_099347819 [Acetobacter aceti]	group7
+PLX41265 [Deltaproteobacteria bacterium]	group7
+RMG90621 [Zetaproteobacteria bacterium]	group7
+WP_121666205 [Mesonia aquimarina]	group6
+PYV01336 [Acidobacteria bacterium]	group1
+OGO95839 [Curvibacter sp. GWA2_63_95]	group5
+OPY76164 [Syntrophorhabdus sp. PtaU1.Bin058]	group4
+KJS31979 [Pseudomonas sp. BRH_c35]	group3
+WP_086181959 [Acinetobacter sp. ANC 4558]	group1
+WP_008838047 [Mesorhizobium alhagi CCNWXJ12-2]	group1
+QDO98280 [Ferrovibrio sp. K5]	group6
+WP_064540064 [Xanthomonas translucens pv. poae]	group6
+WP_107752128 [Pararhodobacter aggregans]	group6
+PYF93865 [Pseudomonas sp. OV467]	group5
+BBI61094 [Halomonas sulfidaeris]	group1
+WP_085824080 [Ruegeria meonggei]	group4
+WP_129721862 [Clostridiales bacterium SYSU GA17129]	group1
+OJV89829 [Gammaproteobacteria bacterium 39-13]	group3
+WP_015434232 [Azoarcus sp. KH32C]	group3
+WP_054125325 [beta proteobacterium AAP99]	group2
+WP_032978308 [Bordetella hinzii]	group4
+WP_013219326 [Nitrosococcus watsonii C-113]	group2
+WP_067457564 [Devosia elaeis]	group4
+OJW50712 [Candidatus Accumulibacter sp. 66-26]	group3
+OGO93573 [Coxiella sp. RIFCSPHIGHO2_12_FULL_42_15]	group1
+TDJ78910 [Planctomycetes bacterium]	group2
+WP_099277334 [Limimaricola cinnabarinus]	group2
+WP_133842814 [Erwinia rhapontici]	group3
+WP_112485656 [Thiomonas sp. X19]	group4
+WP_092495446 [bacterium A52C2]	group3
+PZO66282 [Pseudoxanthomonas suwonensis]	group3
+WP_046695963 [Moraxella bovoculi]	group2
+WP_033483571 [Xanthomonas citri]	group2
+WP_086465943 [Oceanibaculum nanhaiense]	group1
+WP_011179348 [Bartonella quintana]	group2
+WP_141919135 [Zymomonas mobilis]	group5
+WP_105043180 [Rubritalea profundi]	group7
+WP_094035377 [Antarctobacter heliothermus]	group7
+WP_045224814 [Methyloterricola oryzae]	group3
+WP_073614425 [Desulfopila aestuarii DSM 18488]	group5
+OFZ70588 [Bdellovibrionales bacterium RIFOXYC2_FULL_39_8]	group6
+WP_009144280 [Succinatimonas hippei YIT 12066]	group3
+WP_027201487 [Butyricimonas virosa]	group5
+QCI17741 [Buchnera aphidicola (Acyrthosiphon lactucae)]	group3
+PWM29392 [Verrucomicrobia bacterium]	group4
+WP_124025010 [Buttiauxella warmboldiae]	group5
+WP_008174954 [Marinobacter manganoxydans MnI7-9]	group2
+WP_005010247 [Nitrospina gracilis 3/211]	group7
+WP_122125543 [Bacteroides sp. AF16-49]	group7
+WP_047496295 [Terriglobus sp. TAA 43]	group4
+WP_110664912 [Salinicola halophilus]	group6
+WP_113775878 [Loktanella sp. D2R18]	group6
+GDX63449 [Chlorobi bacterium]	group4
+WP_125484846 [Edaphobacter aggregans]	group4
+WP_128454702 [Sphingomonas sp. UV9]	group2
+WP_120238594 [Marinifilum flexuosum]	group4
+WP_062625927 [Ferriphaselus amnicola]	group7
+WP_046561961 [Kangiella geojedonensis]	group3
+WP_115899699 [Tenacibaculum gallaicum]	group1
+WP_107240911 [Photobacterium frigidiphilum]	group7
+PYX45333 [Acidobacteria bacterium]	group4
+WP_091752657 [Methylobacterium sp. ap11]	group6
+WP_011479543 [Methylobacillus flagellatus KT]	group2
+WP_094019995 [Maliponia aquimaris]	group6
+XP_021274790 [Herrania umbratica]	group4
+WP_138241126 [Photobacterium damselae subsp. damselae]	group6
+TAK16479 [Rhizorhabdus sp.]	group5
+PJI96772 [Acidovorax sp. 69]	group7
+WP_092057845 [Desulfuromonas acetexigens]	group6
+WP_131913431 [Celerinatantimonas diazotrophica]	group4
+OUV15512 [Verrucomicrobiaceae bacterium TMED86]	group6
+WP_067561355 [Halofilum ochraceum]	group2
+WP_024812263 [Oceanicola sp. HL-35]	group6
+SNR65211 [Paracoccus sediminis]	group7
+RZL41325 [Variovorax sp.]	group2
+WP_070125114 [Alteromonas confluentis]	group7
+WP_121771835 [Corallococcus sp. AB047A]	group3
+WP_139850734 [Acinetobacter sp. S23]	group4
+PZQ49185 [Rhodovulum sulfidophilum]	group4
+WP_114698149 [Polynucleobacter necessarius]	group4
+OGS75358 [Gallionellales bacterium GWA2_60_142]	group6
+WP_002626897 [Cystobacter fuscus DSM 2262]	group3
+OUT82935 [Rhizobiales bacterium TMED28]	group2
+WP_140075249 [Vibrio parahaemolyticus]	group4
+WP_131911181 [Celerinatantimonas diazotrophica]	group7
+RKY31101 [Candidatus Omnitrophica bacterium]	group5
+QCI24982 [Buchnera aphidicola (Rhopalosiphum padi)]	group4
+WP_089399406 [Noviherbaspirillum humi]	group1
+WP_021770678 [Mitsuokella sp. oral taxon 131 str. W9106]	group2
+WP_130063701 [Alistipes finegoldii]	group6
+AQS41637 [Candidatus Tokpelaia hoelldoblerii]	group3
+WP_024993706 [Bacteroides paurosaccharolyticus]	group4
+WP_103948002 [Lelliottia aquatilis]	group1
+WP_136351929 [Bacillus sp. DSL-17]	group4
+WP_007080733 [Rhodanobacter fulvus Jip2]	group5
+OGS75433 [Gallionellales bacterium GWA2_55_18]	group4
+OGD74556 [Candidatus Coatesbacteria bacterium RBG_13_66_14]	group7
+WP_128177479 [Pantoea sp. LMG 27579]	group6
+WP_131328047 [Arachidicoccus sp. B3-10]	group5
+PIW61155 [Shewanella sp. CG12_big_fil_rev_8_21_14_0_65_47_15]	group6
+WP_115375218 [Adhaeribacter sp. HMF7616]	group4
+TEY13533 [Salvia splendens]	group4
+WP_036800387 [Photobacterium marinum]	group1
+VEH66120 [Rodentibacter pneumotropicus]	group6
+WP_140915875 [Pantoea eucalypti]	group6
+RKZ49955 [Gammaproteobacteria bacterium]	group3
+OOO03434 [Chromatiales bacterium USCg_Taylor]	group3
+KIQ68790 [Wenxinia marina DSM 24838]	group2
+WP_093115753 [Salinihabitans flavidus]	group1
+WP_084367464 [Rhizobium sp. RU36D]	group2
+WP_012415540 [Elusimicrobium minutum Pei191]	group1
+WP_126611574 [Azospirillum sp. L-25-5w-1]	group2
+WP_006589672 [Bartonella birtlesii LL-WM9]	group2
+OUT70946 [Planctomycetaceae bacterium TMED10]	group7
+WP_007398966 [Komagataeibacter xylinus]	group6
+WP_081805278 [Dyella marensis]	group3
+WP_088068337 [Bacillus luciferensis]	group3
+RYD54642 [Sphingobacteriales bacterium]	group5
+WP_132971411 [Thiogranum longum]	group4
+WP_129501275 [Candidatus Marinimicrobia bacterium]	group3
+WP_077514843 [Rhodanobacter sp. B05]	group3
+WP_036640349 [Paenirhodobacter enshiensis]	group7
+WP_062403626 [Limnohabitans sp. 63ED37-2]	group6
+WP_085795526 [Ruegeria litorea R37]	group5
+TAM95356 [Rhizobiaceae bacterium]	group2
+KGO33742 [Desulfobulbus sp. Tol-SR]	group1
+WP_119764692 [Sphingomonas sp. K2R01-6]	group3
+WP_052767330 [Luteibacter rhizovicinus]	group7
+OLC67177 [Betaproteobacteria bacterium 13_1_40CM_4_64_4]	group3
+WP_128731022 [Pseudoalteromonas sp. PS5]	group6
+WP_028795488 [Thalassobaculum litoreum DSM 18839]	group4
+OYZ37388 [Alphaproteobacteria bacterium 17-39-52]	group7
+TMM23244 [Actinobacteria bacterium]	group7
+WP_137794485 [Aquicoccus sp. SCR17]	group6
+WP_136482716 [Vibrio sp. H11]	group2
+REJ72865 [Planctomycetes bacterium]	group2
+OGI47846 [Candidatus Muproteobacteria bacterium RBG_16_65_34]	group3
+WP_129778809 [Steroidobacter sp. JW-3]	group1
+WP_104801348 [Limnohabitans sp. TS-CS-82]	group7
+WP_115138293 [Shewanella corallii]	group3
+WP_101108072 [Psychromonas sp. psych-6C06]	group7
+WP_012231767 [Bartonella tribocorum]	group2
+OGT37271 [Gammaproteobacteria bacterium RIFCSPHIGHO2_12_FULL_38_14]	group2
+PDH41340 [Candidatus Thioglobus sp. MED-G25]	group5
+WP_083589748 [Aurantimonas sp. 22II-16-19i]	group1
+WP_124945715 [Sulfurirhabdus autotrophica]	group3
+WP_007090281 [Thalassospira xiamenensis M-5 = DSM 17429]	group7
+WP_069341619 [Pandoraea sp. ISTKB]	group7
+WP_077032502 [Sphingopyxis sp. QXT-31]	group7
+WP_126463821 [Sulfuritortus calidifontis]	group6
+AJP48038 [Rugosibacter aromaticivorans]	group1
+KFI36434 [Peptococcaceae bacterium SCADC1_2_3]	group5
+BBJ23753 [Candidatus Nitrotoga sp. AM1]	group1
+PCJ95583 [Rhizobiales bacterium]	group1
+WP_109703822 [Gammaproteobacteria bacterium ESL0073]	group4
+PHX81501 [Thermoleophilia bacterium]	group2
+WP_107230937 [Stenotrophomonas sp. Nf4]	group2
+KPK40292 [Omnitrophica WOR_2 bacterium SM23_29]	group7
+WP_004405113 [Vibrio nigripulchritudo]	group3
+CDD09629 [Phascolarctobacterium succinatutens CAG:287]	group2
+SIS98877 [Oleibacter marinus]	group7
+WP_061780543 [Sphingomonas sanguinis]	group1
+WP_083490100 [Stenotrophomonas daejeonensis]	group5
+WP_039105689 [Frischella perrara]	group7
+VEN75094 [uncultured Desulfobacteraceae bacterium]	group7
+WP_091274519 [Alteribacillus persepolensis]	group5
+RVU86253 [Leucothrix sp. C3212]	group6
+TDI66679 [Alphaproteobacteria bacterium]	group1
+TAL72462 [Rhodanobacter sp.]	group1
+PYT15063 [Acidobacteria bacterium]	group2
+WP_002691167 [Beggiatoa alba B18LD]	group4
+RMH35193 [Acidobacteria bacterium]	group2
+WP_073142974 [Chryseolinea serpens]	group5
+OGQ73122 [Deltaproteobacteria bacterium RIFCSPLOWO2_12_55_13]	group7
+WP_135051136 [Beijerinckiaceae bacterium]	group3
+XP_029143785 [Arachis hypogaea]	group3
+OYZ32115 [Sphingobacteriales bacterium 17-39-43]	group4
+WP_128465272 [Geovibrio thiophilus]	group2
+PIP99308 [Shewanella sp. CG_4_9_14_0_8_um_filter_42_14]	group2
+WP_020175518 [Methyloferula stellata]	group2
+KPD02561 [Moellerella wisconsensis ATCC 35017]	group4
+WP_074652724 [Terriglobus roseus]	group7
+SDU25930 [Pseudomonas guangdongensis]	group7
+RLF59658 [Thermoplasmata archaeon]	group1
+WP_101895992 [Ketobacter alkanivorans]	group3
+PKP25410 [Bacteroidetes bacterium HGW-Bacteroidetes-2]	group4
+WP_045835410 [Hyphomicrobium sp. 99]	group3
+WP_007576970 [Patulibacter medicamentivorans]	group2
+PCI21585 [Piscirickettsiaceae bacterium]	group2
+WP_090596253 [Pelagibacterium luteolum]	group6
+RJP89682 [Desulfobacteraceae bacterium]	group4
+WP_026294034 [Saccharibacter floricola]	group2
+WP_050518462 [Pseudorhodobacter antarcticus]	group3
+WP_035488403 [Gammaproteobacteria bacterium MOLA455]	group4
+WP_034334370 [Conchiformibius kuhniae]	group6
+TRO95811 [Glycocaulis sp. ZYF765]	group4
+WP_054461548 [Phaeobacter sp. 11ANDIMAR09]	group5
+WP_112112983 [Flavobacterium aciduliphilum]	group6
+WP_082892658 [Bacillus aquimaris]	group3
+WP_126977124 [Burkholderiales bacterium CNM695-12]	group3
+GDX42522 [Bacteroidetes bacterium]	group6
+WP_049757887 [Shewanella amazonensis]	group5
+WP_114696138 [Motiliproteus coralliicola]	group5
+EGT79631 [Haemophilus haemolyticus M21621]	group3
+WP_109678473 [Spiribacter sp. E85]	group7
+WP_028072819 [Solirubrobacterales bacterium URHD0059]	group3
+WP_123236249 [Methylophilaceae bacterium]	group7
+RZJ35729 [Flavobacterium sp.]	group6
+PWA78172 [Artemisia annua]	group2
+PHS73559 [Porticoccus sp.]	group3
+WP_010323951 [Marinobacterium stanieri]	group3
+OUW19529 [Opitutales bacterium TMED158]	group4
+TCT15119 [Bibersteinia trehalosi]	group3
+TVO65802 [Denitromonas halophilus]	group4
+WP_038536492 [Bacillus sp. X1(2014)]	group4
+RMD60987 [Planctomycetes bacterium]	group7
+WP_093330444 [Thalassotalea agarivorans]	group7
+WP_116640695 [Methylocystaceae bacterium]	group7
+WP_036831688 [Photobacterium sanctipauli]	group4
+WP_070064550 [Wolbachia pipientis]	group7
+WP_020376549 [Sulfobacillus thermosulfidooxidans DSM 9293]	group6
+RPF95763 [Rhizobiales bacterium TMED227]	group4
+WP_068879067 [Phenylobacterium sp. CCH12-B4]	group5
+XP_019182691 [Ipomoea nil]	group7
+RMH39965 [Gammaproteobacteria bacterium]	group3
+RLT94162 [Ketobacter sp.]	group2
+RKV86750 [Bacteroidetes bacterium]	group1
+WP_048695123 [Catenovulum maritimum]	group5
+WP_065239006 [Gallibacterium genomosp. 3]	group1
+WP_129970156 [Pusillimonas soli]	group4
+WP_011985057 [Anaeromyxobacter sp. Fw109-5]	group5
+KWW36476 [Cupriavidus metallidurans]	group3
+WP_038608576 [Pseudomonas alkylphenolica]	group4
+WP_095610751 [Tamilnaduibacter salinus]	group4
+WP_124211619 [Vespertiliibacter pulmonis]	group4
+WP_044349723 [Dethiosulfatarculus sandiegensis]	group7
+OYV70608 [Deltaproteobacteria bacterium 21-66-5]	group2
+WP_044023146 [Bacillus sp. SG-1]	group4
+PCJ19023 [Gammaproteobacteria bacterium]	group3
+WP_006942648 [Megasphaera micronuciformis F0359]	group6
+ASM72236 [Sulfitobacter pseudonitzschiae]	group6
+WP_109252541 [Marinicauda sp. WD6-1]	group5
+WP_088914428 [Porphyrobacter sp. CACIAM 03H1]	group2
+WP_006974130 [Plesiocystis pacifica SIR-1]	group5
+WP_086181774 [Acinetobacter sp. ANC 4558]	group3
+WP_013664424 [Sphingobacterium sp. 21]	group6
+WP_090874960 [Bauldia litoralis]	group6
+WP_008735986 [Alcanivorax pacificus W11-5]	group7
+VTN06021 [Raoultella ornithinolytica]	group1
+WP_112536428 [Rhizobiales bacterium]	group6
+WP_031255050 [Curvibacter lanceolatus]	group4
+OUW05066 [Betaproteobacteria bacterium TMED156]	group4
+WP_071628883 [Francisella sp. PA05-1188]	group7
+WP_087107025 [Parendozoicomonas haliclonae]	group3
+OGV48321 [Legionellales bacterium RIFCSPHIGHO2_12_FULL_42_9]	group5
+OQX91239 [Candidatus Coatesbacteria bacterium 4484_99]	group5
+RJQ32940 [Peptococcaceae bacterium]	group1
+WP_009348291 [Alloprevotella rava F0323]	group1
+WP_043379107 [Methylobacterium sp. UNCCL125]	group5
+WP_062202690 [Aureimonas sp. AU12]	group4
+WP_028392080 [Bacillus cihuensis]	group4
+PHR16402 [Sphingopyxis sp.]	group6
+CDF98114 [Avibacterium paragallinarum JF4211]	group6
+PHR46357 [Fluviicola sp.]	group6
+RAV60900 [Aerococcus urinae]	group6
+WP_124930833 [Alloprevotella sp. OH1205_COT-284]	group1
+WP_118996127 [Pusillimonas caeni]	group3
+WP_122465736 [Brevundimonas sp. NS26]	group7
+WP_020084421 [Hyphomicrobium zavarzinii]	group4
+PUA26496 [Cellvibrio sp. 79]	group1
+WP_055731534 [Agarivorans gilvus]	group7
+RJX32633 [Oxalobacter sp.]	group4
+WP_075433374 [Buchnera aphidicola (Diuraphis noxia)]	group3
+WP_119885325 [Paracoccus aestuarii]	group5
+GAK50475 [Candidatus Moduliflexus flocculans]	group5
+GBC99372 [bacterium HR17]	group4
+AHN97770 [uncultured bacterium lac82]	group2
+WP_011480333 [Methylobacillus flagellatus KT]	group2
+WP_084695834 [Arenimonas donghaensis]	group3
+WP_118193468 [Pedobacter sp. SM1810]	group1
+WP_007553348 [Bartonella sp. DB5-6]	group6
+WP_125353745 [Enterobacteriaceae bacterium CCUG 66741]	group3
+WP_014267082 [Granulicella mallensis MP5ACTX8]	group1
+WP_084151554 [Thiomicrorhabdus sp. Milos-T2]	group1
+PIE83321 [Candidatus Contendobacter odensis]	group7
+WP_088920938 [Granulosicoccus antarcticus IMCC3135]	group1
+WP_025820644 [Shewanella marina]	group2
+WP_025437419 [Komagataeibacter xylinus E25]	group3
+WP_131616163 [Roseitalea porphyridii]	group4
+WP_081112646 [Ehrlichia ruminantium]	group3
+RLA13199 [Gammaproteobacteria bacterium]	group6
+KPQ06551 [Rhodobacteraceae bacterium HLUCCA12]	group5
+RZK47217 [Hymenobacter sp.]	group4
+WP_107177343 [Acidovorax avenae subsp. avenae]	group1
+TNC86457 [Oleibacter sp.]	group4
+WP_077807843 [Neoasaia chiangmaiensis]	group1
+WP_109532298 [Pararhodobacter sp. CIC4N-9]	group2
+WP_086744071 [Pseudoalteromonas ulvae]	group3
+WP_015258618 [Thioalkalivibrio nitratireducens DSM 14787]	group2
+AEJ38817 [Sulfobacillus acidophilus DSM 10332]	group5
+WP_028582468 [Desulfobulbus japonicus]	group5
+WP_008989938 [Galbibacter marinus]	group4
+TDJ17603 [Gammaproteobacteria bacterium]	group7
+TFH47477 [Xanthomonadales bacterium]	group7
+PYU04573 [Acidobacteria bacterium]	group6
+WP_135072567 [Algoriphagus sp. XY-J91]	group1
+WP_110075994 [Idiomarina tainanensis]	group2
+WP_132958879 [Rhizobium sp. BK251]	group1
+WP_113289551 [Rhodosalinus sp. E84]	group1
+WP_029140451 [Citromicrobium sp. JL2201]	group6
+WP_136415301 [Muribaculum sp. H5]	group4
+OZB06489 [Idiomarina sp. 34-48-12]	group1
+PSQ94178 [Bacteroidetes bacterium SW_7_64_58]	group6
+WP_058574313 [Halothiobacillus sp. WRN-7]	group3
+WP_012765757 [Desulfovibrio salexigens DSM 2638]	group1
+WP_116887819 [Pseudomonas parafulva]	group4
+RVD19850 [Mesorhizobium sp. M4B.F.Ca.ET.017.02.2.1]	group2
+WP_126770443 [Idiomarina homiensis]	group5
+WP_029888832 [Polycyclovorans algicola]	group5
+WP_072560518 [Sphingopyxis sp. LPB0140]	group6
+RYG12701 [Chitinophagaceae bacterium]	group1
+WP_028032941 [Chelativorans sp. J32]	group5
+WP_135801700 [Marinobacter confluentis]	group2
+RNC73306 [Desulfuromonadales bacterium]	group6
+WP_041972430 [Geobacter sp. OR-1]	group5
+WP_028685992 [Phaseolibacter flectens]	group4
+WP_114098302 [Thalassospira profundimaris]	group5
+WP_007347147 [Bartonella rattimassiliensis 15908]	group5
+WP_057637906 [Stenotrophomonas ginsengisoli]	group4
+WP_018413966 [Candidatus Pelagibacter ubique]	group7
+WP_055148719 [Jiulongibacter sediminis]	group3
+WP_061948603 [Bacillus trypoxylicola]	group2
+EIL95933 [Rhodanobacter sp. 115]	group5
+RZO53283 [Verrucomicrobia subdivision 3 bacterium]	group2
+WP_076575527 [Aeromonas sp. RU39B]	group7
+WP_099026172 [Parasaccharibacter apium]	group5
+WP_119768333 [Herbaspirillum sp. K1R23-30]	group2
+RUM36031 [Desulfobulbus sp.]	group3
+RME70366 [Planctomycetes bacterium]	group3
+WP_013778594 [Tepidanaerobacter acetatoxydans Re1]	group2
+WP_009470850 [gamma proteobacterium HIMB55]	group4
+KXK19149 [Bacteroidetes bacterium OLB8]	group6
+KPK19064 [Betaproteobacteria bacterium SG8_41]	group7
+WP_033078359 [Thalassotalea sp. ND16A]	group1
+WP_125481849 [Bacillus subterraneus]	group2
+WP_082630999 [Idiomarinaceae bacterium HL-53]	group4
+WP_015389656 [Candidatus Kinetoplastibacterium galatii TCC219]	group2
+OUU30120 [Candidatus Endolissoclinum sp. TMED37]	group2
+WP_121997116 [Rhodobacteraceae bacterium EL53]	group5
+WP_107967283 [Sphingomonas oleivorans]	group4
+WP_142489074 [Leclercia adecarboxylata]	group3
+WP_002440214 [Shimwellia blattae]	group7
+TMI94337 [Bacteroidetes bacterium]	group3
+RPG84511 [Cellvibrionales bacterium TMED47]	group5
+WP_026758807 [Sediminimonas qiaohouensis]	group2
+TNF80265 [Acidobacteria bacterium]	group6
+WP_105012358 [Salinibacter sp. 10B]	group6
+WP_114340827 [Rhodanobacter denitrificans]	group5
+QCI19907 [Buchnera aphidicola (Brevicoryne brassicae)]	group4
+RKX67850 [candidate division TA06 bacterium]	group7
+RLA54965 [Gammaproteobacteria bacterium]	group5
+WP_098020864 [Orrella dioscoreae]	group6
+WP_130153708 [Candidatus Finniella inopinata]	group3
+PHS22480 [Robiginitomaculum sp.]	group3
+RQP20345 [Ochrobactrum intermedium]	group4
+WP_066883630 [Dechloromonas denitrificans]	group1
+SDO66578 [Sulfitobacter litoralis]	group2
+WP_013147341 [Methylotenera versatilis 301]	group5
+WP_101776066 [Pasteurella oralis]	group7
+WP_093075605 [Variovorax sp. OV084]	group3
+TRZ82985 [Sediminibacterium sp.]	group7
+WP_082164442 [Dakarella massiliensis]	group6
+WP_131905256 [Cocleimonas flava]	group2
+WP_123489230 [Granulicella sp. GAS466]	group6
+WP_128182175 [Sinirhodobacter sp. 24D10-4-9]	group3
+OYZ27359 [Hydrogenophilales bacterium 16-64-40]	group6
+WP_132273273 [Neorhizobium sp. JUb45]	group3
+PZP86707 [Azospirillum brasilense]	group2
+ALP53396 [Candidatus Tenderia electrophaga]	group2
+OYV97440 [Deltaproteobacteria bacterium 37-65-8]	group2
+WP_012905434 [Citrobacter rodentium]	group2
+WP_036234436 [Methylibium sp. T29-B]	group2
+WP_051555136 [Legionella fairfieldensis]	group6
+WP_068808211 [Immundisolibacter cernigliae]	group5
+PYX29714 [Acidobacteria bacterium]	group3
+WP_055829172 [Brevundimonas sp. Root608]	group6
+RLA07436 [Gammaproteobacteria bacterium]	group6
+WP_107046369 [Riemerella anatipestifer]	group3
+WP_102230811 [Bacillus sp. UMB0899]	group3
+WP_075482433 [Candidatus Pelagibacter ubique]	group5
+WP_076446657 [Roseivivax lentus]	group7
+WP_043317927 [Microbulbifer sp. HZ11]	group3
+WP_007362280 [Opitutaceae bacterium TAV1]	group5
+WP_114789765 [Niabella yanshanensis]	group1
+WP_006301313 [Aminomonas paucivorans DSM 12260]	group3
+EJW12963 [Rhodovulum sp. PH10]	group2
+OGP50362 [Deltaproteobacteria bacterium RBG_13_43_22]	group1
+WP_054650747 [Desulfovibrio brasiliensis]	group7
+RKY38876 [Candidatus Omnitrophica bacterium]	group5
+PPC94419 [Methylotenera sp.]	group7
+RPI77245 [Desulfobacteraceae bacterium]	group7
+OGU21287 [Hydrogenophilales bacterium RIFOXYD1_FULL_62_11]	group4
+WP_075754620 [Sporomusa sphaeroides DSM 2875]	group1
+PVW87386 [Klebsiella pneumoniae]	group3
+OGA17431 [Betaproteobacteria bacterium RIFCSPLOWO2_02_FULL_66_14]	group1
+PYV88374 [Acidobacteria bacterium]	group7
+WP_117371797 [Shinella sp. WSJ-2]	group5
+WP_114484026 [Extensimonas vulgaris]	group2
+PIE17200 [Proteobacteria bacterium]	group3
+WP_141383561 [Nitrobacter winogradskyi]	group2
+WP_120993962 [Pseudomonas sp. T3]	group4
+GAM57004 [Vibrio ishigakensis]	group6
+PKP22941 [Bacteroidetes bacterium HGW-Bacteroidetes-21]	group4
+WP_090119096 [Lutibacter oricola]	group2
+WP_109368885 [Ochrobactrum haematophilum]	group1
+WP_092614974 [Roseospirillum parvum]	group6
+WP_109997307 [Candidatus Cardinium hertigii]	group1
+WP_108649185 [Gammaproteobacteria bacterium DM2]	group1
+QDP00289 [Thalassotalea sp. PS06]	group4
+WP_126316042 [Cardiobacterium hominis]	group7
+OGA38582 [Betaproteobacteria bacterium RIFCSPLOWO2_12_FULL_68_19]	group1
+WP_128897182 [Dyella sp. M7H15-1]	group1
+WP_015327600 [Halobacteroides halobius DSM 5150]	group4
+WP_051928813 [Thermopetrobacter sp. TC1]	group6
+SMX28718 [Tropicibacter phthalicicus]	group7
+WP_106874224 [Candidatus Phycorickettsia trachydisci]	group3
+WP_115218670 [Suttonella indologenes]	group4
+WP_140808892 [Mesorhizobium sp. B2-7-1]	group2
+RCL67789 [Rhodothermaceae bacterium TMED105]	group2
+WP_102090794 [Psychrobacter sp. 4Bb]	group2
+WP_072427228 [Chitinimonas taiwanensis DSM 18899]	group6
+WP_108049588 [Bosea sp. 124]	group4
+PYR76476 [Acidobacteria bacterium]	group1
+RKY12036 [Planctomycetes bacterium]	group1
+KUJ89549 [Halomonas sp. 54_146]	group2
+WP_142828926 [Rhizobium sp. rho-1.1]	group5
+WP_102471691 [Vibrio sp. 10N.286.48.B7]	group5
+ELU03841 [Capitella teleta]	group6
+WP_141147546 [Martelella sp. BGMRC2036]	group7
+PPC90748 [Methylomonas sp.]	group1
+WP_070123318 [Alteromonas confluentis]	group3
+WP_138854508 [Flavobacteriaceae bacterium F202Z8]	group1
+RIK78204 [candidate division KSB1 bacterium]	group5
+RJR20440 [Desulfobacteraceae bacterium]	group2
+WP_111872715 [Aeromonas]	group6
+RLD72636 [Bacteroidetes bacterium]	group4
+WP_108646354 [Polynucleobacter rarus]	group4
+OZA95783 [Thiotrichales bacterium 34-46-19]	group1
+WP_081938059 [Leptospirillum ferriphilum]	group2
+WP_135525673 [Flavobacterium sp. DS2-A]	group3
+TSE28097 [Tepidimonas thermarum]	group5
+PYT40787 [Acidobacteria bacterium]	group3
+WP_035257125 [Actibacterium mucosum KCTC 23349]	group4
+KPQ12832 [Algoriphagus marincola HL-49]	group6
+KUK22531 [Thermotoga naphthophila]	group4
+WP_021269730 [Bacteriovorax sp. BSW11_IV]	group1
+OIO61257 [Alphaproteobacteria bacterium CG_4_10_14_0_2_um_filter_63_37]	group5
+WP_110019562 [Plasticicumulans acidivorans]	group7
+OJX04292 [Caedibacter sp. 38-128]	group2
+OGC42432 [candidate division WOR-3 bacterium RBG_13_43_14]	group1
+WP_077450506 [Psychrobacter piechaudii]	group6
+WP_116687312 [Pelagibaculum spongiae]	group3
+EYR78834 [Shinella sp. DD12]	group4
+RLT08289 [Planctomycetia bacterium]	group3
+WP_009602828 [Vibrio caribbeanicus ATCC BAA-2122]	group2
+PSQ81388 [Bacteroidetes bacterium QS_8_68_15]	group2
+RZI83490 [Rubrivivax sp.]	group6
+WP_034336078 [Commensalibacter sp. MX01]	group4
+WP_007069115 [Dialister invisus DSM 15470]	group4
+OGU05615 [Geobacteraceae bacterium GWC2_58_44]	group7
+PDH35282 [OM182 bacterium MED-G28]	group2
+WP_090248492 [Lishizhenia tianjinensis]	group1
+RYD52812 [Sphingobacteriales bacterium]	group3
+RLB08830 [Deltaproteobacteria bacterium]	group6
+RZL96560 [Variovorax sp.]	group5
+WP_094236200 [Tumebacillus algifaecis]	group4
+OFW99817 [Alphaproteobacteria bacterium RIFCSPHIGHO2_12_FULL_63_12]	group1
+WP_072711849 [Francisella sp. TX077310]	group7
+PYX79369 [Acidobacteria bacterium]	group6
+OUT51446 [Rhodospirillaceae bacterium TMED8]	group1
+GBD33165 [bacterium HR33]	group2
+WP_014782105 [Aequorivita sublithincola DSM 14238]	group7
+WP_117011665 [Duganella sp. BJB480]	group2
+PLY06812 [Desulfuromonas sp.]	group1
+PCI63572 [Gammaproteobacteria bacterium]	group3
+WP_046109225 [Devosia geojensis]	group4
+WP_014778590 [Thiocystis violascens DSM 198]	group3
+OGP55816 [Deltaproteobacteria bacterium RBG_13_52_11]	group6
+WP_129470301 [Pseudoxanthomonas sp. GSS15]	group1
+PYS81770 [Acidobacteria bacterium]	group4
+PDH33383 [Halieaceae bacterium MED-G27]	group6
+OGB24960 [Burkholderiales bacterium RIFCSPLOWO2_02_FULL_57_36]	group4
+PYS89522 [Acidobacteria bacterium]	group5
+WP_018574406 [Oligella ureolytica]	group5
+PZU16373 [Citromicrobium sp.]	group6
+PPR55253 [Alphaproteobacteria bacterium MarineAlpha5_Bin3]	group4
+WP_123633314 [Marinobacter sp. R17]	group4
+PYK72998 [Verrucomicrobia bacterium]	group2
+TAM04016 [Paraburkholderia sp.]	group7
+CDE64100 [Parabacteroides sp. CAG:409]	group6
+WP_069039133 [Methyloversatilis sp. RAC08]	group6
+XP_020189664 [Aegilops tauschii subsp. tauschii]	group7
+SFP58449 [Nitrosomonas cryotolerans ATCC 49181]	group6
+PDH46468 [Bacteroidetes bacterium MED-G13]	group2
+WP_077026685 [Fuerstia marisgermanicae]	group4
+RMF08618 [Alphaproteobacteria bacterium]	group6
+WP_091639692 [Aquisalimonas asiatica]	group1
+KVH92261 [Cynara cardunculus var. scolymus]	group5
+OUW10889 [Candidatus Pelagibacter sp. TMED166]	group5
+PYT98900 [Acidobacteria bacterium]	group3
+TAN09068 [Rhodanobacteraceae bacterium]	group3
+TAK39951 [Xanthomonadaceae bacterium]	group5
+PIE84048 [Bacteroidia bacterium]	group4
+CBX28973 [uncultured Desulfobacterium sp.]	group6
+WP_107960903 [Neisseria cinerea]	group2
+WP_005646425 [Parabacteroides merdae]	group7
+WP_112291144 [Rahnella sp. AN3-3W3]	group6
+WP_113905792 [Aliidiomarina sp. F3105]	group3
+WP_115858144 [Lysobacter sp. zong2l5]	group2
+PHS66547 [Thalassobium sp.]	group1
+WP_057157507 [Massilia sp. Root351]	group6
+WP_078239498 [Haemophilus]	group5
+WP_078487226 [Solemya velesiana gill symbiont]	group7
+PPR35140 [Alphaproteobacteria bacterium MarineAlpha9_Bin6]	group5
+OLB24076 [Acidobacteriales bacterium 13_2_20CM_55_8]	group7
+WP_110253757 [Undibacterium pigrum]	group1
+WP_104228923 [Solimonas fluminis]	group1
+WP_123290298 [Desulfosoma caldarium]	group4
+KXK30111 [Candidatus Brocadia sinica]	group2
+WP_106227887 [beta proteobacterium MWH-P2sevCIIIb]	group5
+WP_113858602 [Pseudocitrobacter faecalis]	group3
+OPY85347 [Smithella sp. PtaU1.Bin162]	group7
+WP_057972744 [Lysobacter antibioticus]	group6
+WP_066406184 [Flavisolibacter tropicus]	group4
+WP_119116033 [Bacillus asahii]	group4
+RMF72450 [Alphaproteobacteria bacterium]	group1
+PYO97433 [Gemmatimonadetes bacterium]	group2
+PMP70589 [Calditerrivibrio nitroreducens]	group4
+PKQ01918 [Alphaproteobacteria bacterium HGW-Alphaproteobacteria-12]	group4
+WP_018151224 [Leeia oryzae]	group4
+WP_089515454 [Polynucleobacter cosmopolitanus]	group3
+WP_051246365 [Thermomonas fusca]	group1
+TDJ21784 [Deltaproteobacteria bacterium]	group4
+WP_031597047 [Ferrovum sp. Z-31]	group7
+WP_108037202 [Verrucomicrobia bacterium LW23]	group3
+PYV85203 [Acidobacteria bacterium]	group5
+OFW65008 [Actinobacteria bacterium RBG_19FT_COMBO_36_27]	group7
+WP_011362997 [Chlorobium chlorochromatii CaD3]	group1
+WP_092898380 [Rhodobacter sp. 24-YEA-8]	group1
+TIO10484 [Mesorhizobium sp.]	group3
+WP_010183312 [Sphingomonas sp. PAMC 26605]	group1
+PKP71931 [Alphaproteobacteria bacterium HGW-Alphaproteobacteria-5]	group7
+WP_074010144 [Duodenibacillus massiliensis]	group5
+KLT17437 [Bacillus vireti]	group7
+WP_064260397 [Roseovarius indicus]	group2
+WP_132545349 [Rhodovulum euryhalinum]	group2
+WP_138018547 [Moraxella osloensis]	group5
+WP_108902668 [Flavobacterium pallidum]	group6
+WP_116013746 [Thalassotalea euphylliae]	group2
+WP_002647284 [Gimesia maris DSM 8797]	group3
+PIW46949 [Zetaproteobacteria bacterium CG_4_9_14_3_um_filter_54_145]	group5
+PZN86496 [Proteobacteria bacterium]	group2
+OYY43999 [Gallionellales bacterium 39-52-133]	group7
+OYU43324 [Burkholderiales bacterium PBB4]	group4
+TNF89000 [Gammaproteobacteria bacterium]	group1
+TMH90851 [Betaproteobacteria bacterium]	group3
+RLA91703 [Deltaproteobacteria bacterium]	group4
+WP_067743628 [Novosphingobium sp. Fuku2-ISO-50]	group7
+RKY02263 [Candidatus Poribacteria bacterium]	group2
+PRD30068 [Trichonephila clavipes]	group3
+RJR18915 [Nitrospiraceae bacterium]	group6
+WP_132539005 [Plasticicumulans lactativorans]	group1
+PYN12351 [Candidatus Rokubacteria bacterium]	group5
+WP_068389976 [Ventosimonas gracilis]	group6
+RKZ39083 [Gammaproteobacteria bacterium]	group7
+WP_011828256 [Methylibium petroleiphilum PM1]	group7
+OUW50936 [bacterium TMED190]	group7
+WP_095177096 [Haemophilus pittmaniae]	group5
+RWE26734 [Mesorhizobium sp.]	group5
+WP_084067113 [Desulfobacterium vacuolatum DSM 3385]	group3
+WP_056185361 [Pseudorhodoferax sp. Leaf267]	group3
+WP_109425900 [Maritimibacter sp. 55A14]	group2
+WP_013707197 [Desulfobacca acetoxidans DSM 11109]	group6
+WP_100366612 [Yoonia maricola]	group1
+WP_026447389 [Acidobacteriaceae bacterium URHE0068]	group5
+WP_092284433 [Pseudomonas sabulinigri]	group7
+WP_089287939 [Azospirillum sp. RU37A]	group2
+WP_028115161 [Ferrimonas senticii]	group5
+WP_138165925 [Methylocystis sp. B8]	group7
+OIP85083 [Porphyromonadaceae bacterium CG2_30_38_12]	group7
+WP_066743070 [Sphingomonadales bacterium EhC05]	group4
+WP_136573657 [Lampropedia puyangensis]	group4
+WP_106747721 [Phreatobacter cathodiphilus]	group5
+WP_021185596 [Pantoea sp. AS-PWVM4]	group4
+WP_071316118 [Anaerobacillus isosaccharinicus]	group4
+WP_069313607 [Piscirickettsia litoralis]	group4
+RNC91332 [Oricola sp.]	group4
+RKZ14898 [bacterium]	group2
+PHR63939 [Idiomarina sp.]	group1
+PKO26032 [Betaproteobacteria bacterium HGW-Betaproteobacteria-8]	group5
+RMG06790 [Acidobacteria bacterium]	group2
+WP_132577538 [Pseudofulvimonas gallinarii]	group3
+WP_012683189 [Gemmatimonas aurantiaca T-27]	group5
+WP_013166147 [Starkeya novella DSM 506]	group7
+OHE59832 [Thiobacillus sp. GWE1_62_9]	group5
+OEU64328 [Desulfuromonadales bacterium C00003107]	group7
+WP_127745329 [Sphingomonas sp. CCP-7]	group6
+WP_013536883 [Thermovibrio ammonificans HB-1]	group7
+WP_078545349 [Bacillus alkalitelluris]	group6
+WP_119052184 [Pseudoflavitalea sp. 5GH32-13]	group4
+TDI88389 [Caldithrix sp.]	group5
+TAM33901 [Burkholderiaceae bacterium]	group4
+KES17263 [Gilliamella apicola SCGC AB-598-B02]	group5
+KUP91345 [Tritonibacter horizontis]	group6
+OWY70981 [cyanobacterium TDX16]	group5
+WP_111445432 [Cytophaga xylanolytica]	group2
+RYY01918 [Gammaproteobacteria bacterium]	group7
+WP_129508607 [Candidatus Marinimicrobia bacterium]	group2
+OLC17771 [Candidatus Rokubacteria bacterium 13_1_20CM_2_70_7]	group2
+WP_015597255 [Hyphomicrobium denitrificans 1NES1]	group4
+WP_038487388 [Collimonas arenae]	group4
+WP_010941589 [Geobacter sulfurreducens]	group4
+WP_106637498 [Siphonobacter sp. BAB-5404]	group3
+WP_109302259 [Aquimarina sp. AU474]	group7
+WP_109384739 [Pelagicola sp. LXJ1103]	group4
+WP_108650764 [Gammaproteobacteria bacterium DM2]	group6
+KXS49086 [Marinobacter sp. T13-3]	group5
+WP_111362131 [Rhodobacteraceae bacterium AsT-22]	group5
+RLB28149 [Deltaproteobacteria bacterium]	group3
+WP_056464212 [Rhizobacter sp. Root404]	group2
+WP_029166012 [Aminiphilus circumscriptus]	group3
+OUW24678 [Rickettsiales bacterium TMED174]	group3
+WP_056664811 [Rhizobacter sp. Root1221]	group5
+WP_045817654 [Cellvibrionaceae bacterium 1162T.S.0a.05]	group5
+OGA32361 [Betaproteobacteria bacterium RIFCSPLOWO2_12_FULL_64_23]	group2
+RLB01460 [Deltaproteobacteria bacterium]	group2
+WP_009119779 [Neisseria shayeganii 871]	group1
+WP_117155245 [Rhodobacteraceae bacterium 63075]	group3
+WP_038271755 [Xylella taiwanensis]	group3
+WP_068342793 [Porphyromonadaceae bacterium H1]	group1
+WP_142586278 [Methylobacterium sp. SB0023/3]	group6
+WP_134700030 [Ammoniphilus sp. YIM 78166]	group6
+WP_062503949 [Gluconobacter japonicus]	group3
+WP_136851481 [Sinimarinibacterium sp. CAU 1509]	group2
+WP_093688370 [Sporolituus thermophilus DSM 23256]	group4
+WP_008058683 [Methyloversatilis universalis FAM5]	group7
+RDH81855 [endosymbiont of Seepiophila jonesi]	group6
+EAR61051 [Neptuniibacter caesariensis]	group3
+WP_071058241 [Pelistega sp. MC2]	group2
+WP_105051555 [Psychrosphaera saromensis]	group1
+SPH21119 [Ascidiaceihabitans donghaensis]	group5
+WP_088264244 [Chryseobacterium haifense DSM 19056]	group6
+RTL58520 [Sphingobacteriales bacterium]	group6
+WP_111126247 [Mesonia sp. K7]	group1
+WP_091586824 [Alteribacillus bidgolensis]	group2
+WP_070111766 [Glaciecola punicea]	group3
+WP_051079898 [Thioalkalivibrio thiocyanodenitrificans]	group1
+SMB26582 [Sterolibacterium denitrificans]	group6
+WP_012934133 [Conexibacter woesei DSM 14684]	group4
+OAV33751 [Moraxella catarrhalis]	group1
+PYO36813 [Gemmatimonadetes bacterium]	group4
+WP_094099748 [Lonsdalea iberica]	group1
+WP_047144762 [Aquamicrobium sp. LC103]	group3
+WP_087146509 [Crenothrix polyspora]	group1
+WP_018781685 [Bacillus pseudomycoides]	group4
+WP_068856062 [Xanthomonas translucens]	group4
+PDH45155 [Flavobacteriales bacterium MED-G22]	group6
+RFC32747 [Candidatus Nitrotoga sp. MKT]	group2
+ATW28570 [Peptococcaceae bacterium DCMF]	group4
+WP_116859880 [Sphingomonas sp. URHD0007]	group6
+RPI00446 [Calditrichaeota bacterium]	group3
+WP_011629174 [Alkalilimnicola ehrlichii MLHE-1]	group7
+WP_024460787 [Marinimicrobium sp. LS-A18]	group1
+WP_119334431 [Hydrogenophilus thermoluteolus]	group4
+WP_142852689 [Aliiroseovarius halocynthiae]	group6
+WP_105743307 [Phyllobacterium sp. 1N-3]	group4
+WP_082132219 [Luteimonas sp. FCS-9]	group6
+PDH18288 [Pelagibacterales bacterium MED-G44]	group4
+WP_091932351 [Propionivibrio dicarboxylicus]	group5
+WP_132007451 [Bacillus foraminis]	group6
+WP_013163387 [Desulfurivibrio alkaliphilus AHT 2]	group1
+RZL57351 [Variovorax sp.]	group5
+WP_062179433 [Dysgonomonas macrotermitis]	group3
+WP_132954832 [Uruburuella suis]	group2
+WP_109706220 [Falsochrobactrum sp. HN4]	group6
+WP_113288376 [Rhodosalinus sp. E84]	group2
+WP_013639435 [Acidiphilium multivorum AIU301]	group7
+XP_024923011 [Ziziphus jujuba]	group2
+WP_050027937 [Verrucomicrobium sp. BvORR034]	group4
+WP_142904262 [Cellvibrionaceae bacterium R142]	group7
+OIN91240 [Comamonadaceae bacterium CG12_big_fil_rev_8_21_14_0_65_59_15]	group5
+TNE98261 [Bacteroidetes bacterium]	group4
+WP_130642696 [Marinilabiliaceae bacterium JC017]	group7
+KXS31778 [Candidatus Gallionella acididurans]	group2
+WP_011581049 [Chelativorans sp. BNC1]	group4
+WP_122253937 [Comamonadaceae bacterium NML161473]	group1
+WP_104404938 [Prevotella sp. MGM2]	group3
+RUM55997 [Marinomonas sp.]	group7
+WP_024594468 [Pseudoalteromonas sp. TB13]	group6
+RZJ45553 [Brevundimonas sp.]	group6
+WP_138921829 [endosymbiont of Tevnia jerichonana]	group2
+WP_057192919 [Bosea sp. Root483D1]	group6
+PLX14219 [Marinilabiliales bacterium]	group3
+WP_105052537 [Psychrosphaera saromensis]	group1
+WP_136461585 [Shimia sp. MYP11]	group3
+WP_101814296 [Yersiniaceae bacterium 2015Iso6]	group2
+KXB98381 [Chlorobi bacterium NICIL-2]	group2
+WP_111636957 [Marinomonas sp. DSL-35]	group7
+WP_067961821 [Aminobacter aminovorans]	group4
+WP_104520143 [Rhodopila globiformis]	group7
+OHE84947 [Xanthomonadales bacterium RIFOXYD1_FULL_69_11]	group3
+RLD10666 [candidate division KSB1 bacterium]	group1
+OGT57460 [Gammaproteobacteria bacterium RIFCSPHIGHO2_12_FULL_43_28]	group7
+WP_049705383 [Devosia sp. H5989]	group1
+OIP67703 [Candidatus Atribacteria bacterium CG2_30_33_13]	group2
+WP_133005894 [Marinobacter sp. JH2]	group7
+WP_047264677 [Candidatus Liberibacter africanus PTSAPSY]	group4
+WP_024297960 [Methylosarcina lacus]	group4
+WP_127078835 [Rhodomicrobium sp. JA980]	group4
+PIV15256 [Gallionellales bacterium CG03_land_8_20_14_0_80_55_15]	group1
+WP_086495683 [Sphingomonas sp. KC8]	group6
+TES92398 [Candidatus Cloacimonetes bacterium]	group6
+SUB35020 [Pasteurella multocida]	group2
+KRO61055 [Pelagibacteraceae bacterium BACL5 MAG-120813-bin20]	group1
+PYT97210 [Acidobacteria bacterium]	group1
+OGF13163 [Candidatus Eisenbacteria bacterium RBG_19FT_COMBO_70_11]	group2
+PLX87476 [Desulfuromonas sp.]	group7
+WP_023472188 [Betaproteobacteria bacterium MOLA814]	group5
+OGP50386 [Deltaproteobacteria bacterium RBG_13_43_22]	group1
+WP_090553167 [Natronincola ferrireducens]	group2
+WP_129224554 [bacterium RmlP026]	group4
+WP_051968630 [Alysiella crassa]	group3
+WP_090698658 [Beijerinckia sp. 28-YEA-48]	group3
+WP_009149763 [Thiorhodovibrio sp. 970]	group7
+WP_012030829 [Dichelobacter nodosus VCS1703A]	group3
+WP_097460478 [Mangrovitalea sediminis]	group5
+WP_049724644 [Wenzhouxiangella marina]	group2
+WP_085632834 [Marivita cryptomonadis]	group2
+OGQ26560 [Deltaproteobacteria bacterium RBG_16_71_12]	group6
+WP_028486859 [Thiomicrorhabdus chilensis]	group2
+WP_114228487 ['Sphingomonas ginsengisoli' Hoang et al. 2012]	group6
+RPG25777 [Gammaproteobacteria bacterium TMED92]	group7
+OGR82068 [Elusimicrobia bacterium RIFCSPLOWO2_01_FULL_64_13]	group2
+RYF19282 [Comamonadaceae bacterium]	group7
+WP_116499752 [Betaproteobacteria bacterium]	group4
+WP_125180468 [Thiohalobacter thiocyanaticus]	group2
+PID63483 [Gammaproteobacteria bacterium]	group5
+WP_127684028 [Inhella sp. CCP-18]	group3
+OEU46192 [Desulfobacterales bacterium S7086C20]	group1
+PYR48895 [Acidobacteria bacterium]	group7
+ALP54567 [Candidatus Tenderia electrophaga]	group5
+WP_068808900 [Thauera phenolivorans]	group2
+WP_105168508 [Pseudoalteromonas sp. T1lg23B]	group5
+RYY67877 [Chitinophagaceae bacterium]	group4
+PIV15363 [Gallionellales bacterium CG03_land_8_20_14_0_80_55_15]	group1
+WP_114327459 [Candidatus Colwellia aromaticivorans]	group4
+WP_056713692 [Bosea sp. Leaf344]	group6
+WP_091946012 [Phyllobacterium sp. YR620]	group5
+OUV62177 [Candidatus Thioglobus sp.]	group3
+WP_141623449 [Lysobacter sp. SJ-36]	group5
+WP_115434386 [Crenobacter cavernae]	group6
+WP_114712270 [Rhizobium grahamii]	group3
+RVH98384 [Sinorhizobium meliloti]	group4
+CSB57571 [Vibrio cholerae]	group3
+RKX71426 [candidate division WOR-3 bacterium]	group3
+WP_027716496 [Desulfuromonas sp. TF]	group5
+THG36735 [Muribaculaceae bacterium]	group5
+OFX61963 [Bacteroidetes bacterium RIFOXYC2_FULL_40_12]	group7
+TDJ53164 [Nitrospina sp.]	group6
+TRZ96168 [bacterium]	group4
+WP_135089627 [Sphingomonas sp. 17J27-24]	group3
+TSA02172 [Methylococcus sp.]	group5
+WP_114390496 [Notoacmeibacter marinus]	group6
+RYG06059 [Burkholderiales bacterium]	group3
+WP_085284443 [Colwellia chukchiensis]	group1
+ODT36606 [Lautropia sp. SCN 70-15]	group4
+WP_036519394 [Nitrincola sp. A-D6]	group4
+WP_082195208 [Bacillus andreraoultii]	group4
+WP_116208159 [Paraperlucidibaca baekdonensis]	group5
+WP_013944197 [Simkania negevensis Z]	group4
+WP_102072199 [Pusillimonas sp. JR1/69-3-13]	group4
+WP_100695912 [Advenella sp. S44]	group1
+RKX45134 [Verrucomicrobia bacterium]	group5
+OIP92687 [Syntrophobacterales bacterium CG_4_8_14_3_um_filter_49_14]	group4
+WP_126757059 [Aliidiomarina taiwanensis]	group5
+WP_015500831 [Octadecabacter antarcticus 307]	group3
+WP_129948693 [Shewanella sp. OPT22]	group7
+WP_085896677 [Limimaricola soesokkakensis]	group2
+WP_129466070 [Providencia rettgeri]	group6
+WP_125932053 [Chromatiaceae bacterium 2141T.STBD.0c.01a]	group2
+WP_028293178 [Oceanobacter kriegii]	group1
+WP_049622618 [Dyella-like sp. DHo]	group2
+WP_106891714 [Ahniella affigens]	group4
+TQV64983 [Halothiobacillaceae bacterium]	group4
+WP_121993421 [Rhizobiales bacterium]	group2
+WP_083868085 [Halomonas smyrnensis]	group1
+OWU66331 [Armatimonadetes bacterium Cent15-Ar3]	group4
+WP_062060715 [Sphingobium baderi]	group5
+KRO71284 [Cryomorphaceae bacterium BACL18 MAG-120924-bin36]	group3
+KOR30368 [Achromatium sp. WMS2]	group7
+KZZ41738 [Thalassolituus sp. HI0120]	group5
+WP_141350289 [Zoogloea ramigera]	group2
+OIO54090 [Alphaproteobacteria bacterium CG_4_10_14_0_2_um_filter_63_37]	group7
+RPG32157 [Gammaproteobacteria bacterium TMED92]	group3
+OUU46220 [Verrucomicrobia bacterium TMED56]	group6
+OFY87463 [Bacteroidetes bacterium RIFCSPLOWO2_12_FULL_35_15]	group1
+PIW55201 [Sphingomonadales bacterium CG12_big_fil_rev_8_21_14_0_65_65_10]	group4
+TAM46567 [Gammaproteobacteria bacterium]	group2
+RUQ40095 [Candidatus Competibacteraceae bacterium]	group1
+WP_113854871 [Sutterella wadsworthensis]	group5
+PKN51668 [Deltaproteobacteria bacterium HGW-Deltaproteobacteria-13]	group7
+WP_012383937 [Beijerinckia indica subsp. indica ATCC 9039]	group5
+WP_004346555 [Prevotella buccae ATCC 33574]	group5
+PLX11907 [Marinilabiliales bacterium]	group3
+TPG39588 [Sphingomonas koreensis]	group1
+WP_045534825 [Serpentinomonas mccroryi]	group6
+BAL77175 [Bradyrhizobium sp. S23321]	group3
+WP_136870954 [Desulforhopalus sp. IMCC35007]	group7
+WP_108127193 [Saccharospirillum mangrovi]	group4
+WP_022595219 [Vibrio nigripulchritudo SO65]	group6
+PYT54552 [Acidobacteria bacterium]	group1
+PWM61824 [Clostridia bacterium]	group1
+WP_044241155 [Chondromyces apiculatus DSM 436]	group4
+PDH32934 [OM182 bacterium MED-G28]	group2
+OGN63318 [Chlamydiae bacterium RIFCSPHIGHO2_12_FULL_49_9]	group2
+RKY76217 [candidate division KSB1 bacterium]	group7
+WP_076591705 [Herminiimonas arsenitoxidans]	group3
+ADW17267 [Desulfobulbus propionicus DSM 2032]	group6
+GBD01036 [bacterium HR18]	group2
+OGW75001 [Omnitrophica bacterium RBG_13_46_9]	group5
+TMM31801 [Actinobacteria bacterium]	group3
+WP_101068049 [Roseovarius salinarum]	group6
+RPH06339 [bacterium TMED46]	group6
+WP_019369339 [Sphingomonas sp. WG]	group5
+WP_101240911 [Enterobacterales bacterium CwR94]	group4
+WP_129169852 [Candidatus Marinimicrobia bacterium]	group2
+RZL30741 [Pedobacter sp.]	group7
+WP_126979522 [Defluviimonas sp. XJ4]	group2
+ONK68199 [Asparagus officinalis]	group7
+OIQ20236 [Lacinutrix sp. MedPE-SW]	group4
+WP_058088777 [Aquabacterium parvum]	group1
+OHB76469 [Planctomycetes bacterium RBG_16_55_9]	group6
+OQW90678 [Beggiatoa sp. IS2]	group2
+OGP13292 [Deltaproteobacteria bacterium GWA2_50_8]	group7
+PYI87320 [Verrucomicrobia bacterium]	group6
+WP_132257478 [Paucimonas lemoignei]	group4
+WP_124081703 [Pigmentiphaga sp. IMT-318]	group2
+PYX12526 [Acidobacteria bacterium]	group2
+PCH72317 [Rhizobiales bacterium]	group3
+RPH00556 [Candidatus Pelagibacter sp. TMED153]	group3
+WP_099822955 [Tatumella sp. OPLPL6]	group4
+OGU20780 [Gemmatimonadetes bacterium RIFCSPLOWO2_12_FULL_68_9]	group1
+WP_124865842 [Comamonadaceae bacterium OH2545_COT-014]	group7
+WP_014450318 [Leptospirillum ferrooxidans C2-3]	group2
+WP_138564558 [Thiomicrorhabdus sp. G1]	group2
+TMH26456 [Betaproteobacteria bacterium]	group2
+OUR71965 [Methylophaga sp. 41_12_T18]	group3
+WP_121085512 [Robbsia sp. DHC34]	group3
+WP_086105581 [Chitinophagaceae bacterium IBVUCB2]	group1
+OUU11648 [Verrucomicrobia bacterium TMED40]	group3
+WP_045825384 [Teredinibacter turnerae]	group2
+OUU96135 [Planctomycetes bacterium TMED75]	group5
+WP_024334502 [Desulfotignum balticum]	group3
+RZO59009 [Verrucomicrobia subdivision 3 bacterium]	group1
+WP_123712055 [Sinobacterium caligoides]	group6
+WP_115073164 [Haemophilus haemoglobinophilus]	group7
+RMG52181 [Gammaproteobacteria bacterium]	group3
+WP_005865280 [Bartonella alsatica IBS 382]	group5
+RMG95853 [Candidatus Dadabacteria bacterium]	group6
+WP_013214874 [Hyphomicrobium denitrificans ATCC 51888]	group6
+WP_014402169 [Frateuria aurantia DSM 6220]	group4
+RPI50851 [Deltaproteobacteria bacterium]	group7
+WP_058701391 [Pantoea stewartii]	group5
+TAJ25514 [Nitrospirae bacterium]	group6
+WP_075792956 [Massilia putida]	group7
+RZO69122 [Parvularculaceae bacterium]	group1
+TND06849 [Gammaproteobacteria bacterium]	group2
+WP_106183049 [Candidatus Pandoraea novymonadis]	group5
+WP_017221690 [Moritella dasanensis]	group4
+OGS99614 [Gallionellales bacterium RIFCSPLOWO2_12_FULL_59_22]	group5
+OUW21305 [bacterium TMED161]	group3
+WP_115466486 [Marinomonas sp. YLB-05]	group4
+SIO26652 [Rhodovulum sp. ES.010]	group6
+KRP04589 [Pelagibacteraceae bacterium BACL20 MAG-120920-bin64]	group2
+PTQ68608 [Celeribacter persicus]	group4
+PLW96932 [Marinilabiliales bacterium]	group1
+WP_127121725 [Cytophagaceae bacterium Ys]	group7
+RYD17817 [Verrucomicrobiaceae bacterium]	group3
+WP_129762942 [Salipiger sp. IMCC34102]	group4
+WP_139514879 [Hymenobacter sp. 17J68-5]	group2
+WP_114417905 [Marinospirillum sp. F3212]	group3
+WP_091239288 [Aquimonas voraii]	group6
+WP_091682119 [Methylocapsa palsarum]	group7
+PIU29285 [Actinobacteria bacterium CG08_land_8_20_14_0_20_35_9]	group2
+WP_105732641 [Phyllobacterium myrsinacearum]	group4
+WP_107975861 [Roseivivax pacificus]	group2
+WP_132872056 [Seleniivibrio woodruffii]	group5
+WP_036867526 [Prevotella bivia DNF00320]	group6
+PPR35728 [Alphaproteobacteria bacterium MarineAlpha9_Bin5]	group6
+WP_025822153 [Asaia astilbis]	group2
+PPD56309 [Methylotenera sp.]	group6
+WP_066181350 [Hoeflea olei]	group6
+WP_018025751 [Oligella urethralis]	group5
+WP_116546453 [Plesiomonas shigelloides]	group5
+PIK16523 [Halobacteriovorax sp. JY17]	group1
+WP_085847824 [Pacificibacter marinus]	group3
+WP_129727710 [Bacillus funiculus]	group5
+WP_107337713 [Pandoraea apista]	group1
+WP_114210885 [Acidobacteriaceae bacterium SBC82]	group3
+OIN98972 [Desulfovibrionaceae bacterium CG1_02_65_16]	group1
+WP_096175543 [Cohaesibacter sp. ES.047]	group5
+RPI75699 [Desulfobacteraceae bacterium]	group3
+WP_114888955 [Sulfitobacter sp. SK012]	group7
+RJR27422 [Candidatus Latescibacteria bacterium]	group5
+RZK49561 [Pedobacter sp.]	group5
+WP_036302549 [Methylotenera sp. L2L1]	group5
+VFS61432 [Leminorella grimontii]	group7
+WP_015260143 [Thioalkalivibrio nitratireducens DSM 14787]	group1
+PIP01767 [Zetaproteobacteria bacterium CG_4_9_14_3_um_filter_54_145]	group2
+SFJ46277 [Nereida ignava DSM 16309]	group1
+WP_124735017 [Rhodobacteraceae bacterium CH30]	group2
+WP_134841617 [Gammaproteobacteria bacterium LSUCC0112]	group1
+WP_119263579 [Rhodospirillaceae bacterium SYSU D60007]	group1
+PSQ94561 [Proteobacteria bacterium SW_6_67_9]	group3
+PIP91317 [Bdellovibrionales bacterium CG11_big_fil_rev_8_21_14_0_20_38_13]	group5
+WP_010516438 [Croceivirga radicis]	group7
+RLA22859 [Gammaproteobacteria bacterium]	group1
+PIX12450 [Flavobacteriaceae bacterium CG_4_8_14_3_um_filter_31_8]	group6
+PCI90822 [Oceanospirillales bacterium]	group2
+TAH17528 [Cytophagales bacterium]	group7
+WP_108001247 [Mycoplana dimorpha]	group2
+WP_085757071 [Oceanicoccus sagamiensis]	group7
+KXK53213 [Chlorobi bacterium OLB7]	group3
+WP_133003619 [Marinomonas sp. KMM3893]	group1
+CRH76281 [Chlamydia trachomatis]	group4
+WP_108669452 [Bacillus acanthi]	group1
+RMF58763 [Calditrichaeota bacterium]	group4
+WP_058443058 [Legionella brunensis]	group5
+PPR74934 [Alphaproteobacteria bacterium MarineAlpha3_Bin4]	group5
+WP_113910502 [Roseovarius sp. YLY04]	group3
+RMI25504 [Calditrichaeota bacterium]	group3
+RCL68671 [Bacteroidetes bacterium]	group4
+RPE93682 [Frederiksenia canicola]	group1
+WP_096383340 [Lysobacter enzymogenes]	group1
+PHS01706 [Oceanobacter sp.]	group5
+PDH46047 [Bacteroidetes bacterium MED-G21]	group6
+OQX68717 [Sorangiineae bacterium NIC37A_2]	group2
+RPI73564 [Ignavibacteriales bacterium]	group5
+WP_106753308 [Pannonibacter carbonis]	group5
+SEA31946 [Alkalimonas amylolytica]	group5
+KJS17527 [Peptococcaceae bacterium BRH_c4b]	group2
+TVO67950 [Denitromonas halophilus]	group4
+WP_123663401 [Candidatus Cardinium hertigii]	group5
+RLA98397 [Deltaproteobacteria bacterium]	group1
+WP_088343635 [Rhodomicrobium]	group5
+WP_045857263 [Cellvibrionaceae bacterium Bs12]	group6
+RYE14461 [Rickettsiales bacterium]	group1
+WP_108923555 [Actinobacillus porcitonsillarum]	group1
+WP_120323157 [Altererythrobacter sp. HN-Y73]	group5
+QDO96721 [Ferrovibrio sp. K5]	group5
+RZO28774 [SAR86 cluster bacterium]	group7
+PZO89392 [Sphingomonas sanxanigenens]	group3
+WP_007651009 [Shewanella sp. HN-41]	group1
+WP_072666051 [Candidatus Erwinia haradaeae]	group1
+TAK33113 [Myxococcaceae bacterium]	group4
+WP_116301563 [Alkalilimnicola ehrlichii]	group6
+WP_014106333 [Komagataeibacter medellinensis NBRC 3288]	group2
+WP_012172150 [Azorhizobium caulinodans ORS 571]	group5
+WP_008811954 [Burkholderiales bacterium]	group2
+WP_009177868 [Silicibacter sp. TrichCH4B]	group6
+AAP95187 [Haemophilus]	group7
+WP_015360427 [Candidatus Uzinura diaspidicola str. ASNER]	group4
+TSE35374 [Tepidimonas sp. SPSP-6]	group1
+WP_003795548 [Kingella oralis ATCC 51147]	group1
+WP_006283143 [Prevotella bryantii]	group1
+WP_115173978 [Vibrio cincinnatiensis]	group3
+OUU17033 [Crocinitomicaceae bacterium TMED45]	group7
+WP_109338488 [Salinimonas sp. HMF8227]	group4
+VFP79586 [Candidatus Erwinia haradaeae]	group4
+WP_077618945 [Bacillus sinesaloumensis]	group6
+WP_066568800 [Snodgrassella sp. CFCC 13594]	group6
+WP_114984687 [Candidatus Cyclonatronum proteinivorum]	group1
+WP_116435691 [Herbaspirillum sp. 3C11]	group3
+WP_012179007 [Dinoroseobacter shibae DFL 12 = DSM 16493]	group6
+WP_052339071 [Anaerobiospirillum succiniciproducens]	group5
+RKY15609 [Planctomycetes bacterium]	group5
+PYX40766 [Acidobacteria bacterium]	group3
+PZN75935 [Proteobacteria bacterium]	group7
+WP_027240570 [Pseudophaeobacter arcticus]	group7
+OZB74984 [Halothiobacillus sp. 14-55-98]	group6
+WP_005368838 [Methylomicrobium album BG8]	group4
+WP_005000490 [Nitrococcus mobilis Nb-231]	group6
+WP_013567452 [Terriglobus saanensis SP1PR4]	group3
+PAZ02445 [Spartobacteria bacterium AMD-G5]	group6
+WP_028257121 [Veillonella montpellierensis]	group7
+XP_021680865 [Hevea brasiliensis]	group6
+WP_117412826 [Breoghania sp. L-A4]	group1
+OJT96795 [Alphaproteobacteria bacterium 65-7]	group4
+PIU45211 [Ignavibacteriales bacterium CG07_land_8_20_14_0_80_59_12]	group4
+WP_132052139 [Flavisolibacter sp. 17J28-1]	group2
+TAK98572 [Rhodospirillaceae bacterium]	group5
+WP_095524703 [Candidatus Dactylopiibacterium carminicum]	group2
+WP_047196344 [Polyangium]	group6
+EKD55276 [uncultured bacterium]	group3
+OHB51915 [Planctomycetes bacterium GWF2_41_51]	group1
+WP_085218389 [Sphingomonas indica]	group2
+RJQ64627 [Ignavibacteriales bacterium]	group4
+WP_047166425 [Sphingomonas sp. Y57]	group6
+OUU22048 [Flavobacteriaceae bacterium TMED48]	group5
+WP_132583733 [Paralcaligenes ureilyticus]	group7
+PIX44124 [Armatimonadetes bacterium CG_4_8_14_3_um_filter_66_20]	group5
+WP_068182582 [Rhizobiales bacterium CCH3-A5]	group3
+REJ34255 [Firmicutes bacterium]	group7
+OUT98109 [Betaproteobacteria bacterium TMED41]	group1
+WP_026462056 [Adhaeribacter aquaticus]	group2
+RJQ55833 [Actinobacteria bacterium]	group7
+WP_066599779 [Sphingobium czechense]	group6
+WP_009162995 [Prevotella saccharolytica F0055]	group3
+WP_131311380 [Ancalomicrobiaceae bacterium SA-279]	group1
+RMG88325 [Candidatus Dadabacteria bacterium]	group1
+OFW03142 [Acidobacteria bacterium RIFCSPLOWO2_12_FULL_68_19]	group7
+WP_137949006 [Comamonadaceae bacterium ALPHA2B]	group5
+WP_126775869 [Aliidiomarina sanyensis]	group3
+WP_095367159 [Pseudoalteromonas sp. NBT06-2]	group2
+WP_017223349 [Moritella dasanensis]	group7
+WP_121541668 [Zetaproteobacteria bacterium]	group4
+TFG96191 [Myxococcales bacterium]	group5
+WP_007229271 [marine gamma proteobacterium HTCC2148]	group1
+WP_101521396 [Chromatocurvus sp. F02]	group5
+WP_129714320 [Pedobacter sp. SYP-B3415]	group2
+WP_013796186 [Marinomonas posidonica IVIA-Po-181]	group1
+RPG44632 [Gammaproteobacteria bacterium TMED112]	group5
+OYV20633 [Methylococcaceae bacterium NSP1-2]	group4
+WP_015856371 [Bartonella grahamii]	group5
+WP_132021716 [Bisgaardia hudsonensis]	group3
+RQW84777 [Methylococcus sp.]	group3
+TPW34442 [Neokomagataea sp. Jb2]	group7
+WP_103327676 [Bacteroidetes endosymbiont of Geopemphigus sp.]	group7
+WP_090920753 [Pasteurella skyensis]	group7
+WP_119396361 [Oceanospirillales bacterium WDS2A16A]	group5
+WP_132701997 [Reinekea marinisedimentorum]	group4
+AWV22130 [Roseomonas mucosa]	group5
+WP_069649233 [Caloranaerobacter ferrireducens]	group3
+WP_029416515 [Brevundimonas bacteroides]	group2
+WP_086638229 [Acetobacter okinawensis]	group1
+PYY16575 [Acidobacteria bacterium]	group5
+WP_014101924 [Micavibrio aeruginosavorus ARL-13]	group2
+WP_070237020 [Lutibacter sp. LPB0138]	group6
+WP_070375569 [Colwellia sp. PAMC 20917]	group4
+WP_074697704 [Selenomonas ruminantium]	group5
+WP_010547539 [gamma proteobacterium HIMB30]	group6
+PIE42847 [Gammaproteobacteria bacterium]	group7
+WP_064749729 [Lysobacter antibioticus]	group6
+WP_073055323 [Kaistia soli DSM 19436]	group3
+WP_129196328 [Ammoniphilus sp. CFH 90114]	group4
+WP_102794478 [Bowmanella denitrificans]	group3
+WP_135283974 [Ramlibacter rhizophilus]	group1
+WP_140192528 [Rhodobacteraceae bacterium SM1903]	group6
+TAE23792 [Candidatus Kapabacteria bacterium]	group6
+TFG37593 [Syntrophobacterales bacterium]	group4
+TNF54028 [Gammaproteobacteria bacterium]	group1
+WP_078745715 [Oceanospirillum multiglobuliferum]	group4
+WP_028498614 [Microvirgula sp. AG722]	group6
+SED97732 [Prevotella sp. lc2012]	group1
+WP_085356096 [Neisseria dumasiana]	group5
+WP_129252963 [Ancylomarina sp. SHSM-M15]	group4
+WP_111915251 [Lysobacter sp. N42]	group3
+OED43704 [Endozoicomonas sp. (ex Bugula neritina AB1)]	group5
+PCJ26234 [SAR86 cluster bacterium]	group7
+KWV86297 [Pseudomonas fluorescens]	group2
+OYT91561 [Pseudomonas sp. PGPPP3]	group3
+WP_079446851 [Nitrobacter vulgaris]	group6
+RME82481 [Zetaproteobacteria bacterium]	group2
+RJP40687 [Phycisphaerales bacterium]	group2
+WP_036181858 [Maribius sp. MOLA 401]	group4
+WP_061568417 [Caldibacillus debilis]	group7
+TLY53217 [Gammaproteobacteria bacterium]	group7
+EQB63404 [candidate division Zixibacteria bacterium RBG_19FT_COMBO_42_43]	group5
+RMH11209 [Planctomycetes bacterium]	group6
+WP_123658124 [Salinisphaera japonica YTM-1]	group3
+WP_084720383 [Skermanella aerolata KACC 11604]	group1
+WP_088104633 [Bacillus sp. FJAT-45385]	group2
+WP_114277311 [Sulfitobacter sp. DFL-14]	group5
+OHE78656 [Verrucomicrobia bacterium RIFCSPHIGHO2_12_FULL_41_10]	group2
+GBD90483 [bacterium BMS3Abin04]	group5
+TMI80106 [Bacteroidetes bacterium]	group7
+SDU00085 [Pseudomonas salegens]	group3
+WP_121839649 [Parashewanella curva]	group2
+PKL52144 [Nitrospira bacterium HGW-Nitrospira-1]	group2
+WP_142835971 [Rhodobacteraceae bacterium JBTF-M29]	group7
+TLY65466 [Gammaproteobacteria bacterium]	group7
+WP_023473157 [Betaproteobacteria bacterium MOLA814]	group6
+WP_084373020 [Reichenbachiella faecimaris]	group3
+WP_121532952 [Rhodobacter sp. BO-81]	group7
+WP_022968095 [Arenimonas oryziterrae DSM 21050 = YC6267]	group6
+WP_009490934 [Microvirga lotononidis]	group6
+RLB47643 [Deltaproteobacteria bacterium]	group5
+WP_138084907 [Verrucobacter flavum]	group4
+WP_107350071 [Photobacterium lutimaris]	group4
+SFR38422 [Yoonia tamlensis]	group7
+WP_010521591 [Aquimarina agarivorans]	group6
+PZO02765 [Alphaproteobacteria bacterium]	group2
+WP_110131877 [Coraliomargarita sp. WN38]	group2
+WP_129167732 [Oxalobacteraceae bacterium CAVE-383]	group2
+WP_132476594 [Paracandidimonas soli]	group7
+WP_136066784 [Halomonas sp. EAR18]	group2
+WP_074205079 [Sphingorhabdus marina DSM 22363]	group5
+EGW51963 [Desulfovibrio sp. 6_1_46AFAA]	group3
+WP_126519655 [Shewanella canadensis]	group2
+TMI87562 [Terrabacteria group bacterium ANGP1]	group6
+WP_114986593 [Pragia fontium]	group3
+WP_108661156 [Acuticoccus kandeliae]	group1
+TMG84181 [Betaproteobacteria bacterium]	group5
+OGT77754 [Gammaproteobacteria bacterium RIFCSPLOWO2_02_FULL_52_10]	group7
+WP_076603977 [Azoarcus tolulyticus]	group2
+RTL52985 [Bradyrhizobiaceae bacterium]	group2
+WP_085159924 [Alteromonadaceae bacterium Bs31]	group4
+REJ85390 [Acidobacteria bacterium]	group4
+WP_053422015 [Azoarcus sp. PA01]	group6
+WP_114727841 [Gluconacetobacter liquefaciens]	group5
+VDL05581 [Bordetella pertussis]	group4
+WP_014353891 [Wigglesworthia glossinidia endosymbiont of Glossina morsitans morsitans (Yale colony)]	group5
+TLM80496 [Actinobacteria bacterium]	group4
+PYS24279 [Acidobacteria bacterium]	group1
+RKZ96388 [Gammaproteobacteria bacterium]	group1
+KRO87080 [Cryomorphaceae bacterium BACL29 MAG-121220-bin8]	group4
+WP_107694200 [Nitrosospira sp. Nsp2]	group4
+WP_025264143 [Wolbachia endosymbiont of Onchocerca volvulus]	group7
+TET68338 [candidate division Zixibacteria bacterium]	group6
+WP_057850557 [Bradyrhizobium valentinum]	group1
+WP_126787838 [Aliidiomarina sedimenti]	group5
+OIO59829 [Verrucomicrobia bacterium CG_4_9_14_3_um_filter_43_20]	group2
+WP_022842139 [Acidobacteriaceae bacterium TAA166]	group2
+EHL31218 [Legionella drancourtii LLAP12]	group3
+WP_111538259 [Hwanghaeicola aestuarii]	group2
+PKP66883 [Alphaproteobacteria bacterium HGW-Alphaproteobacteria-9]	group4
+WP_123139871 [Marichromatium sp. AB31]	group4
+RZL11668 [Rubrivivax sp.]	group6
+PCJ60897 [Planctomycetes bacterium]	group1
+XP_021889955 [Carica papaya]	group6
+WP_109616359 [Sediminitomix flava]	group3
+RPG59772 [Flavobacteriaceae bacterium TMED81]	group7
+OQX95466 [candidate division KSB1 bacterium 4572_119]	group6
+PYM19528 [Candidatus Rokubacteria bacterium]	group3
+OKY85673 [Bacteroidales bacterium 52_46]	group5
+WP_068478493 [Oleiphilus sp. HI0067]	group2
+AHF00901 [Thiomicrospira aerophila AL3]	group5
+WP_118994588 [Pusillimonas caeni]	group2
+WP_101505849 [Erwinia sp. B116]	group1
+WP_119322290 [Capsulimonas corticalis]	group7
+WP_025004083 [Porphyromonas macacae]	group2
+WP_082990319 [Woeseia oceani]	group6
+WP_096432169 [Thioclava arenosa]	group1
+PCK09513 [Alteromonadaceae bacterium]	group7
+WP_089728863 [Halomonas muralis]	group7
+WP_136871913 [Desulforhopalus sp. IMCC35007]	group7
+CDA93308 [Bacteroides sp. CAG:709]	group3
+WP_136545426 [Acetobacteraceae bacterium]	group7
+OJY50978 [Sphingomonas sp. 67-41]	group7
+WP_056929083 [Ferrovum sp. 34-44-207]	group7
+PYQ32512 [Acidobacteria bacterium]	group7
+WP_029311027 [Acidiphilium rubrum]	group7
+WP_039885391 [Acidocella sp. MX-AZ02]	group2
+WP_126841966 [Idiomarina tyrosinivorans]	group6
+EGY28458 [Candidatus Regiella insecticola 5.15]	group4
+WP_025300380 [Candidatus Endolissoclinum faulkneri L5]	group5
+WP_123152938 [Sphingomonadaceae bacterium KCTC 52944]	group4
+WP_022385307 [Bacteroides sp. CAG:462]	group7
+WP_110516352 [Bacillus sp. YSP-3]	group7
+WP_056799502 [Bosea sp. Root381]	group2
+WP_027176531 [Desulfovibrio aminophilus]	group2
+OGS82657 [Gallionellales bacterium GWA2_59_43]	group1
+WP_131776700 [Legionella impletisoli]	group3
+WP_140920201 [Pragia sp. CF-509]	group1
+KXS56411 [Candidatus Adiutrix intracellularis]	group7
+WP_068769369 [Opitutaceae bacterium TSB47]	group4
+SPY94445 [Proteus mirabilis]	group6
+WP_088281651 [Ideonella sp. A 288]	group2
+WP_120096896 [Salinisphaera sp. Q1T1-3]	group3
+WP_119630045 [Methylocaldum marinum]	group5
+RZL41877 [Pedobacter sp.]	group6
+WP_124964680 [Gemmobacter sp. YIM 102744-1]	group3
+WP_137700338 [Marimonas sp. GH1-19]	group7
+WP_119437982 [Prolixibacteraceae bacterium XSD2]	group4
+OHB76565 [Planctomycetes bacterium RBG_16_59_8]	group3
+WP_084068351 [Desulfobacterium vacuolatum DSM 3385]	group5
+TMQ13082 [Deltaproteobacteria bacterium]	group5
+WP_134093115 [Novosphingobium sp. PhB55]	group6
+WP_103116511 [Geothermobacter sp. HR-1]	group2
+PIS36450 [Nitrospirae bacterium CG_4_9_14_3_um_filter_53_35]	group6
+RZO24946 [SAR86 cluster bacterium]	group7
+WP_107990542 [Breoghania corrubedonensis]	group2
+WP_140908690 [Luteimonas sp. 1.1416]	group7
+WP_066537186 [Comamonas terrigena NBRC 13299]	group1
+ODT87528 [Phenylobacterium sp. SCN 70-31]	group3
+OIN59112 [Arsenicibacter rosenii]	group1
+WP_127112149 [Thalassobius sp. ZQ172]	group1
+WP_117395764 [Maritalea myrionectae]	group4
+WP_076706082 [Pelagibaca abyssi]	group3
+WP_042084726 [alpha proteobacterium Q-1]	group3
+WP_035489530 [Gammaproteobacteria bacterium MOLA455]	group7
+WP_082351223 [Desulfuromonas soudanensis]	group7
+RFC41626 [Verrucomicrobia bacterium]	group2
+OUW81902 [Gammaproteobacteria bacterium TMED222]	group3
+WP_119784857 [Noviherbaspirillum sp. K1S02-23]	group7
+WP_004177189 [Nitrosospira lacus]	group7
+TMA46823 [Deltaproteobacteria bacterium]	group7
+WP_073118159 [Wenyingzhuangia marina]	group4
+RFC42674 [Verrucomicrobia bacterium]	group3
+WP_023627146 [Bacillus sp. 17376]	group7
+WP_092342971 [unclassified Bacteria (miscellaneous)]	group5
+OUU10627 [Gammaproteobacteria bacterium TMED34]	group1
+WP_015048783 [Simiduia agarivorans SA1 = DSM 21679]	group7
+GBE53570 [bacterium BMS3Abin13]	group7
+WP_121145131 [Orbus hercynius]	group7
+WP_142592193 [Rhizobium endolithicum]	group4
+WP_036545165 [Nitrincola lacisaponensis]	group4
+WP_091189491 [Formivibrio citricus]	group7
+WP_136494992 [Methylocystis heyeri]	group3
+WP_119334324 [Hydrogenophilus thermoluteolus]	group1
+WP_097440910 [Sediminicola luteus]	group2
+TRZ37431 [Bacillus circulans]	group5
+WP_116649938 [Wenzhouxiangella sediminis]	group1
+PID65614 [Gammaproteobacteria bacterium]	group3
+WP_078663379 [Bartonella sp. WD12.1]	group1
+OUR78074 [Alphaproteobacteria bacterium 46_93_T64]	group5
+WP_027469059 [Deefgea rivuli]	group2
+WP_117299049 [Acidipila sp. 4G-K13]	group2
+WP_023464135 [Asticcacaulis sp. YBE204]	group1
+OUR67760 [Marinomonas sp. 42_23_T18]	group6
+TDJ06870 [Deltaproteobacteria bacterium]	group7
+WP_138468689 [Poseidonocella sp. HB161398]	group1
+WP_121210276 [Maricaulis maris]	group7
+WP_084732324 [Verrucomicrobia bacterium SCGC AAA168-F10]	group4
+WP_062498712 [Moraxella lacunata]	group3
+WP_099405004 [Chitinimonas sp. BJB300]	group3
+WP_119288625 [Comamonadaceae bacterium SYSU G00088]	group7
+WP_143308276 [Chitinophaga sp. BD 01]	group2
+PKL47832 [Candidatus Riflebacteria bacterium HGW-Riflebacteria-2]	group4
+WP_107497971 [Thalassobius sp. I31.1]	group7
+TDR80387 [Paludibacterium purpuratum]	group4
+WP_029461543 [Serpentinomonas raichei]	group5
+WP_047872332 [Photobacterium aphoticum]	group4
+PPC94285 [Methylotenera sp.]	group1
+KZZ33803 [Oleiphilus sp. HI0117]	group4
+WP_022957244 [Spongiibacter tropicus]	group3
+WP_034642538 [Bacillus manliponensis]	group4
+TAJ70343 [Phenylobacterium sp.]	group6
+WP_088004126 [Bacillus solisilvae]	group4
+TET52412 [Desulfobacteraceae bacterium]	group4
+XP_010252826 [Nelumbo nucifera]	group5
+WP_079253933 [Endozoicomonas arenosclerae]	group2
+WP_008546539 [Pseudovibrio sp. JE062]	group7
+WP_008844674 [Aliiglaciecola lipolytica E3]	group2
+OUR81629 [Cycloclasticus sp. 46_120_T64]	group1
+WP_041976962 [Pyrinomonas methylaliphatogenes]	group5
+WP_050927760 [Aestuariivita boseongensis]	group4
+WP_120489615 [Bergeyella cardium]	group4
+WP_054624617 [Cronobacter sakazakii]	group6
+WP_083459205 [Amantichitinum ursilacus]	group5
+RKZ35560 [Gammaproteobacteria bacterium]	group7
+KEY90803 [Candidatus Photodesmus katoptron]	group3
+WP_013043473 [Coraliomargarita akajimensis DSM 45221]	group5
+PIR38994 [Alphaproteobacteria bacterium CG11_big_fil_rev_8_21_14_0_20_39_49]	group1
+RLC26615 [Deltaproteobacteria bacterium]	group1
+WP_100151788 [Snodgrassella alvi]	group4
+PYR22683 [Acidobacteria bacterium]	group7
+WP_069898028 [Pseudomonas marincola]	group1
+WP_048400393 [Achromatium sp. WMS3]	group7
+WP_048498916 [Chryseobacterium koreense CCUG 49689]	group2
+WP_005959845 [endosymbiont of Tevnia jerichonana (vent Tica)]	group1
+WP_047765399 [Kiloniella spongiae]	group1
+TCM86519 [Rhodovulum steppense]	group3
+OGW12640 [Nitrospinae bacterium RIFCSPLOWO2_12_39_16]	group4
+RZC26225 [Glycine soja]	group6
+WP_072351420 [Flavobacteriaceae bacterium A100]	group1
+TML13496 [Actinobacteria bacterium]	group6
+EKD69083 [Candidatus Wallbacteria bacterium GWC2_49_35]	group6
+PCH52856 [Cellvibrionales bacterium]	group4
+TQS59068 [Salmonella enterica subsp. enterica serovar Typhimurium]	group3
+WP_009205674 [Sulfuricella denitrificans skB26]	group1
+TML86403 [Actinobacteria bacterium]	group7
+OFY67046 [Bacteroidetes bacterium RBG_13_43_22]	group7
+WP_110786242 [Rhodopseudomonas palustris]	group2
+TDI20876 [Acidobacteria bacterium]	group3
+PHR68320 [Alcanivorax sp.]	group6
+WP_053940296 [Buchnera aphidicola (Aphis glycines)]	group5
+WP_123640824 [Histidinibacterium lentulum]	group1
+EBA03351 [Rhodobacteraceae bacterium HTCC2150]	group2
+WP_138934357 [Roseovarius sp. MK6-18]	group5
+WP_133612011 [Dongia mobilis]	group1
+WP_075982444 [Bacillus massilionigeriensis]	group1
+RPI57392 [Acidobacteria bacterium]	group7
+WP_046299074 [Verrucomicrobia bacterium IMCC26134]	group7
+WP_079551141 [Halomonas subglaciescola]	group3
+WP_015088157 [Candidatus Endolissoclinum faulkneri L2]	group6
+WP_083541322 [Gluconobacter roseus]	group6
+VEI48577 [Actinobacillus equuli]	group5
+WP_096486483 [Methylorubrum populi]	group7
+WP_137911111 [Rudaea sp. 3F27F6]	group2
+OIP99746 [Syntrophobacteraceae bacterium CG2_30_61_12]	group5
+WP_075587143 [Rhodoferax antarcticus]	group6
+WP_100313280 [Thermoflavifilum aggregans]	group6
+WP_121853512 [Parashewanella spongiae]	group1
+RUA04385 [Gammaproteobacteria bacterium]	group2
+XP_021812570 [Prunus avium]	group1
+WP_079435611 [Zoogloea sp. LCSB751]	group6
+WP_115610502 [Cardiobacterium valvarum]	group3
+WP_114439746 [Phyllobacterium salinisoli]	group4
+WP_028129801 [Selenomonas sp. AE3005]	group2
+OYV67474 [Acidiphilium sp. 21-66-27]	group1
+RPG99673 [Candidatus Pelagibacter sp. TMED118]	group4
+WP_011587027 [Cytophaga hutchinsonii ATCC 33406]	group7
+WP_009552128 [Burkholderiales bacterium JOSHI_001]	group3
+PZO79642 [Sphingomonas hengshuiensis]	group7
+WP_084503429 [Desulfatirhabdium butyrativorans]	group3
+PIV74938 [Rhodobacteraceae bacterium CG17_big_fil_post_rev_8_21_14_2_50_65_11]	group4
+RZB34516 [Desulfobacteraceae bacterium Eth-SRB1]	group4
+WP_077544476 [Pasteurellaceae bacterium ppn422]	group6
+WP_138181577 [Halomonas sp. TBZ3]	group1
+WP_114511334 [Thalassococcus sp. WRAS1]	group7
+PKO91603 [Betaproteobacteria bacterium HGW-Betaproteobacteria-1]	group4
+OON59012 [Klebsiella pneumoniae]	group2
+WP_035243935 [Desulfonatronovibrio hydrogenovorans]	group3
+WP_020209696 [Gilvimarinus chinensis]	group5
+WP_020567001 [Lewinella persica]	group5
+WP_066050107 [Bacillus korlensis]	group6
+RPF91299 [Rhizobiales bacterium TMED168]	group1
+PZP93483 [Variovorax paradoxus]	group6
+WP_079201664 [Pseudomonas sp. CC6-YY-74]	group3
+WP_093003150 [Rhizobium sp. NFR07]	group7
+PKP46907 [Bacteroidetes bacterium HGW-Bacteroidetes-11]	group2
+OFZ19386 [Bdellovibrionales bacterium RBG_16_40_8]	group3
+WP_045472379 [Burkholderiales bacterium GJ-E10]	group4
+OGI50196 [Candidatus Muproteobacteria bacterium RIFCSPHIGHO2_01_FULL_61_200]	group7
+OFZ68817 [Betaproteobacteria bacterium RBG_19FT_COMBO_58_11]	group7
+WP_077925747 [Wohlfahrtiimonas larvae]	group1
+OED41621 [Endozoicomonas sp. (ex Bugula neritina AB1)]	group6
+WP_124751584 [Tannerella forsythia]	group6
+WP_024901511 [Robbsia andropogonis]	group2
+OGQ99299 [Deltaproteobacteria bacterium RIFOXYA12_FULL_61_11]	group4
+WP_067267816 [Methylovorus sp. MM2]	group6
+WP_084374912 [Bacillus soli]	group4
+WP_074200811 [Sulfurivirga caldicuralii]	group4
+PZS09781 [Solirubrobacterales bacterium]	group4
+WP_075870738 [Bartonella apis]	group5
+RUQ39648 [Candidatus Competibacteraceae bacterium]	group1
+OGW66767 [Nitrospirae bacterium RIFCSPLOWO2_01_FULL_62_17]	group5
+WP_075681280 [Bacillus pseudofirmus]	group5
+WP_051176162 [Luteimonas mephitis]	group3
+WP_142849718 [Telmatospirillum sp. J64-1]	group1
+WP_078790902 [Geobacter thiogenes]	group7
+WP_129944835 [Shewanella sp. OPT22]	group5
+WP_079434836 [Zoogloea sp. LCSB751]	group6
+WP_006788363 [Thiorhodospira sibirica ATCC 700588]	group4
+WP_131415314 [Corallincola sp. DASS28]	group2
+CDC28187 [Prevotella sp. CAG:386]	group6
+BAC22655 [Comamonas sp. NCIMB 9872]	group4
+RLD22498 [Bacteroidetes bacterium]	group1
+WP_129353157 [Sorangium cellulosum]	group6
+WP_012504622 [Prosthecochloris sp. ZM]	group6
+KJJ14803 [Neisseria sp. HMSC06F02]	group6
+OGQ84481 [Deltaproteobacteria bacterium RIFCSPLOWO2_12_FULL_60_19]	group3
+WP_048648798 [Nitratireductor soli]	group6
+WP_078059661 [Xanthomonas massiliensis]	group2
+WP_091565845 [Oryzisolibacter propanilivorax]	group5
+TAJ07520 [Nitrospirae bacterium]	group5
+TSJ62023 [Starkeya sp. 3C]	group1
+KJJ85827 [Candidatus Omnitrophus magneticus]	group6
+WP_011419755 [Anaeromyxobacter dehalogenans 2CP-C]	group5
+TDH24064 [Segetibacter sp. 3557_3]	group5
+OGT79366 [Gammaproteobacteria bacterium RIFCSPLOWO2_02_FULL_61_13]	group3
+OGP87529 [Deltaproteobacteria bacterium RBG_16_48_10]	group4
+RLD47718 [Bacteroidetes bacterium]	group1
+WP_092837323 [Roseovarius lutimaris]	group7
+OJY46236 [Rhizobiales bacterium 64-17]	group7
+WP_091459781 [Acetomicrobium thermoterrenum DSM 13490]	group4
+PIE54173 [Dethiosulfovibrio peptidovorans]	group7
+PYV94687 [Acidobacteria bacterium]	group7
+EKD75339 [Gammaproteobacteria bacterium RIFCSPLOWO2_12_FULL_38_14]	group1
+WP_089724273 [Candidatus Thiosymbion oneisti]	group3
+OYV70530 [Acidiphilium sp. 34-60-192]	group2
+TPG71435 [Brevibacillus laterosporus]	group6
+SEN28844 [Gemmobacter aquatilis]	group7
+RZO32847 [SAR116 cluster bacterium]	group4
+WP_083488089 [Stenotrophomonas koreensis]	group5
+PIY44026 [Armatimonadetes bacterium CG_4_10_14_3_um_filter_66_18]	group3
+WP_075185193 [Alteromonadales bacterium BS08]	group6
+WP_087289278 [Elusimicrobium sp. An273]	group7
+RLA35415 [Gammaproteobacteria bacterium]	group5
+KYP45338 [Cajanus cajan]	group1
+XP_019431601 [Lupinus angustifolius]	group1
+WP_116364170 [Parahaliea mediterranea]	group7
+WP_010195924 [Bacillus sp. m3-13]	group2
+ORU91981 [Cycloclasticus sp. symbiont of Bathymodiolus heckerae]	group6
+RLD37926 [Bacteroidetes bacterium]	group6
+TMB19186 [Deltaproteobacteria bacterium]	group3
+WP_066818076 [Defluviimonas alba]	group7
+WP_068860368 [Perlucidibaca aquatica]	group1
+EFH13036 [Roseomonas cervicalis ATCC 49957]	group1
+WP_073374224 [Desulfofustis glycolicus DSM 9705]	group7
+WP_106705428 [Nitrosomonas sp. APG5]	group7
+WP_029622980 [Sphingomonas echinoides]	group6
+WP_056429726 [Methylobacterium sp. Leaf91]	group1
+WP_083479873 [Oxobacter pfennigii]	group2
+OYT87496 [Burkholderiales bacterium PBB6]	group7
+PKO44510 [Betaproteobacteria bacterium HGW-Betaproteobacteria-4]	group6
+WP_084616495 [Marinomonas sp. S3726]	group6
+PPR60527 [Alphaproteobacteria bacterium MarineAlpha3_Bin3]	group1
+WP_038499002 [Basilea psittacipulmonis DSM 24701]	group5
+WP_125326553 [Tabrizicola sp. K13M18]	group6
+WP_006929076 [Caldithrix abyssi DSM 13497]	group2
+RZO23338 [Candidatus Thioglobus sp.]	group7
+WP_088615963 [Bdellovibrio sp. SKB1291214]	group7
+TDI54845 [Alphaproteobacteria bacterium]	group2
+WP_136796763 [Desulfopila sp. IMCC35004]	group2
+WP_075340505 [Tenacibaculum agarivorans]	group6
+WP_064667072 [Pseudoalteromonas prydzensis]	group1
+THF52273 [Rhizobium sp. CC-HIH110]	group2
+WP_070244756 [Edwardsiella hoshinae]	group1
+WP_037586052 [Stenoxybacter acetivorans]	group4
+WP_116477778 [candidate division NC10 bacterium]	group4
+WP_073090500 [Thermosyntropha lipolytica DSM 11003]	group4
+SPE18134 [Candidatus Sulfotelmatomonas gaucii]	group3
+WP_070134221 [Candidatus Erwinia dacicola]	group3
+PPD21464 [Methylomonas sp.]	group3
+WP_140538329 [Mesorhizobium sp. B1-1-8]	group5
+WP_011445961 [Novosphingobium stygium]	group4
+WP_127714803 [Halobacteriovorax sp. HLS]	group4
+RPF83170 [Verrucomicrobia bacterium TMED71]	group7
+KPK58938 [Gammaproteobacteria bacterium SG8_31]	group6
+TMJ85195 [Alphaproteobacteria bacterium]	group3
+WP_053973641 [Polaribacter dokdonensis DSW-5]	group2
+WP_110692060 [Salinicola sp. CR45]	group4
+CUX95688 [Candidatus Mikella endobia]	group1
+OUS06080 [Gammaproteobacteria bacterium 42_54_T18]	group1
+WP_074200990 [Sulfurivirga caldicuralii]	group7
+WP_077214118 [Bacillus dakarensis]	group7
+WP_097023253 [Chromohalobacter canadensis]	group7
+TAK95752 [Verrucomicrobia bacterium]	group7
+WP_127768856 [Rhodobacteraceae bacterium CCMM004]	group3
+OHB62317 [Planctomycetes bacterium RBG_13_46_10]	group5
+WP_036232002 [Massilia sp. JS1662]	group4
+RKK04561 [Roseomonas sp. Z24]	group2
+PLX79170 [Desulfuromonas sp.]	group7
+WP_114960959 [Thermomonas haemolytica]	group4
+TRX67958 [Flammeovirga kamogawensis]	group6
+WP_068460603 [Hyphomicrobium sulfonivorans]	group3
+RUM45065 [Desulfurobacterium sp.]	group6
+WP_135280668 [Candidatus Macondimonas diazotrophica]	group4
+WP_101288233 [Pleomorphomonas diazotrophica]	group3
+WP_130639019 [Alteromonas sp. KUL49]	group6
+WP_015896797 [Acidobacterium capsulatum ATCC 51196]	group6
+TFH12694 [Nitrosomonadales bacterium]	group4
+RLB39216 [Deltaproteobacteria bacterium]	group2
+XP_006469421 [Citrus sinensis]	group3
+WP_124328155 [Desulfonema ishimotonii]	group1
+WP_033169908 [Selenomonas sp. ND2010]	group6
+WP_022683708 [Sphingobium sp. YL23]	group3
+OIO31208 [Nitrospirae bacterium CG1_02_44_142]	group6
+KUK57366 [Bacteroidetes bacterium 38_7]	group5
+WP_083217795 [Kangiella sediminilitoris]	group5
+OGK85085 [Candidatus Rokubacteria bacterium GWA2_70_23]	group3
+WP_055850910 [Aurantimonas sp. Leaf443]	group2
+PYP68088 [Gemmatimonadetes bacterium]	group2
+WP_104704011 [Labrenzia sp. EL143]	group4
+WP_076877571 [Alkanindiges sp. H1]	group3
+WP_089797045 [Halomonas korlensis]	group5
+RUM51864 [Methylococcus sp.]	group5
+WP_129680532 [Loktanella sp. IMCC34160]	group5
+WP_048451990 [Methylobacterium tarhaniae]	group4
+WP_014235549 [Betaproteobacteria bacterium]	group4
+WP_076019095 [Betaproteobacteria bacterium GR16-43]	group7
+WP_108507988 [Polynucleobacter acidiphobus]	group5
+PZP49480 [Azospira oryzae]	group6
+WP_074199253 [Acetomicrobium flavidum]	group5
+TML57771 [Actinobacteria bacterium]	group4
+RYY75506 [Gammaproteobacteria bacterium]	group6
+KMJ60557 [Bacillus sp. LL01]	group1
+PKN49660 [Deltaproteobacteria bacterium HGW-Deltaproteobacteria-16]	group1
+EFV05259 [Prevotella salivae DSM 15606]	group2
+WP_130922297 [Cytophagaceae bacterium 103A-SOEBACH]	group4
+TAN38520 [Nitrospirae bacterium]	group3
+OGL10780 [Candidatus Rokubacteria bacterium RIFCSPLOWO2_02_FULL_72_37]	group7
+WP_085813828 [Geobacter pelophilus]	group6
+RIZ69511 [Methylococcales bacterium]	group6
+WP_066800859 [Moraxella oblonga]	group5
+PCI41869 [Rhodospirillaceae bacterium]	group7
+WP_072604299 [Mesorhizobium oceanicum]	group4
+WP_014003604 [Acidithiobacillus caldus]	group7
+WP_100096104 [Candidatus Hamiltonella defensa]	group4
+SHJ44226 [Cycloclasticus sp. DSM 27168]	group4
+WP_073192515 [Psychroflexus salarius]	group1
+AKC60569 [Blochmannia endosymbiont of Camponotus (Colobopsis) obliquus]	group6
+WP_051291252 [Fictibacillus gelatini]	group7
+WP_061304337 [Achromobacter piechaudii]	group5
+WP_040241870 [Chromohalobacter japonicus]	group2
+WP_047136052 [Luteimonas sp. FCS-9]	group5
+RUY19813 [Mesorhizobium sp. M7A.F.Ca.CA.001.13.2.1]	group2
+WP_025281248 [Ectothiorhodospira haloalkaliphila]	group6
+WP_089682298 [Halomonas gudaonensis]	group7
+WP_021279743 [Mannheimia haemolytica]	group7
+WP_101925797 [Luteimonas sp. 4-12]	group5
+WP_105017910 [Nonlabens tegetincola]	group6
+TAK51805 [Gammaproteobacteria bacterium]	group3
+WP_084594049 [Arhodomonas aquaeolei]	group1
+WP_128353853 [Pusillimonas sp. ye3]	group5
+TAL37970 [Phenylobacterium sp.]	group7
+WP_040334077 [Candidatus Magnetobacterium casensis]	group2
+RMG83617 [Bacteroidetes bacterium]	group5
+KPK58540 [Planctomycetes bacterium SM23_32]	group2
+WP_011337256 [Rhodobacter sphaeroides 2.4.1]	group7
+WP_018479901 [Pontibacter roseus]	group4
+OGA12364 [Betaproteobacteria bacterium RIFCSPLOWO2_02_FULL_65_20]	group4
+WP_043100059 [Oleiagrimonas soli]	group7
+OXS28015 [Desulfovibrio sp. MES5]	group6
+PLY03843 [Desulfuromonas sp.]	group3
+WP_078318441 [Moraxella porci DSM 25326]	group4
+WP_139447441 [Desulfobotulus sp. PAR22N]	group7
+VFJ71089 [Candidatus Kentron sp. FM]	group3
+WP_128782110 [Photobacterium sp. BEI 247]	group4
+RZO45851 [Proteobacteria bacterium]	group4
+KDR91302 [Agrobacterium tumefaciens GW4]	group3
+WP_134822224 [Gammaproteobacteria bacterium LSUCC0057]	group7
+WP_129218241 [bacterium RmlP001]	group2
+OCA06074 [Wolbachia endosymbiont of Trichogramma pretiosum]	group3
+PCI80373 [Ectothiorhodospiraceae bacterium]	group7
+RPG41020 [Gammaproteobacteria bacterium TMED186]	group1
+WP_078059114 [Pseudoruegeria marinistellae]	group3
+WP_038130412 [Verrucomicrobia bacterium SCGC AAA168-F10]	group4
+WP_078256558 [Moraxella canis]	group4
+WP_116084443 [Tropicimonas sp. IMCC34011]	group6
+RLA25381 [Gammaproteobacteria bacterium]	group5
+WP_130098866 [Siccibacter turicensis]	group6
+KPJ87684 [Gammaproteobacteria bacterium SG8_11]	group3
+OHB56994 [Planctomycetes bacterium GWF2_50_10]	group2
+PPC85370 [Hyphomicrobium sp.]	group3
+OIQ48569 [Gammaproteobacteria bacterium MedPE]	group1
+WP_019896160 [Hydrogenovibrio halophilus]	group2
+RLS65885 [Planctomycetes bacterium]	group5
+WP_048441218 [Caenimonas sp. SL110]	group1
+WP_066892968 [Moraxella nonliquefaciens]	group3
+PIQ82190 [Candidatus Omnitrophica bacterium CG11_big_fil_rev_8_21_14_0_20_64_10]	group2
+RJQ48754 [Gammaproteobacteria bacterium]	group7
+WP_050716577 [Ottowia sp. oral taxon 894]	group1
+SBT10500 [Candidatus Propionivibrio aalborgensis]	group7
+WP_093025351 [Pustulibacterium marinum]	group7
+RLD62814 [Bacteroidetes bacterium]	group4
+WP_140944100 [Candidatus Thermokryptus mobilis]	group6
+WP_090441608 [Duganella sp. CF458]	group5
+WP_088967052 [Vogesella sp. LIG4]	group4
+PHR77285 [Methylophaga sp.]	group4
+OGB83606 [candidate division TM6 bacterium RIFCSPHIGHO2_12_FULL_32_22]	group3
+SDR12035 [Pseudoxanthomonas sp. CF385]	group5
+WP_079666018 [Soonwooa buanensis]	group4
+WP_103788811 [Solitalea longa]	group5
+PSR05988 [Bacteroidetes bacterium SW_10_40_5]	group6
+KOR29691 [Achromatium sp. WMS1]	group4
+WP_093287279 [Verrucomicrobium sp. GAS474]	group5
+WP_046135904 [Devosia limi DSM 17137]	group7
+WP_127775051 [Bordetella sp. J329]	group7
+WP_142595376 [Teredinibacter sp. ISS155]	group4
+WP_085315627 [Derxia lacustris]	group2
+OJZ21163 [Thiobacillus sp. 65-29]	group1
+WP_100284386 [Sphingomonas sp. Cra20]	group1
+GAV19365 [Mariprofundus micogutta]	group3
+RKZ31842 [bacterium]	group7
+RME36998 [Planctomycetes bacterium]	group7
+WP_017508901 [beta proteobacterium L13]	group5
+TAM10773 [Sinobacteraceae bacterium]	group3
+WP_013885491 [Flexistipes sinusarabici DSM 4947]	group4
+XP_006857728 [Amborella trichopoda]	group5
+RME72303 [Verrucomicrobia bacterium]	group7
+WP_028456572 [Chitinilyticum litopenaei]	group6
+KGP73930 [Pontibacillus yanchengensis Y32]	group5
+OLA80420 [Azospirillum sp. 51_20]	group5
+WP_034619276 [Chitinibacter tainanensis]	group3
+KJS30794 [Desulfatitalea sp. BRH_c12]	group5
+PTB92464 [Marinobacter sp. Z-F4-2]	group5
+OYV04611 [Verrucomicrobiales bacterium VVV1]	group6
+WP_053233355 [Sandaracinus amylolyticus]	group6
+WP_056308127 [Devosia sp. Root685]	group1
+PHR68961 [Lutibacter sp.]	group7
+WP_081637745 [Bilophila]	group4
+WP_122005506 [Rhizobiales bacterium]	group1
+KXU37146 [Cephaloticoccus primus]	group5
+OGP81151 [Deltaproteobacteria bacterium RBG_16_64_85]	group1
+PCJ14045 [Candidatus Marinimicrobia bacterium]	group4
+OFZ20956 [Bdellovibrionales bacterium RIFOXYA1_FULL_36_14]	group6
+TNF36733 [Gammaproteobacteria bacterium]	group1
+ODU30563 [Thiobacillus sp. SCN 62-729]	group4
+OGS12871 [Elusimicrobia bacterium RIFOXYA2_FULL_58_8]	group7
+WP_097675332 [Bradyrhizobium sp. C9]	group3
+KTD30990 [Legionella moravica]	group1
+WP_038007375 [Sutterella]	group7
+WP_045363021 [Mycoavidus cysteinexigens]	group7
+AEY01720 [Oceanimonas sp. GK1]	group2
+WP_091813732 [Marinobacter mobilis]	group2
+WP_121644724 [Notoacmeibacter sp. M2BS9Y-3-1]	group3
+WP_139448703 [Desulfobotulus sp. PAR22N]	group1
+WP_083489898 [Stenotrophomonas ginsengisoli]	group4
+WP_080798694 [Agrobacterium genomosp. 1 str. S56]	group1
+PYS45899 [Acidobacteria bacterium]	group2
+TSA37519 [Methylococcaceae bacterium]	group5
+PIP94576 [Bdellovibrio sp. CG_4_9_14_3_um_filter_39_7]	group3
+WP_110559300 [Komagataeibacter pomaceti]	group1
+WP_094766973 [Bacillus sp. OG2]	group5
+WP_142596926 [Teredinibacter sp. ISS155]	group2
+WP_082311413 [Bartonella ancashensis]	group3
+AWT60846 [Candidatus Moanabacter tarae]	group7
+OYY54574 [Halothiobacillus sp. 28-55-5]	group2
+RTZ84252 [SAR324 cluster bacterium]	group5
+WP_136824988 [Pedobacter sp. AR-3-17]	group1
+WP_093318070 [Thorsellia anophelis DSM 18579]	group6
+WP_035177133 [Bacillus bogoriensis]	group4
+WP_009022394 [gamma proteobacterium NOR5-3]	group2
+WP_091535486 [Fontimonas thermophila]	group1
+WP_046021698 [Magnetospira sp. QH-2]	group3
+WP_043948845 [Candidatus Phaeomarinobacter ectocarpi]	group4
+WP_141056350 [Tepidiphilus succinatimandens]	group4
+WP_069834445 [Fabibacter misakiensis]	group6
+PJB14540 [Flavobacteriales bacterium CG_4_9_14_3_um_filter_32_8]	group3
+WP_066049827 [Halioglobus sp. HI00S01]	group2
+KPJ61346 [Latescibacteria bacterium DG_63]	group2
+WP_135985184 [Sphingomonas naasensis]	group5
+WP_054313072 [Mesorhizobium sp. 1M-11]	group1
+TFG78271 [Thermodesulfobacteriales bacterium]	group7
+WP_090286652 [Nitrosomonas mobilis]	group1
+WP_057625101 [Candidatus Berkiella cookevillensis]	group7
+WP_068358431 [Rhodobacteraceae bacterium SB2]	group2
+RMH39223 [Deltaproteobacteria bacterium]	group7
+WP_121025398 [Litoreibacter meonggei]	group3
+OPL16389 [delta proteobacterium MLS_D]	group1
+RKQ86464 [Solirubrobacter pauli]	group7
+SHF04041 [Thermomonas hydrothermalis]	group3
+WP_041186253 [Candidatus Kinetoplastibacterium desouzaii]	group7
+WP_093141631 [Ruminobacter amylophilus]	group5
+OJX13782 [Burkholderiales bacterium 68-20]	group7
+WP_139475939 [Bathymodiolus brooksi thiotrophic gill symbiont]	group5
+WP_077243510 [Thioalkalivibrio halophilus]	group3
+TCK04684 [Phorcysia thermohydrogeniphila]	group7
+WP_137900469 [Rhizobiales bacterium 3FA27D7]	group2
+WP_028324111 [Desulfatirhabdium butyrativorans]	group5
+WP_067037787 [Marinomonas gallaica]	group6
+WP_119898563 [Paracoccus siganidrum]	group7
+WP_025916630 [Herminiimonas sp. CN]	group6
+WP_099827692 [Oceaniglobus indicus]	group3
+RKY80148 [candidate division KSB1 bacterium]	group7
+WP_018931445 [Gracilibacillus lacisalsi]	group3
+WP_064718860 [Proteus hauseri ATCC 700826]	group7
+WP_072294091 [Nitrosovibrio sp. Nv17]	group1
+WP_119524593 [Bisgaard Taxon 44 str. B96_3]	group5
+WP_022854219 [Thermodesulfatator atlanticus]	group2
+RMG11605 [Deltaproteobacteria bacterium]	group7
+OAI52525 [Betaproteobacteria bacterium SCGC AG-212-J23]	group1
+OUS13643 [Rhodospirillales bacterium 47_12_T64]	group5
+WP_092021459 [Marinobacter zhejiangensis]	group4
+WP_007414764 [Pedosphaera parvula Ellin514]	group6
+WP_049596431 [Yersinia nurmii]	group7
+PKL93933 [Gemmatimonadetes bacterium HGW-Gemmatimonadetes-1]	group4
+OEU59139 [Desulfuromonadales bacterium C00003094]	group3
+RYZ70950 [Proteobacteria bacterium]	group3
+PZQ45900 [Micavibrio aeruginosavorus]	group1
+OHB63251 [Planctomycetes bacterium RBG_13_50_24]	group6
+WP_130990571 [Paracoccus sp. GY0581]	group4
+WP_136377638 [Bacillus timonensis]	group4
+WP_098180674 [Halomonas salina]	group7
+WP_015904575 [Desulfobacterium autotrophicum HRM2]	group2
+TAH04025 [Sphingobacteriales bacterium]	group6
+WP_087480667 [Vibrio mangrovi]	group5
+WP_069437587 [Methyloceanibacter methanicus]	group1
+WP_027859314 [Marinobacterium jannaschii]	group4
+OJW82731 [Bacteroidetes bacterium 46-16]	group7
+WP_027469003 [Deefgea rivuli]	group3
+WP_130537975 [Thiomicrorhabdus sp. 13-15A]	group7
+WP_124223964 [Tibeticola sediminis]	group1
+WP_078117897 [Chromatiaceae bacterium 2141T.STBD.0c.01a]	group5
+WP_005008758 [Nitrospina gracilis 3/211]	group6
+WP_106448280 [Simplicispira suum]	group6
+PZO92431 [Haemophilus parainfluenzae]	group7
+WP_027486236 [Rhizobium undicola]	group4
+TDJ45508 [Gammaproteobacteria bacterium]	group7
+WP_102966697 [Vibrio diazotrophicus]	group6
+WP_010862670 [Plesiomonas shigelloides]	group7
+GBE05719 [bacterium BMS3Bbin08]	group2
+WP_028254764 [Veillonella magna]	group5
+WP_026774068 [Asinibacterium sp. OR43]	group4
+PYX78115 [Acidobacteria bacterium]	group3
+WP_087355469 [Desulfovibrio sp. An276]	group6
+WP_007226689 [marine gamma proteobacterium HTCC2143]	group1
+WP_098108689 [Novosphingobium sp. PC22D]	group6
+PKI41082 [Punica granatum]	group3
+WP_105532301 [Solimicrobium silvestre]	group6
+WP_134276063 [Psychromonas sp. RZ22]	group6
+REJ36787 [Firmicutes bacterium]	group6
+WP_087517247 [Pseudomonas sp. M30-35]	group5
+RTL60574 [Rhizobiales bacterium]	group7
+WP_055662465 [Jannaschia seosinensis]	group1
+PSH03978 [Acidobacteria bacterium]	group4
+PCJ34104 [Alphaproteobacteria bacterium]	group6
+WP_051395358 [Bacillus sp. FJAT-14578]	group4
+WP_112579274 [Rhizobiales bacterium]	group1
+WP_013513140 [Pseudodesulfovibrio aespoeensis Aspo-2]	group5
+WP_086635481 [Acetobacter sp. DsW_059]	group3
+PZQ81064 [Starkeya novella]	group6
+OQY57656 [Desulfobacteraceae bacterium 4572_88]	group3
+PPR76328 [Alphaproteobacteria bacterium MarineAlpha3_Bin5]	group1
+WP_103761389 [Roseovarius confluentis]	group6
+EXB34463 [Morus notabilis]	group1
+OYW39007 [Hydrogenophilales bacterium 32-62-9]	group6
+WP_026441994 [Acidobacterium ailaaui]	group4
+WP_019246819 [Alistipes ihumii]	group7
+WP_009095077 [Rhodopirellula sp. SWK7]	group2
+CCY16040 [Prevotella sp. CAG:755]	group3
+WP_123296040 [Comamonas sp. BIGb0124]	group7
+WP_055086826 [Jannaschia donghaensis]	group4
+PKM10472 [Gammaproteobacteria bacterium HGW-Gammaproteobacteria-3]	group7
+WP_047761896 [Neisseria arctica]	group2
+WP_013011636 [Denitrovibrio acetiphilus DSM 12809]	group4
+WP_055866818 [Methylophilus sp. Leaf414]	group1
+PIF01136 [Maribacter sp.]	group3
+WP_019936263 [Bordetella sp. FB-8]	group1
+PLX84917 [Desulfuromonas sp.]	group5
+OQW97360 [Desulfobacteraceae bacterium A6]	group2
+PYN46204 [Candidatus Rokubacteria bacterium]	group7
+WP_013506125 [Desulfurispirillum indicum S5]	group2
+WP_037562217 [Alkalispirochaeta odontotermitis]	group5
+WP_036251347 [Methylobacter sp. BBA5.1]	group7
+WP_111529227 [Phenylobacterium sp. LX32]	group3
+WP_043113489 [Solimonas soli]	group7
+WP_038489708 [Janthinobacterium agaricidamnosum]	group4
+WP_107835296 [Opitutus sp. ER46]	group7
+WP_140985156 [Asticcacaulis sp. 3.1105]	group4
+RXH90155 [Malus domestica]	group4
+WP_081896287 [Roseovarius sp. MCTG156(2b)]	group2
+WP_114645488 [Pelagibacterium sp. XYN52]	group3
+WP_103523023 [Aquitalea sp. MWU14-2217]	group7
+RME17903 [Alphaproteobacteria bacterium]	group3
+OYU18520 [Rhodobacteraceae bacterium PARR1]	group5
+WP_134077596 [Rhodovulum visakhapatnamense]	group5
+WP_011698686 [Syntrophobacter fumaroxidans MPOB]	group6
+WP_116964726 [Fastidiosibacter lacustris]	group3
+EHL81970 [Tannerella sp. CAG:51]	group4
+WP_007800954 [Salipiger bermudensis HTCC2601]	group2
+WP_111613805 [Bacillus sp. YR335]	group4
+RLS62636 [Planctomycetes bacterium]	group6
+WP_106203742 [Pseudoruegeria haliotis]	group6
+WP_102345415 [Bacillus sp. Marseille-P3661]	group1
+WP_006003509 [Glaciecola punicea ACAM 611]	group6
+WP_008284534 [gamma proteobacterium HTCC5015]	group3
+WP_039975738 [Pseudomonas psychrotolerans]	group5
+WP_035419690 [Bacillus sp. JCM 19046]	group5
+XP_012089615 [Jatropha curcas]	group6
+PYQ59419 [Acidobacteria bacterium]	group1
+AJP74618 [Sphingomonas hengshuiensis]	group3
+WP_139950656 [Mesorhizobium sp. 8]	group5
+KDA04079 [Hyphomonas oceanitis SCH89]	group4
+RPG52126 [Gammaproteobacteria bacterium TMED104]	group3
+WP_013454715 [Marivirga tractuosa DSM 4126]	group1
+KLV24523 [Bacillus circulans]	group5
+OGR25594 [Desulfobacterales bacterium RIFOXYA12_FULL_46_15]	group4
+RZL50060 [Variovorax sp.]	group5
+WP_020592734 [Kiloniella laminariae]	group1
+OJU75409 [Bacteroidetes bacterium 47-18]	group7
+WP_026038063 [Halomonas sp. KM-1]	group6
+TAM97494 [Rhodanobacteraceae bacterium]	group6
+TDI76712 [Bacteroidetes bacterium]	group2
+WP_093516562 [Stigmatella erecta]	group1
+WP_049682446 [Bacillus loiseleuriae]	group4
+WP_096458593 [Sulfurifustis variabilis]	group2
+WP_037165209 [Pseudorhizobium pelagicum]	group3
+TMA97076 [Deltaproteobacteria bacterium]	group6
+WP_123482298 [Bacteroidales bacterium]	group4
+OOO03224 [Chromatiales bacterium USCg_Taylor]	group3
+WP_082674529 [Thiohalocapsa sp. ML1]	group6
+OGC94706 [candidate division Zixibacteria bacterium RBG_16_53_22]	group6
+OGB94294 [candidate division NC10 bacterium RIFCSPLOWO2_12_FULL_66_18]	group3
+WP_106462195 [Mesoflavibacter aestuarii]	group2
+PYS60615 [Acidobacteria bacterium]	group5
+WP_021097182 [Rubellimicrobium thermophilum DSM 16684]	group6
+XP_026406482 [Papaver somniferum]	group5
+PZN77748 [Candidatus Methyloumidiphilus alinensis]	group3
+TAL54052 [Pandoraea sp.]	group6
+WP_126174951 [Altererythrobacter rigui]	group5
+TAG26504 [Burkholderiales bacterium]	group3
+WP_099057531 [Rhizobium sp. ACO-34A]	group1
+WP_132097723 [Gulbenkiania mobilis]	group6
+WP_035581960 [Hyphomonas jannaschiana]	group5
+RYZ86874 [Proteobacteria bacterium]	group6
+SEM90278 [Luteibacter sp. UNCMF331Sha3.1]	group5
+WP_093066802 [Thiothrix caldifontis]	group5
+WP_073149415 [Mesonia phycicola]	group5
+OUV91293 [Puniceicoccaceae bacterium TMED149]	group7
+WP_027353467 [Desulfosarcina sp. BuS5]	group7
+WP_131280411 [Hylemonella gracilis]	group6
+WP_134258574 [Bacillus lehensis]	group1
+WP_039620905 [Acinetobacter harbinensis]	group4
+WP_077300812 [Aquaspirillum sp. LM1]	group1
+WP_066612170 [Bosea sp. PAMC 26642]	group5
+RZO26877 [SAR86 cluster bacterium]	group6
+WP_055933261 [Sphingomonas sp. Leaf17]	group7
+OHC73374 [Rhodospirillales bacterium RIFCSPLOWO2_12_FULL_58_28]	group4
+PZU58079 [Sphingobium sp.]	group6
+APH06973 [Bacillus weihaiensis]	group7
+RIK67931 [Planctomycetes bacterium]	group2
+WP_107285163 [Photobacterium lipolyticum]	group3
+WP_121463398 [Arsenophonus endosymbiont of Aleurodicus dispersus]	group1
+OGU01360 [Geobacteraceae bacterium GWF2_54_21]	group2
+WP_116662290 [Tardiphaga sp. OV697]	group5
+WP_025225279 [Fimbriimonas ginsengisoli Gsoil 348]	group7
+OUV61284 [Candidatus Pelagibacter sp. TMED128]	group4
+WP_092401464 [unclassified Bacteria (miscellaneous)]	group4
+RJP67701 [Comamonadaceae bacterium]	group3
+WP_133038514 [Shewanella fodinae]	group3
+WP_088652710 [Marinibacterium profundimaris]	group2
+WP_112599723 [Rhizobiales bacterium]	group7
+PWL62635 [Bacteroidales bacterium]	group7
+WP_028669729 [Saccharospirillum impatiens]	group3
+WP_113104382 [Rhizobiales bacterium]	group3
+WP_011282955 [Candidatus Blochmannia pennsylvanicus str. BPEN]	group6
+BBE00053 [Sphingobium amiense]	group1
+TAL07932 [Porticoccaceae bacterium]	group6
+WP_036831226 [Pontibacillus litoralis JSM 072002]	group2
+PYU94886 [Acidobacteria bacterium]	group3
+WP_108734238 [Microbulbifer sp. A4B17]	group4
+PCK02647 [Flavobacteriales bacterium]	group6
+RKX67637 [Thermodesulfobacteria bacterium]	group7
+PYP86293 [Blastocatellia bacterium AA13]	group7
+WP_017472715 [Amphibacillus jilinensis]	group5
+OHE56979 [Thermodesulfovibrio sp. RBG_19FT_COMBO_41_18]	group5
+WP_056274533 [Methylobacterium sp. Leaf88]	group5
+WP_061924243 [Altererythrobacter epoxidivorans]	group2
+RYE05722 [Rickettsiaceae bacterium]	group4
+PZQ58953 [Phenylobacterium zucineum]	group5
+PTM09862 [Bacteroidetes bacterium]	group6
+PKP30074 [Bacteroidetes bacterium HGW-Bacteroidetes-16]	group3
+KKW69204 [Lampropedia cohaerens]	group1
+RMH61138 [Zetaproteobacteria bacterium]	group6
+OGQ04310 [Deltaproteobacteria bacterium RIFCSPLOWO2_12_FULL_44_12]	group5
+WP_082081586 [Methylocucumis oryzae]	group2
+WP_007674466 [alpha proteobacterium BAL199]	group6
+WP_015398057 [Bartonella australis Aust/NH1]	group3
+KPK28231 [Nitrospira bacterium SG8_3]	group2
+RLC05326 [Deltaproteobacteria bacterium]	group3
+WP_108782151 [Pontivivens insulae]	group6
+TAL15610 [bacterium]	group3
+WP_066257895 [Bacillus drentensis]	group1
+WP_108602029 [Catenovulum sp. CCB-QB4]	group1
+TMK25890 [Actinobacteria bacterium]	group6
+WP_110111482 [Bacillus sp. CGMCC 1.16541]	group5
+RKZ72764 [Gammaproteobacteria bacterium]	group7
+WP_024001322 [Acidovorax sp. MR-S7]	group1
+WP_119083174 [Altererythrobacter sp. B11]	group6
+TLY77381 [Gammaproteobacteria bacterium]	group4
+WP_009726375 [Methylophaga lonarensis MPL]	group5
+WP_044619073 [Gynuella sunshinyii YC6258]	group3
+WP_136131516 [Pantoea sp. SoET]	group6
+WP_091335861 [Frateuria terrea]	group7
+WP_019120143 [Brevibacillus massiliensis]	group7
+WP_069981075 [Geosporobacter ferrireducens]	group1
+RZJ73905 [Flavobacterium sp.]	group7
+RLJ40223 [Acidovorax sp. 106]	group4
+WP_141511393 [Ramlibacter sp. WS9]	group7
+CAL68511 [Gramella forsetii KT0803]	group4
+WP_072285450 [Pelobacter acetylenicus]	group4
+TDI11287 [Acidobacteria bacterium]	group3
+WP_115392926 [Rhodovulum sp. 12E13]	group6
+SBW03185 [uncultured delta proteobacterium]	group6
+WP_124210264 [Vespertiliibacter pulmonis]	group7
+WP_072297015 [Paracoccus sp. SM22M-07]	group7
+WP_111989024 [Cellvibrionaceae bacterium AOL6]	group3
+WP_142941163 [Aliikangiella marina]	group6
+OGR86048 [Elusimicrobia bacterium RIFCSPLOWO2_01_FULL_60_11]	group6
+OGP58918 [Deltaproteobacteria bacterium RBG_13_49_15]	group7
+KPK07022 [Betaproteobacteria bacterium SG8_39]	group5
+TAH69087 [Rhodopseudomonas palustris]	group6
+RKV75715 [Alloprevotella sp.]	group1
+WP_106722439 [Mesorhizobium soli]	group6
+AWL12033 [Salinimonas sp. HMF8227]	group2
+WP_083687779 [Lawsonia intracellularis]	group5
+PYJ40796 [Verrucomicrobia bacterium]	group7
+WP_119584013 [Erythrobacter sp. V18]	group7
+WP_109823917 [Leucothrix sp. IMCC9719]	group4
+OIP83052 [Rhodobacterales bacterium CG2_30_65_12]	group5
+OGA54247 [Betaproteobacteria bacterium RIFCSPLOWO2_12_FULL_62_58]	group3
+KXK11398 [Armatimonadetes bacterium OLB18]	group1
+OGT02715 [Gallionellales bacterium RBG_16_57_15]	group4
+WP_027986119 [delta proteobacterium PSCGC 5451]	group3
+OYD16792 [candidate division WOR-3 bacterium JGI_Cruoil_03_51_56]	group7
+QCI21067 [Buchnera aphidicola (Hyperomyzus lactucae)]	group7
+WP_023402681 [Vibrio halioticoli NBRC 102217]	group5
+WP_021707873 [Vibrio azureus]	group4
+KPK38191 [Gammaproteobacteria bacterium SG8_47]	group3
+WP_023045077 [Photorhabdus temperata J3]	group6
+WP_124848574 [Acidipila sp. EB88]	group2
+PYL22315 [Verrucomicrobia bacterium]	group3
+PYQ42661 [Acidobacteria bacterium]	group4
+WP_101533452 [Cohaesibacter sp. H1304]	group2
+WP_135061469 [Brevundimonas sp. MF30-B]	group7
+WP_076068720 [Sphingomonas montana]	group6
+WP_086100042 [Chitinophagaceae bacterium IBVUCB1]	group1
+WP_082735646 [Pseudovibrio stylochi]	group2
+GAK56042 [Candidatus Vecturithrix granuli]	group1
+WP_131354931 [Aquitalea sp. USM4]	group1
+WP_057659138 [Pseudoxanthomonas dokdonensis]	group5
+WP_109837180 [Leucothrix pacifica]	group1
+PCH62235 [Gammaproteobacteria bacterium]	group6
+WP_129216023 [Candidatus Marinimicrobia bacterium]	group1
+OGW91585 [Omnitrophica bacterium RIFCSPHIGHO2_02_FULL_63_14]	group7
+WP_100320886 [Xanthomonadaceae bacterium NML95-0200]	group1
+PZO64867 [Pseudoxanthomonas suwonensis]	group1
+RLC12597 [Deltaproteobacteria bacterium]	group7
+WP_008945531 [Oceanibaculum indicum P24]	group5
+PWK58612 [Silicimonas algicola]	group2
+WP_101459080 [Paracoccus sp. BM15]	group2
+PSR34546 [Sulfobacillus benefaciens]	group2
+RYE40260 [Sphingobacteriales bacterium]	group5
+WP_127697924 [Rheinheimera sp. KYPC3]	group3
+WP_073361916 [Flavobacterium fontis]	group5
+WP_099105087 [Lewinella marina]	group6
+TDJ10743 [Gammaproteobacteria bacterium]	group6
+GBU08100 [Bacteroidales bacterium]	group6
+TMK63165 [Actinobacteria bacterium]	group7
+WP_089272571 [Puniceibacterium sediminis]	group1
+WP_058461219 [Legionella adelaidensis]	group5
+WP_135440062 [Thalassotalea sp. HSM 43]	group2
+PSQ92345 [Bacteroidetes bacterium SW_4_67_19]	group6
+RMG06033 [Nitrospirae bacterium]	group1
+WP_035528769 [Haliea salexigens]	group7
+TMJ95639 [Actinobacteria bacterium]	group5
+OQX30166 [Candidatus Sedimenticola endophacoides]	group7
+GBE07823 [bacterium BMS3Abin11]	group1
+WP_066592369 [Turicimonas muris]	group4
+PPR19356 [Alphaproteobacteria bacterium MarineAlpha10_Bin2]	group1
+WP_018276972 [Teredinibacter turnerae]	group3
+PHT56309 [Capsicum baccatum]	group4
+WP_125216266 [Rickettsiales endosymbiont of Stachyamoeba lipophora]	group3
+WP_017755950 [Bacillus oryziterrae]	group4
+RLS89798 [Planctomycetes bacterium]	group2
+WP_121468380 [Alteromonadaceae bacterium 2052S.S.stab0a.01]	group5
+ODT61590 [Phenylobacterium sp. SCN 69-14]	group6
+WP_027995536 [Simplicispira psychrophila]	group7
+WP_005155048 [Acinetobacter sp. ANC 3929]	group3
+WP_119986134 [Arachidicoccus sp. KIS59-12]	group3
+WP_137939437 [Chitinivorax sp. B]	group5
+PDH21414 [Pelagibacterales bacterium MED-G42]	group7
+WP_008867174 [Polaribacter sp. BACL8 MAG-120419-bin8]	group4
+RZO57940 [Sandaracinaceae bacterium]	group5
+WP_067298665 [Marinobacterium profundum]	group6
+KKB96600 [Candidatus Arcanobacter lacustris]	group7
+XP_019707948 [Elaeis guineensis]	group3
+WP_132601006 [Rhodovulum adriaticum]	group6
+WP_031208760 [Halomonas huangheensis]	group5
+WP_070969198 [Clostridium formicaceticum]	group4
+WP_017842174 [Methylomicrobium buryatense]	group5
+RPJ75632 [Alphaproteobacteria bacterium]	group5
+WP_046865291 [Microvirga massiliensis]	group2
+WP_097146227 [Pseudooceanicola antarcticus]	group3
+WP_062177206 [Bacillales]	group1
+RMF97200 [Planctomycetes bacterium]	group2
+WP_019882078 [Methylophilus]	group5
+PSS30010 [Actinidia chinensis var. chinensis]	group1
+RED16224 [Parasphingopyxis lamellibrachiae]	group5
+PIQ97830 [Nitrospinae bacterium CG11_big_fil_rev_8_21_14_0_20_56_8]	group3
+WP_121172271 [Kushneria sinocarnis]	group2
+WP_132245007 [Primorskyibacter sedentarius]	group2

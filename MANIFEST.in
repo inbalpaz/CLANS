@@ -1,1 +1,7 @@
 recursive-include clans *.dmp
+recursive-include clans *.gif
+recursive-include clans *.clans
+recursive-include clans *.fasta
+recursive-include clans *.pdf
+recursive-include clans *.txt
+

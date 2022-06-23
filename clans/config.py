@@ -50,9 +50,11 @@ layouts = {'FR':
 run_params = {  # a dict to hold all the running parameters (given by the user / defaults) - filled by parser.py
     'is_problem': False,
     'error': None,
+    'no_gui': False,
     'total_sequences_num': 1,
     'input_format': input_format,
     'input_file': None,
+    'output_file': None,
     'output_format': output_format,
     'type_of_values': type_of_values,
     'is_debug_mode': False,
@@ -155,10 +157,10 @@ seq_by_tax_level_dict = {
     'Domain': dict()
 }
 
-taxonomy_names_file = "clans/taxonomy/names.dmp"
-taxonomy_lineage_file = "clans/taxonomy/rankedlineage.dmp"
+taxonomy_names_file = "clans/clans/taxonomy/names.dmp"
+taxonomy_lineage_file = "clans/clans/taxonomy/rankedlineage.dmp"
 
-manual_path = "manual/Manual.pdf"
+manual_path = "clans/manual/Manual.pdf"
 
 
 

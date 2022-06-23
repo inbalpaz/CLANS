@@ -1,11 +1,20 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='clans',
-    version='v2.0.1_beta',
-    packages=['clans', 'clans.data', 'clans.io', 'clans.io.file_formats', 'clans.GUI', 'clans.layouts', 'clans.graphics',
-              'clans.taxonomy', 'clans.similarity_search'],
-    package_data={'clans': ['clans/taxonomy/names.dmp', 'clans/taxonomy/rankedlineage.dmp']},
+    version='2.0.1_beta',
+    packages=find_packages(),
+    package_data={'clans': [
+        'clans/clans/taxonomy/names.dmp',
+        'clans/clans/taxonomy/rankedlineage.dmp',
+        'clans/clans/GUI/icons/*.gif',
+        'clans/input_example/clans_format/*',
+        'clans/input_example/fasta_format/*',
+        'clans/input_example/metadata/groups/*',
+        'clans/input_example/metadata/numerical_features/*',
+        'clans/input_example/tab_delimited_format/*',
+        'clans/manual/*.pdf',
+    ]},
     include_package_data=True,
     url='https://github.com/inbalpaz/CLANS',
     license='GPL',

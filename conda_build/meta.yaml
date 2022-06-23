@@ -1,5 +1,5 @@
 {% set name = "clans" %}
-{% set version = "v2.0.1_beta" %}
+{% set version = "2.0.1_beta" %}
 
 package:
   name: {{ name|lower }}
@@ -17,12 +17,14 @@ build:
 
 requirements:
   host:
-    - python=3.9
-    - numpy=1.20
+    #- python=3.9
+    - python
+    #- numpy=1.20
     - pip
   run:
-    - python=3.9
-    - {{ pin_compatible('numpy') }}
+    - python=3.9.6
+    #- {{ pin_compatible('numpy') }}
+    - numpy=1.20.3
     - numba=0.53.1
     - vispy=0.8.1
     - pyqt=5.9.2
