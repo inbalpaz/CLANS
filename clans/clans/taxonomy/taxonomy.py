@@ -62,11 +62,7 @@ def get_taxonomy_hierarchy():
     if not os.path.isfile(cfg.taxonomy_lineage_file):
         cfg.run_params['is_taxonomy_available'] = False
         error = "The file " + cfg.taxonomy_lineage_file + " does not exist in the specified path.\n" \
-                                                          "In order to use the \'Group by taxonomy\' feature, " \
-                                                          "you should download the files \'rankedlineage.dmp\' and " \
-                                                          "\'names.dmp\' from:\n" \
-                                                          "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/ " \
-                                                          "and place them in the clans/taxonomy/ folder."
+                                                          "The \'Group by taxonomy\' feature cannot be applied."
         if cfg.run_params['is_debug_mode']:
             print("Cannot find the taxonomy lineage file " + cfg.taxonomy_lineage_file)
         return error
@@ -75,11 +71,8 @@ def get_taxonomy_hierarchy():
     if not os.path.isfile(cfg.taxonomy_names_file):
         cfg.run_params['is_taxonomy_available'] = False
         error = "The file " + cfg.taxonomy_names_file + " does not exist in the specified path.\n" \
-                                                          "In order to use the \'Group by taxonomy\' feature, " \
-                                                          "you should download the files \'rankedlineage.dmp\' and " \
-                                                          "\'names.dmp\' from: \n" \
-                                                          "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/ " \
-                                                          "and place them in the clans/taxonomy/ folder."
+                                                        "The \'Group by taxonomy\' feature cannot be applied."
+
         if cfg.run_params['is_debug_mode']:
             print("Cannot find the taxonimy names file " + cfg.taxonomy_names_file)
         return error

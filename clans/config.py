@@ -1,5 +1,6 @@
 import numpy as np
 from vispy.color import ColorArray
+import clans
 
 ## Defaults
 version = "2.0.1"
@@ -157,11 +158,12 @@ seq_by_tax_level_dict = {
     'Domain': dict()
 }
 
-taxonomy_names_file = "clans/clans/taxonomy/names.dmp"
-taxonomy_lineage_file = "clans/clans/taxonomy/rankedlineage.dmp"
+taxonomy_names_file = str(clans.__path__[0]) + "/clans/taxonomy/names.dmp"
+taxonomy_lineage_file = str(clans.__path__[0]) + "/clans/taxonomy/rankedlineage.dmp"
 
-manual_path = "clans/manual/Manual.pdf"
+manual_path = str(clans.__path__[0]) + "/manual/Manual.pdf"
 
+icons_dir = str(clans.__path__[0]) + "/clans/GUI/icons/"
 
 
 

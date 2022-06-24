@@ -147,7 +147,8 @@ class GroupByTaxDialog(QDialog):
 
             # Add a 'loading' gif
             self.loading_label = QLabel()
-            self.loading_gif = QMovie("clans/clans/GUI/icons/loading_bar_blue_small.gif")
+            loading_gif_path = cfg.icons_dir + "loading_bar_blue_small.gif"
+            self.loading_gif = QMovie(loading_gif_path)
             self.loading_label.setMovie(self.loading_gif)
             self.loading_gif.start()
 

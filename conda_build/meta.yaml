@@ -6,7 +6,7 @@ package:
   version: {{ version }}
 
 source:
-  git_tag: v2.0.1_beta
+  git_tag: 2.0.1_beta
   url: https://github.com/inbalpaz/CLANS/releases/download/{{ version }}/CLANS_{{ version }}.tar.gz
   sha256: d8ec7721c600fbcb1e5c71ad137fe8af017d656cf987fae5e695c6c4008380d4
 
@@ -17,7 +17,7 @@ build:
 
 requirements:
   host:
-    - python
+    - python=3.9.6
     - pip
   run:
     - python=3.9.6

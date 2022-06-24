@@ -675,8 +675,6 @@ class MainWindow(QMainWindow):
         # Loaded file is valid
         if status == 0:
 
-            print("Nodes color: " + str(cfg.run_params['nodes_color']))
-
             if cfg.run_params['is_debug_mode']:
                 print("Finished loading the input file - file is valid")
 
