@@ -8,7 +8,7 @@ package:
 source:
   git_tag: 2.0.1_beta
   url: https://github.com/inbalpaz/CLANS/releases/download/{{ version }}/CLANS_{{ version }}.tar.gz
-  sha256: d8ec7721c600fbcb1e5c71ad137fe8af017d656cf987fae5e695c6c4008380d4
+  sha256: c465ace8d39654b26fbafd36d6e2fd6fccb7ea5d8fa3e55f18e77e4e6b712555
 
 build:
   noarch: python
@@ -51,7 +51,7 @@ test:
 about:
   home: https://github.com/inbalpaz/CLANS
   description: |
-    CLANS is a Python-based program for visualizing the relationship between proteins 
+    CLANS is a Python-based program for visualizing the relationship between proteins
     based on their pairwise sequence similarities. 
     The program implements a version of the Fruchterman-Reingold 
     force directed graph layout algorithm to visualize the sequence similarities in a 2D or 3D space.
