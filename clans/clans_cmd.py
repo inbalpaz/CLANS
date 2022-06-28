@@ -9,8 +9,6 @@ import clans.clans.layouts.layout_handler as lh
 
 
 def run_cmd():
-    cfg.run_params['working_dir'] = os.getcwd()
-
     # Read the input file (fasta/clans/delimited) and fill the relevant main data-structures
     try:
         print("Reading the input file")

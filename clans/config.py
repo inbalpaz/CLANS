@@ -165,6 +165,8 @@ manual_path = str(clans.__path__[0]) + "/manual/Manual.pdf"
 
 icons_dir = str(clans.__path__[0]) + "/clans/GUI/icons/"
 
+input_example_dir = str(clans.__path__[0]) + "/input_example/"
+
 
 
 
