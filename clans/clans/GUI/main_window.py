@@ -151,9 +151,13 @@ class MainWindow(QMainWindow):
         self.conf_FR_layout_action.triggered.connect(self.conf_FR_layout)
         self.conf_layout_submenu.addAction(self.conf_FR_layout_action)
 
-        self.conf_nodes_action = QAction("Data-points default parameters", self)
+        self.conf_nodes_action = QAction("Data-points general settings", self)
         self.conf_nodes_action.triggered.connect(self.conf_nodes)
         self.conf_menu.addAction(self.conf_nodes_action)
+
+        #self.conf_edges_action = QAction("Connections (edges) settings", self)
+        #self.conf_edges_action.triggered.connect(self.conf_edges)
+        #self.conf_menu.addAction(self.conf_edges_action)
 
         # Create the Tools menu
         self.tools_menu = self.main_menu.addMenu("Tools")
@@ -1449,6 +1453,19 @@ class MainWindow(QMainWindow):
         except Exception as err:
             error_msg = "An error occurred: cannot update the nodes parameters."
             error_occurred(self.conf_nodes, 'conf_nodes', err, error_msg)
+
+    def conf_edges(self):
+
+        try:
+
+            conf_edges_dlg = cd.EdgesConfig()
+
+            if conf_edges_dlg.exec_():
+                pass
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot update the edges parameters."
+            error_occurred(self.conf_edges, 'conf_edges', err, error_msg)
 
     def change_dimensions_view(self):
 

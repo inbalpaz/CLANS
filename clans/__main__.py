@@ -50,8 +50,6 @@ def main():
         except Exception as error:
             print(error)
             print("Cannot copy the 'input_example' directory to the working directory. Continue without...")
-    else:
-        print("Directory " + input_example_local_dir + " already exists")
 
     # Run the application in command-line mode (no GUI)
     if cfg.run_params['no_gui']:

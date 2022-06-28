@@ -144,7 +144,7 @@ class NodesConfig(QDialog):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Configure default visual parameters for data-points")
+        self.setWindowTitle("Configure data-points visual parameters")
 
         self.main_layout = QVBoxLayout()
         self.layout = QGridLayout()
@@ -242,6 +242,24 @@ class NodesConfig(QDialog):
         outline_width = float(self.outline_width_combo.currentText())
 
         return size, color, outline_color, outline_width
+
+
+class EdgesConfig(QDialog):
+
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Configure edges visual parameters")
+
+        self.main_layout = QVBoxLayout()
+        self.layout = QGridLayout()
+
+        self.color_title = QLabel("Set the edges color(s):")
+
+        self.uniform_color_button = QRadioButton("Uniform color for all edges")
+
+        self.bins_color_button = QRadioButton("Color edges by ")
+        self.bins_color_button.setChecked(True)
 
 
 
