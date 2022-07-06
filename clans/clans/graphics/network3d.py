@@ -8,6 +8,20 @@ import clans.clans.graphics.angles_calc as ac
 import clans.clans.graphics.colors as colors
 
 
+def set_edges(i):
+    if cfg.run_params['is_uniform_edges_color']:
+        line_color = cfg.run_params['edges_color']
+    else:
+        line_color = cfg.run_params['edges_color_scale'][i]
+
+    if cfg.run_params['is_uniform_edges_width']:
+        line_width = cfg.run_params['edges_width']
+    else:
+        line_width = cfg.run_params['edges_width_scale'][i]
+
+    return line_color, line_width
+
+
 class Network3D:
 
     def __init__(self, view):
@@ -35,16 +49,6 @@ class Network3D:
         self.selected_outline_color = [1.0, 0.0, 1.0, 1.0]
         self.highlighted_outline_color = [1.0, 0.0, 1.0, 1.0]
         self.att_values_bins = np.array([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
-        self.edges_color_scale = {1: (0.8, 0.8, 0.8, 1.0),
-                                  2: (0.6, 0.6, 0.6, 1.0),
-                                  3: (0.4, 0.4, 0.4, 1.0),
-                                  4: (0.2, 0.2, 0.2, 1.0),
-                                  5: (0.0, 0.0, 0.0, 1.0)}
-        self.edges_width_scale = {1: 0.01,
-                                  2: 0.01,
-                                  3: 0.01,
-                                  4: 0.01,
-                                  5: 0.01}
         self.drag_rectangle_color = (0.3, 0.3, 0.3, 0.5)
         self.colormap = colors.generate_colormap_gradient_2_colors(cfg.short_color, cfg.long_color)
         self.norm_array = []
@@ -208,8 +212,7 @@ class Network3D:
 
         # Set the data for the connecting lines (without displaying them) -
         for i in range(5):
-            line_color = self.edges_color_scale[i + 1]
-            line_width = self.edges_width_scale[i + 1]
+            line_color, line_width = set_edges(i)
             self.lines[i].set_data(pos=self.pos_array, color=line_color, width=line_width,
                                    connect=self.connections_by_bins[i])
 
@@ -318,8 +321,7 @@ class Network3D:
 
             # Update the connecting lines
             for i in range(5):
-                line_color = self.edges_color_scale[i + 1]
-                line_width = self.edges_width_scale[i + 1]
+                line_color, line_width = set_edges(i)
                 self.lines[i].set_data(pos=pos_array, color=line_color, width=line_width,
                                        connect=self.connections_by_bins[i])
 
@@ -360,8 +362,7 @@ class Network3D:
 
             # Update the connecting lines
             for i in range(5):
-                line_color = self.edges_color_scale[i + 1]
-                line_width = self.edges_width_scale[i + 1]
+                line_color, line_width = set_edges(i)
                 self.lines[i].set_data(pos=selected_pos_array, color=line_color, width=line_width,
                                        connect=self.selected_connections_by_bins[i])
 
@@ -403,8 +404,7 @@ class Network3D:
 
             # Update the lines with the updated rotation
             for i in range(5):
-                line_color = self.edges_color_scale[i + 1]
-                line_width = self.edges_width_scale[i + 1]
+                line_color, line_width = set_edges(i)
                 self.lines[i].set_data(pos=pos_array, color=line_color, width=line_width,
                                        connect=self.connections_by_bins[i])
 
@@ -435,8 +435,8 @@ class Network3D:
 
             # Update the connecting lines
             for i in range(5):
-                line_color = self.edges_color_scale[i + 1]
-                line_width = self.edges_width_scale[i + 1]
+                line_color, line_width = set_edges(i)
+
                 self.lines[i].set_data(pos=pos_array, color=line_color, width=line_width,
                                        connect=self.selected_connections_by_bins[i])
 
@@ -473,8 +473,7 @@ class Network3D:
 
             # Update the lines with the updated rotation
             for i in range(5):
-                line_color = self.edges_color_scale[i + 1]
-                line_width = self.edges_width_scale[i + 1]
+                line_color, line_width = set_edges(i)
                 self.lines[i].set_data(pos=self.pos_array, color=line_color, width=line_width,
                                        connect=self.connections_by_bins[i])
         # Subset mode
@@ -494,8 +493,7 @@ class Network3D:
 
             # Set the data for the connecting lines (without displaying them) -
             for i in range(5):
-                line_color = self.edges_color_scale[i + 1]
-                line_width = self.edges_width_scale[i + 1]
+                line_color, line_width = set_edges(i)
                 self.lines[i].set_data(pos=self.selected_pos_array, color=line_color, width=line_width,
                                        connect=self.selected_connections_by_bins[i])
 
@@ -546,8 +544,7 @@ class Network3D:
                 pos_array[:, 2] = -1  # Put the lines at the back of the scatter plot (since the ordering is not enough)
                 order = 6
                 for i in range(5):
-                    line_color = self.edges_color_scale[i + 1]
-                    line_width = self.edges_width_scale[i + 1]
+                    line_color, line_width = set_edges(i)
                     self.lines[i].set_data(pos=pos_array, color=line_color, width=line_width,
                                            connect=self.connections_by_bins[i])
                     self.lines[i].order = order
@@ -565,8 +562,7 @@ class Network3D:
                 pos_array[:, 2] = -1  # Put the lines at the back of the scatter plot (since the ordering is not enough)
                 order = len(self.groups_to_show) + 6
                 for i in range(5):
-                    line_color = self.edges_color_scale[i + 1]
-                    line_width = self.edges_width_scale[i + 1]
+                    line_color, line_width = set_edges(i)
                     self.lines[i].set_data(pos=pos_array, color=line_color, width=line_width,
                                            connect=self.connections_by_bins[i])
                     self.lines[i].order = order
@@ -597,8 +593,7 @@ class Network3D:
             pos_array[:, 2] = -1  # Put the lines at the back of the scatter plot (since the ordering is not enough)
             order = 6
             for i in range(5):
-                line_color = self.edges_color_scale[i + 1]
-                line_width = self.edges_width_scale[i + 1]
+                line_color, line_width = set_edges(i)
                 self.lines[i].set_data(pos=pos_array, color=line_color, width=line_width,
                                        connect=self.selected_connections_by_bins[i])
                 self.lines[i].order = order
@@ -850,8 +845,7 @@ class Network3D:
                 pos_array[:, 2] = -1
 
             for i in range(5):
-                line_color = self.edges_color_scale[i+1]
-                line_width = self.edges_width_scale[i+1]
+                line_color, line_width = set_edges(i)
                 self.lines[i].set_data(pos=pos_array, color=line_color, width=line_width,
                                        connect=self.connections_by_bins[i])
         # Subset mode
@@ -863,8 +857,7 @@ class Network3D:
                 selected_pos_array[:, 2] = -1
 
             for i in range(5):
-                line_color = self.edges_color_scale[i + 1]
-                line_width = self.edges_width_scale[i + 1]
+                line_color, line_width = set_edges(i)
                 self.lines[i].set_data(pos=selected_pos_array, color=line_color, width=line_width,
                                        connect=self.selected_connections_by_bins[i])
 

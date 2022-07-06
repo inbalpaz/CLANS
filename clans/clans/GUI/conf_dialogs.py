@@ -253,13 +253,376 @@ class EdgesConfig(QDialog):
 
         self.main_layout = QVBoxLayout()
         self.layout = QGridLayout()
+        self.colors_layout = QGridLayout()
+        self.width_layout = QGridLayout()
 
-        self.color_title = QLabel("Set the edges color(s):")
+        self.color_title = QLabel("Set the color(s) of the edges:")
 
-        self.uniform_color_button = QRadioButton("Uniform color for all edges")
+        self.layout.addWidget(self.color_title, 0, 0, 1, 6)
 
-        self.bins_color_button = QRadioButton("Color edges by ")
-        self.bins_color_button.setChecked(True)
+        self.color_group = QButtonGroup()
+        self.width_group = QButtonGroup()
+
+        self.bins_color_button = QRadioButton("Color edges by score bins (normalized values)")
+        if not cfg.run_params['is_uniform_edges_color']:
+            self.bins_color_button.setChecked(True)
+        self.bins_color_button.toggled.connect(self.on_color_button_change)
+        self.color_group.addButton(self.bins_color_button)
+
+        self.layout.addWidget(self.bins_color_button, 1, 0, 1, 6)
+
+        self.color_range_label = QLabel("Define the color for each bin:")
+        self.colors_layout.addWidget(self.color_range_label, 0, 0, 1, 5)
+
+        self.bin1_label = QLabel("0.2")
+        self.bin2_label = QLabel("0.4")
+        self.bin3_label = QLabel("0.6")
+        self.bin4_label = QLabel("0.8")
+        self.bin5_label = QLabel("1.0")
+
+        self.colors_layout.addWidget(self.bin1_label, 1, 0)
+        self.colors_layout.addWidget(self.bin2_label, 1, 1)
+        self.colors_layout.addWidget(self.bin3_label, 1, 2)
+        self.colors_layout.addWidget(self.bin4_label, 1, 3)
+        self.colors_layout.addWidget(self.bin5_label, 1, 4)
+
+        self.bin1_color = ColorArray(cfg.run_params['edges_color_scale'][0])
+        self.bin1_color_button = QPushButton("Change")
+        self.bin1_color_button.setFixedSize(60, 28)
+        self.bin1_color_button.setStyleSheet("background-color: " + self.bin1_color.hex[0])
+        self.bin1_color_button.pressed.connect(self.change_bin1_color)
+
+        self.bin2_color = ColorArray(cfg.run_params['edges_color_scale'][1])
+        self.bin2_color_button = QPushButton("Change")
+        self.bin2_color_button.setFixedSize(60, 28)
+        self.bin2_color_button.setStyleSheet("background-color: " + self.bin2_color.hex[0])
+        self.bin2_color_button.pressed.connect(self.change_bin2_color)
+
+        self.bin3_color = ColorArray(cfg.run_params['edges_color_scale'][2])
+        self.bin3_color_button = QPushButton("Change")
+        self.bin3_color_button.setFixedSize(60, 28)
+        self.bin3_color_button.setStyleSheet("background-color: " + self.bin3_color.hex[0])
+        self.bin3_color_button.pressed.connect(self.change_bin3_color)
+
+        self.bin4_color = ColorArray(cfg.run_params['edges_color_scale'][3])
+        self.bin4_color_button = QPushButton("Change")
+        self.bin4_color_button.setFixedSize(60, 28)
+        self.bin4_color_button.setStyleSheet("background-color: " + self.bin3_color.hex[0])
+        self.bin4_color_button.pressed.connect(self.change_bin4_color)
+
+        self.bin5_color = ColorArray(cfg.run_params['edges_color_scale'][4])
+        self.bin5_color_button = QPushButton("Change")
+        self.bin5_color_button.setFixedSize(60, 28)
+        self.bin5_color_button.setStyleSheet("background-color: " + self.bin5_color.hex[0])
+        self.bin5_color_button.pressed.connect(self.change_bin5_color)
+
+        self.colors_layout.addWidget(self.bin1_color_button, 2, 0)
+        self.colors_layout.addWidget(self.bin2_color_button, 2, 1)
+        self.colors_layout.addWidget(self.bin3_color_button, 2, 2)
+        self.colors_layout.addWidget(self.bin4_color_button, 2, 3)
+        self.colors_layout.addWidget(self.bin5_color_button, 2, 4)
+
+        self.layout.addLayout(self.colors_layout, 2, 0, 1, 6)
+
+        self.uniform_color_radio_button = QRadioButton("Uniform color for all edges")
+        if cfg.run_params['is_uniform_edges_color']:
+            self.uniform_color_radio_button.setChecked(True)
+        self.uniform_color_radio_button.toggled.connect(self.on_color_button_change)
+        self.color_group.addButton(self.uniform_color_radio_button)
+
+        self.layout.addWidget(self.uniform_color_radio_button, 3, 0, 1, 6)
+
+        self.uniform_color_label = QLabel("Color:")
+
+        self.edges_color = ColorArray(cfg.run_params['edges_color'])
+        self.edges_color_box = QLabel(" ")
+        self.edges_color_box.setStyleSheet("background-color: " + self.edges_color.hex[0])
+        self.edges_color_button = QPushButton("Change color")
+        self.edges_color_button.setEnabled(False)
+        self.edges_color_button.pressed.connect(self.change_edges_color)
+
+        self.layout.addWidget(self.uniform_color_label, 4, 1, 1, 1)
+        self.layout.addWidget(self.edges_color_box, 4, 2, 1, 1)
+        self.layout.addWidget(self.edges_color_button, 4, 3, 1, 2)
+
+        self.space_label = QLabel("  ")
+        self.layout.addWidget(self.space_label, 5, 0, 1, 6)
+
+        self.width_title = QLabel("Set the width of the edges:")
+        self.layout.addWidget(self.width_title, 6, 0, 1, 6)
+
+        self.uniform_width_radio_button = QRadioButton("Uniform width for all edges:")
+        if cfg.run_params['is_uniform_edges_width']:
+            self.uniform_width_radio_button.setChecked(True)
+        self.uniform_width_radio_button.toggled.connect(self.on_width_button_change)
+        self.width_group.addButton(self.uniform_width_radio_button)
+
+        self.bins_width_radio_button = QRadioButton("Set different width according score bins (normalized values)")
+        if not cfg.run_params['is_uniform_edges_width']:
+            self.bins_width_radio_button.setChecked(True)
+        self.bins_width_radio_button.toggled.connect(self.on_width_button_change)
+        self.width_group.addButton(self.bins_width_radio_button)
+
+        self.layout.addWidget(self.uniform_width_radio_button, 7, 0, 1, 3)
+
+        self.uniform_width_combo = QComboBox()
+        i = 0
+        width_options = np.arange(1, 5.5, 0.5)
+        for size in width_options:
+            self.uniform_width_combo.addItem(str(size))
+            if size == cfg.run_params['edges_width']:
+                default_index = i
+            i += 1
+        self.uniform_width_combo.setCurrentIndex(default_index)
+
+        self.layout.addWidget(self.uniform_width_combo, 7, 3, 1, 1)
+
+        self.layout.addWidget(self.bins_width_radio_button, 8, 0, 1, 6)
+
+        self.width_range_label = QLabel("Define the width for each bin:")
+        self.width_layout.addWidget(self.width_range_label, 0, 0, 1, 5)
+
+        self.bin1_width_label = QLabel("0.2")
+        self.bin2_width_label = QLabel("0.4")
+        self.bin3_width_label = QLabel("0.6")
+        self.bin4_width_label = QLabel("0.8")
+        self.bin5_width_label = QLabel("1.0")
+
+        self.width_layout.addWidget(self.bin1_width_label, 1, 0)
+        self.width_layout.addWidget(self.bin2_width_label, 1, 1)
+        self.width_layout.addWidget(self.bin3_width_label, 1, 2)
+        self.width_layout.addWidget(self.bin4_width_label, 1, 3)
+        self.width_layout.addWidget(self.bin5_width_label, 1, 4)
+
+        self.bin1_width_combo = QComboBox()
+        i = 0
+        for size in width_options:
+            self.bin1_width_combo.addItem(str(size))
+            if size == cfg.run_params['edges_width_scale'][0]:
+                default_index = i
+            i += 1
+        self.bin1_width_combo.setCurrentIndex(default_index)
+        self.bin1_width_combo.setEnabled(False)
+
+        self.bin2_width_combo = QComboBox()
+        i = 0
+        for size in width_options:
+            self.bin2_width_combo.addItem(str(size))
+            if size == cfg.run_params['edges_width_scale'][1]:
+                default_index = i
+            i += 1
+        self.bin2_width_combo.setCurrentIndex(default_index)
+        self.bin2_width_combo.setEnabled(False)
+
+        self.bin3_width_combo = QComboBox()
+        i = 0
+        for size in width_options:
+            self.bin3_width_combo.addItem(str(size))
+            if size == cfg.run_params['edges_width_scale'][2]:
+                default_index = i
+            i += 1
+        self.bin3_width_combo.setCurrentIndex(default_index)
+        self.bin3_width_combo.setEnabled(False)
+
+        self.bin4_width_combo = QComboBox()
+        i = 0
+        for size in width_options:
+            self.bin4_width_combo.addItem(str(size))
+            if size == cfg.run_params['edges_width_scale'][3]:
+                default_index = i
+            i += 1
+        self.bin4_width_combo.setCurrentIndex(default_index)
+        self.bin4_width_combo.setEnabled(False)
+
+        self.bin5_width_combo = QComboBox()
+        i = 0
+        for size in width_options:
+            self.bin5_width_combo.addItem(str(size))
+            if size == cfg.run_params['edges_width_scale'][4]:
+                default_index = i
+            i += 1
+        self.bin5_width_combo.setCurrentIndex(default_index)
+        self.bin5_width_combo.setEnabled(False)
+
+        self.width_layout.addWidget(self.bin1_width_combo, 2, 0)
+        self.width_layout.addWidget(self.bin2_width_combo, 2, 1)
+        self.width_layout.addWidget(self.bin3_width_combo, 2, 2)
+        self.width_layout.addWidget(self.bin4_width_combo, 2, 3)
+        self.width_layout.addWidget(self.bin5_width_combo, 2, 4)
+
+        self.layout.addLayout(self.width_layout, 9, 0, 1, 6)
+
+        self.main_layout.addLayout(self.layout)
+
+        # Add the OK/Cancel standard buttons
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        self.main_layout.addWidget(self.button_box)
+
+        self.setLayout(self.main_layout)
+
+        self.on_color_button_change()
+        self.on_width_button_change()
+
+    def on_color_button_change(self):
+        try:
+            if self.uniform_color_radio_button.isChecked():
+                self.edges_color_button.setEnabled(True)
+                self.bin1_color_button.setEnabled(False)
+                self.bin2_color_button.setEnabled(False)
+                self.bin3_color_button.setEnabled(False)
+                self.bin4_color_button.setEnabled(False)
+                self.bin5_color_button.setEnabled(False)
+            else:
+                self.edges_color_button.setEnabled(False)
+                self.bin1_color_button.setEnabled(True)
+                self.bin2_color_button.setEnabled(True)
+                self.bin3_color_button.setEnabled(True)
+                self.bin4_color_button.setEnabled(True)
+                self.bin5_color_button.setEnabled(True)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change selection"
+            error_occurred(self.on_color_button_change, 'on_color_button_change', err, error_msg)
+
+    def change_edges_color(self):
+
+        dialog = QColorDialog()
+
+        if dialog.exec_():
+            color = dialog.currentColor()
+            hex_color = color.name()
+
+            self.edges_color = ColorArray(hex_color)
+            self.edges_color_box.setStyleSheet("background-color: " + hex_color)
+
+    def change_bin1_color(self):
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
+
+                self.bin1_color = ColorArray(hex_color)
+                self.bin1_color_button.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_bin1_color, 'change_bin1_color', err, error_msg)
+
+    def change_bin2_color(self):
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
+
+                self.bin2_color = ColorArray(hex_color)
+                self.bin2_color_button.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_bin2_color, 'change_bin2_color', err, error_msg)
+
+    def change_bin3_color(self):
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
+
+                self.bin3_color = ColorArray(hex_color)
+                self.bin3_color_button.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_bin3_color, 'change_bin3_color', err, error_msg)
+
+    def change_bin4_color(self):
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
+
+                self.bin4_color = ColorArray(hex_color)
+                self.bin4_color_button.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_bin4_color, 'change_bin4_color', err, error_msg)
+
+    def change_bin5_color(self):
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
+
+                self.bin5_color = ColorArray(hex_color)
+                self.bin5_color_button.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_bin5_color, 'change_bin5_color', err, error_msg)
+
+    def on_width_button_change(self):
+
+        try:
+            if self.bins_width_radio_button.isChecked():
+                self.uniform_width_combo.setEnabled(False)
+                self.bin1_width_combo.setEnabled(True)
+                self.bin2_width_combo.setEnabled(True)
+                self.bin3_width_combo.setEnabled(True)
+                self.bin4_width_combo.setEnabled(True)
+                self.bin5_width_combo.setEnabled(True)
+            else:
+                self.uniform_width_combo.setEnabled(True)
+                self.bin1_width_combo.setEnabled(False)
+                self.bin2_width_combo.setEnabled(False)
+                self.bin3_width_combo.setEnabled(False)
+                self.bin4_width_combo.setEnabled(False)
+                self.bin5_width_combo.setEnabled(False)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change selection"
+            error_occurred(self.on_width_button_change, 'on_width_button_change', err, error_msg)
+
+    def get_parameters(self):
+
+        color = self.edges_color.rgba[0]
+
+        color_scale = list()
+        color_scale.append(self.bin1_color.rgba[0])
+        color_scale.append(self.bin2_color.rgba[0])
+        color_scale.append(self.bin3_color.rgba[0])
+        color_scale.append(self.bin4_color.rgba[0])
+        color_scale.append(self.bin5_color.rgba[0])
+
+        width = float(self.uniform_width_combo.currentText())
+
+        width_scale = list()
+        width_scale.append(float(self.bin1_width_combo.currentText()))
+        width_scale.append(float(self.bin2_width_combo.currentText()))
+        width_scale.append(float(self.bin3_width_combo.currentText()))
+        width_scale.append(float(self.bin4_width_combo.currentText()))
+        width_scale.append(float(self.bin5_width_combo.currentText()))
+
+        if self.uniform_color_radio_button.isChecked():
+            is_uniform_color = True
+        else:
+            is_uniform_color = False
+
+        if self.uniform_width_radio_button.isChecked():
+            is_uniform_width = True
+        else:
+            is_uniform_width = False
+
+        return is_uniform_color, color, color_scale, is_uniform_width, width, width_scale
+
+
+
 
 
 

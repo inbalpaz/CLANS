@@ -155,9 +155,9 @@ class MainWindow(QMainWindow):
         self.conf_nodes_action.triggered.connect(self.conf_nodes)
         self.conf_menu.addAction(self.conf_nodes_action)
 
-        #self.conf_edges_action = QAction("Connections (edges) settings", self)
-        #self.conf_edges_action.triggered.connect(self.conf_edges)
-        #self.conf_menu.addAction(self.conf_edges_action)
+        self.conf_edges_action = QAction("Connections (edges) settings", self)
+        self.conf_edges_action.triggered.connect(self.conf_edges)
+        self.conf_menu.addAction(self.conf_edges_action)
 
         # Create the Tools menu
         self.tools_menu = self.main_menu.addMenu("Tools")
@@ -296,7 +296,7 @@ class MainWindow(QMainWindow):
         # Add a button to change the Z-indexing of nodes in 2D presentation
         self.z_index_mode_combo = QComboBox()
         self.z_index_mode_combo.addItems(["Auto Z-index", "By groups order"])
-        if self.dim_num == 3 or len(cfg.groups_by_categories[self.group_by]['groups']) < 2:
+        if self.dim_num == 3 or len(cfg.groups_by_categories[self.group_by]['groups']) == 0:
             self.z_index_mode_combo.setEnabled(False)
         self.z_index_mode_combo.currentIndexChanged.connect(self.manage_z_indexing)
 
@@ -774,7 +774,7 @@ class MainWindow(QMainWindow):
 
             # Update the text-field for the threshold according to the type of values
             if cfg.run_params['type_of_values'] == 'att':
-                self.pval_label.setText("Attraction value threshold:")
+                self.pval_label.setText("Score threshold:")
             else:
                 self.pval_label.setText("P-value threshold:")
             self.pval_widget.setText(str(cfg.run_params['similarity_cutoff']))
@@ -1050,7 +1050,7 @@ class MainWindow(QMainWindow):
             self.edit_groups_button.setEnabled(True)
 
             if self.is_subset_mode == 0 and self.view_in_dimensions_num == 2 and self.color_by == 'groups' and \
-                    len(cfg.groups_by_categories[self.group_by]['groups']) > 1:
+                    len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                 self.z_index_mode_combo.setEnabled(True)
 
         # Enable selection-related buttons only in full data mode
@@ -1461,7 +1461,16 @@ class MainWindow(QMainWindow):
             conf_edges_dlg = cd.EdgesConfig()
 
             if conf_edges_dlg.exec_():
-                pass
+                cfg.run_params['is_uniform_edges_color'], cfg.run_params['edges_color'], \
+                cfg.run_params['edges_color_scale'], cfg.run_params['is_uniform_edges_width'], \
+                cfg.run_params['edges_width'], cfg.run_params['edges_width_scale'] = conf_edges_dlg.get_parameters()
+
+                try:
+                    self.network_plot.set_defaults(self.dim_num, self.color_by, self.group_by)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot update the default nodes parameters."
+                    error_occurred(self.network_plot.set_defaults, 'set_defaults', err, error_msg)
+                    return
 
         except Exception as err:
             error_msg = "An error occurred: cannot update the edges parameters."
@@ -1496,7 +1505,7 @@ class MainWindow(QMainWindow):
             self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View of " + self.file_name)
 
             # Only in full data and color-by groups modes
-            if self.is_subset_mode == 0 and len(cfg.groups_by_categories[self.group_by]['groups']) > 1 \
+            if self.is_subset_mode == 0 and len(cfg.groups_by_categories[self.group_by]['groups']) > 0 \
                     and self.color_by == 'groups':
                 self.z_index_mode_combo.setEnabled(True)
 
@@ -1653,7 +1662,7 @@ class MainWindow(QMainWindow):
             self.pval_widget.setEnabled(False)
             self.dimensions_view_combo.setEnabled(False)
 
-            if len(cfg.groups_by_categories[self.group_by]['groups']) > 1 and self.color_by == 'groups':
+            if len(cfg.groups_by_categories[self.group_by]['groups']) > 0 and self.color_by == 'groups':
                 self.z_index_mode_combo.setEnabled(True)
 
             # Disconnect the default behaviour of the viewbox when the mouse moves
@@ -1747,7 +1756,7 @@ class MainWindow(QMainWindow):
                     self.add_to_group_button.setEnabled(True)
                     self.remove_selected_button.setEnabled(True)
 
-                if self.dim_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 1:
+                if self.dim_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                     self.z_index_mode_combo.setEnabled(True)
 
                 # Enable the 'group-by' combo box if is more than one grouping option
@@ -1853,7 +1862,7 @@ class MainWindow(QMainWindow):
 
             if self.dim_num == 2:
                 self.z_index_mode_combo.setCurrentIndex(0)
-                if not self.is_subset_mode and len(cfg.groups_by_categories[self.group_by]['groups']) > 1:
+                if not self.is_subset_mode and len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                     self.z_index_mode_combo.setEnabled(True)
                 else:
                     self.z_index_mode_combo.setEnabled(False)
@@ -2074,7 +2083,7 @@ class MainWindow(QMainWindow):
             self.clear_selection_button.setEnabled(True)
             self.select_by_text_button.setEnabled(True)
 
-            if self.view_in_dimensions_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 1:
+            if self.view_in_dimensions_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                 self.z_index_mode_combo.setEnabled(True)
 
             # Update the coordinates in the fruchterman-reingold object
@@ -2297,7 +2306,7 @@ class MainWindow(QMainWindow):
                 return
 
             # Update the look of the selected data-points according to the new group definitions
-            if self.dim_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 1:
+            if self.dim_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                 self.z_index_mode_combo.setEnabled(True)
 
             try:

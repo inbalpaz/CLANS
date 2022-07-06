@@ -559,7 +559,7 @@ class ColorByLengthDialog(QDialog):
         self.long_color_button.pressed.connect(self.change_long_color)
 
         self.switch_button = QPushButton()
-        self.switch_button.setIcon(QIcon("clans/GUI/icons/switch_icon_trans.png"))
+        self.switch_button.setIcon(QIcon(cfg.icons_dir + "switch_icon_trans.png"))
         self.switch_button.pressed.connect(self.switch_colors)
 
         self.layout.addWidget(self.short_color_button, 3, 0)
@@ -684,7 +684,7 @@ class ColorByParamDialog(QDialog):
         self.max_color_button.pressed.connect(self.change_max_color)
 
         self.switch_button = QPushButton()
-        self.switch_button.setIcon(QIcon("clans/GUI/icons/switch_icon_trans.png"))
+        self.switch_button.setIcon(QIcon(cfg.icons_dir + "switch_icon_trans.png"))
         self.switch_button.pressed.connect(self.switch_colors)
 
         self.colors_layout.addWidget(self.min_color_button, 2, 0)
