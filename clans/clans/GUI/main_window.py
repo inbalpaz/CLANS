@@ -62,6 +62,7 @@ class MainWindow(QMainWindow):
         self.after = None
         self.is_running_calc = 0
         self.is_show_connections = 0
+        self.is_hide_singeltons = 0
         self.is_show_selected_names = 0
         self.is_show_group_names = 0
         self.group_names_display = 'all'
@@ -89,15 +90,16 @@ class MainWindow(QMainWindow):
         self.round_layout = QHBoxLayout()
         self.calc_layout = QHBoxLayout()
         self.selection_layout = QHBoxLayout()
+        self.mode_layout = QHBoxLayout()
         self.view_layout = QHBoxLayout()
         self.groups_layout = QHBoxLayout()
         self.display_layout = QHBoxLayout()
 
         self.main_layout.setSpacing(4)
 
-        self.horizontal_spacer_long = QSpacerItem(18, 24, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.horizontal_spacer_short = QSpacerItem(10, 24, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.horizontal_spacer_tiny = QSpacerItem(5, 24, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.horizontal_spacer_long = QSpacerItem(18, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.horizontal_spacer_short = QSpacerItem(10, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.horizontal_spacer_tiny = QSpacerItem(5, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         # Define a menu-bar
         self.main_menu = QMenuBar()
@@ -231,6 +233,7 @@ class MainWindow(QMainWindow):
 
         self.calc_label = QLabel("Clustering:")
         self.calc_label.setStyleSheet("color: maroon; font-weight: bold;")
+        self.calc_label.setFixedSize(80, 20)
 
         # Add calculation buttons (Init, Start, Stop)
         self.start_button = QPushButton("Start")
@@ -254,14 +257,13 @@ class MainWindow(QMainWindow):
         # Add a text-field for the P-value / attraction-value threshold
         self.pval_label = QLabel("P-value threshold:")
         self.pval_widget = QLineEdit()
-        self.pval_widget.setFixedSize(60, 24)
+        self.pval_widget.setFixedSize(90, 20)
         self.pval_widget.setText(str(cfg.run_params['similarity_cutoff']))
         self.pval_widget.setEnabled(False)
         self.pval_widget.returnPressed.connect(self.update_cutoff)
 
         # Add the widgets to the calc_layout
         self.calc_layout.addWidget(self.calc_label)
-        self.calc_layout.addSpacerItem(self.horizontal_spacer_short)
         self.calc_layout.addWidget(self.init_button)
         self.calc_layout.addWidget(self.start_button)
         self.calc_layout.addWidget(self.stop_button)
@@ -284,8 +286,43 @@ class MainWindow(QMainWindow):
         self.mode_combo.setEnabled(False)
         self.mode_combo.currentIndexChanged.connect(self.change_mode)
 
+        self.selection_mode_label = QLabel("Selection mode:")
+        #self.selection_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
+
+        # Add a combo-box to switch between sequences / groups selection
+        self.selection_type_combo = QComboBox()
+        self.selection_type_combo.addItems(["Sequences", "Groups"])
+        self.selection_type_combo.setEnabled(False)
+        self.selection_type_combo.currentIndexChanged.connect(self.change_selection_type)
+
+        # Add a combo-box to switch between color-by options
+        self.color_by_label = QLabel("Color by:")
+        self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
+
+        self.color_by_combo = QComboBox()
+        self.color_by_combo.addItem("Groups/Default")
+        self.color_by_combo.setEnabled(False)
+        self.color_by_combo.currentIndexChanged.connect(self.change_coloring)
+
+        # Add the widgets to the mode layout
+        self.mode_layout.addWidget(self.mode_label)
+        self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.mode_layout.addWidget(self.mode_combo)
+        self.mode_layout.addSpacerItem(self.horizontal_spacer_short)
+        self.mode_layout.addWidget(self.selection_mode_label)
+        self.mode_layout.addWidget(self.selection_type_combo)
+        self.mode_layout.addSpacerItem(self.horizontal_spacer_long)
+        self.mode_layout.addWidget(self.color_by_label)
+        self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.mode_layout.addWidget(self.color_by_combo)
+        self.mode_layout.addStretch()
+
+        # Add the mode_layout to the main layout
+        self.main_layout.addLayout(self.mode_layout)
+
         self.view_label = QLabel("View:")
         self.view_label.setStyleSheet("color: maroon; font-weight: bold;")
+        self.view_label.setFixedSize(80, 18)
 
         # Add a combo-box to switch between 3D and 2D views
         self.dimensions_view_combo = QComboBox()
@@ -306,69 +343,29 @@ class MainWindow(QMainWindow):
         self.data_mode_combo.setEnabled(False)
         self.data_mode_combo.currentIndexChanged.connect(self.manage_subset_presentation)
 
+        # Add a button to hide singeltons
+        self.hide_singeltons_button = QPushButton("Hide singeltons")
+        self.hide_singeltons_button.setCheckable(True)
+        self.hide_singeltons_button.setEnabled(False)
+        self.hide_singeltons_button.released.connect(self.hide_singeltons)
+
         # Add the widgets to the view_layout
-        self.view_layout.addWidget(self.mode_label)
-        self.view_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.view_layout.addWidget(self.mode_combo)
-        self.view_layout.addSpacerItem(self.horizontal_spacer_long)
         self.view_layout.addWidget(self.view_label)
-        self.view_layout.addSpacerItem(self.horizontal_spacer_short)
         self.view_layout.addWidget(self.dimensions_view_combo)
-        self.view_layout.addWidget(self.data_mode_combo)
+        self.view_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.view_layout.addWidget(self.z_index_mode_combo)
+        self.view_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.view_layout.addWidget(self.data_mode_combo)
+        self.view_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.view_layout.addWidget(self.hide_singeltons_button)
         self.view_layout.addStretch()
 
         # Add the view_layout to the main layout
         self.main_layout.addLayout(self.view_layout)
 
-        self.selection_label = QLabel("Selection:")
-        self.selection_label.setStyleSheet("color: maroon; font-weight: bold;")
-
-        self.selection_mode_label = QLabel("Mode:")
-
-        # Add a combo-box to switch between sequences / groups selection
-        self.selection_type_combo = QComboBox()
-        self.selection_type_combo.addItems(["Sequences", "Groups"])
-        self.selection_type_combo.setEnabled(False)
-        self.selection_type_combo.currentIndexChanged.connect(self.change_selection_type)
-
-        # Add a button to select all the sequences / groups
-        self.select_all_button = QPushButton("Select all")
-        self.select_all_button.setEnabled(False)
-        self.select_all_button.released.connect(self.select_all)
-
-        # Add a button to clear the current selection
-        self.clear_selection_button = QPushButton("Clear")
-        self.clear_selection_button.setEnabled(False)
-        self.clear_selection_button.released.connect(self.clear_selection)
-
-        # Add a button to show the selected sequences/groups names on screen
-        self.open_selected_button = QPushButton("Edit selected sequences")
-        self.open_selected_button.setEnabled(False)
-        self.open_selected_button.released.connect(self.open_selected_window)
-
-        # Add a button to show the selected sequences/groups names on screen
-        self.select_by_text_button = QPushButton("Select by text")
-        self.select_by_text_button.setEnabled(False)
-        self.select_by_text_button.released.connect(self.select_by_text)
-
-        # Add the widgets to the selection_layout
-        self.selection_layout.addWidget(self.selection_label)
-        self.selection_layout.addSpacerItem(self.horizontal_spacer_short)
-        self.selection_layout.addWidget(self.selection_mode_label)
-        self.selection_layout.addWidget(self.selection_type_combo)
-        self.selection_layout.addSpacerItem(self.horizontal_spacer_short)
-        self.selection_layout.addWidget(self.select_all_button)
-        self.selection_layout.addWidget(self.clear_selection_button)
-        self.selection_layout.addWidget(self.select_by_text_button)
-        self.selection_layout.addWidget(self.open_selected_button)
-        self.selection_layout.addStretch()
-
-        # Add the selection_layout to the main layout
-        self.main_layout.addLayout(self.selection_layout)
-
         self.display_label = QLabel("Display:")
         self.display_label.setStyleSheet("color: maroon; font-weight: bold;")
+        self.display_label.setFixedSize(80, 18)
 
         # Add a button to show/hide the connections
         self.connections_button = QPushButton("Connections")
@@ -396,31 +393,11 @@ class MainWindow(QMainWindow):
         self.show_groups_combo.currentIndexChanged.connect(self.change_group_names_display)
 
         # Add 'reset group names' button
-        self.reset_group_names_button = QPushButton("Init names")
+        self.reset_group_names_button = QPushButton("Init names positions")
         self.reset_group_names_button.setEnabled(False)
         self.reset_group_names_button.pressed.connect(self.reset_group_names_positions)
 
-        # Add a combo-box to switch between color-by options
-        self.color_by_label = QLabel("Color by:")
-        self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
-
-        self.color_by_combo = QComboBox()
-        self.color_by_combo.addItem("Groups/Default")
-        self.color_by_combo.setEnabled(False)
-        self.color_by_combo.currentIndexChanged.connect(self.change_coloring)
-
-        # Add 'Add text' button
-        #self.add_text_button = QPushButton("Add text")
-        #self.add_text_button.setEnabled(False)
-        #self.add_text_button.pressed.connect(self.add_text)
-
-        # Add the widgets to the view_layout
-        self.display_layout.addWidget(self.color_by_label)
-        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.display_layout.addWidget(self.color_by_combo)
-        self.display_layout.addSpacerItem(self.horizontal_spacer_short)
         self.display_layout.addWidget(self.display_label)
-        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.display_layout.addWidget(self.connections_button)
         self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.display_layout.addWidget(self.show_selected_names_button)
@@ -432,6 +409,41 @@ class MainWindow(QMainWindow):
 
         # Add the view_layout to the main layout
         self.main_layout.addLayout(self.display_layout)
+
+        self.selection_label = QLabel("Selection:")
+        self.selection_label.setStyleSheet("color: maroon; font-weight: bold;")
+        self.selection_label.setFixedSize(80, 18)
+
+        # Add a button to select all the sequences / groups
+        self.select_all_button = QPushButton("Select all")
+        self.select_all_button.setEnabled(False)
+        self.select_all_button.released.connect(self.select_all)
+
+        # Add a button to clear the current selection
+        self.clear_selection_button = QPushButton("Clear")
+        self.clear_selection_button.setEnabled(False)
+        self.clear_selection_button.released.connect(self.clear_selection)
+
+        # Add a button to show the selected sequences/groups names on screen
+        self.open_selected_button = QPushButton("Edit selected sequences")
+        self.open_selected_button.setEnabled(False)
+        self.open_selected_button.released.connect(self.open_selected_window)
+
+        # Add a button to show the selected sequences/groups names on screen
+        self.select_by_text_button = QPushButton("Select by text")
+        self.select_by_text_button.setEnabled(False)
+        self.select_by_text_button.released.connect(self.select_by_text)
+
+        # Add the widgets to the selection_layout
+        self.selection_layout.addWidget(self.selection_label)
+        self.selection_layout.addWidget(self.select_all_button)
+        self.selection_layout.addWidget(self.clear_selection_button)
+        self.selection_layout.addWidget(self.select_by_text_button)
+        self.selection_layout.addWidget(self.open_selected_button)
+        self.selection_layout.addStretch()
+
+        # Add the selection_layout to the main layout
+        self.main_layout.addLayout(self.selection_layout)
 
         self.groups_label = QLabel("Groups:")
         self.groups_label.setStyleSheet("color: maroon; font-weight: bold;")
@@ -454,6 +466,7 @@ class MainWindow(QMainWindow):
         # Add a combo-box to switch between group-by options
         self.group_by_label = QLabel("Group by:")
         self.group_by_label.setStyleSheet("color: maroon; font-weight: bold;")
+        self.group_by_label.setFixedSize(80, 18)
 
         self.group_by_combo = QComboBox()
         self.group_by_combo.addItem("Manual definition")
@@ -466,7 +479,6 @@ class MainWindow(QMainWindow):
         self.edit_categories_button.released.connect(self.edit_categories)
 
         self.groups_layout.addWidget(self.group_by_label)
-        self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.groups_layout.addWidget(self.group_by_combo)
         self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.groups_layout.addWidget(self.edit_categories_button)
@@ -545,6 +557,7 @@ class MainWindow(QMainWindow):
         self.z_index_mode_combo.setCurrentIndex(0)
 
         self.connections_button.setChecked(False)
+        self.hide_singeltons_button.setChecked(False)
         self.show_selected_names_button.setChecked(False)
         self.show_selected_names_button.setEnabled(False)
         self.data_mode_combo.setEnabled(False)
@@ -608,10 +621,13 @@ class MainWindow(QMainWindow):
         cfg.similarity_values_mtx = []
         cfg.attraction_values_mtx = []
         cfg.connected_sequences_mtx = []
+        cfg.connected_sequences_mtx_subset = []
         cfg.connected_sequences_list = []
         cfg.att_values_for_connected_list = []
         cfg.connected_sequences_list_subset = []
         cfg.att_values_for_connected_list_subset = []
+        cfg.singeltons_list = []
+        cfg.singeltons_list_subset = []
 
         cfg.run_params['num_of_rounds'] = 0
         cfg.run_params['rounds_done'] = 0
@@ -644,6 +660,7 @@ class MainWindow(QMainWindow):
         # Reset MainWindow class variables
         self.is_running_calc = 0
         self.is_show_connections = 0
+        self.is_hide_singeltons = 0
         self.is_show_selected_names = 0
         self.is_show_group_names = 0
         self.group_names_display = 'all'
@@ -709,6 +726,7 @@ class MainWindow(QMainWindow):
             self.clear_selection_button.setEnabled(True)
             self.select_by_text_button.setEnabled(True)
             self.connections_button.setEnabled(True)
+            self.hide_singeltons_button.setEnabled(True)
             #self.add_text_button.setEnabled(True)
 
             # Check if there are any defined groups
@@ -933,6 +951,10 @@ class MainWindow(QMainWindow):
             self.show_selected_names_button.setChecked(False)
             self.is_show_selected_names = 0
 
+            # Show the singeltons
+            self.hide_singeltons_button.setChecked(False)
+            self.hide_singeltons()
+
             try:
                 self.network_plot.hide_sequences_names()
             except Exception as err:
@@ -962,6 +984,9 @@ class MainWindow(QMainWindow):
                 # Move to automatic z-indexing
                 self.z_index_mode_combo.setCurrentIndex(0)
 
+            # Move back to rotation interaction mode
+            self.mode_combo.setCurrentIndex(0)
+
             # Disable all setup changes while calculating
             self.init_button.setEnabled(False)
             self.start_button.setEnabled(False)
@@ -969,6 +994,7 @@ class MainWindow(QMainWindow):
             self.pval_widget.setEnabled(False)
             self.dimensions_view_combo.setEnabled(False)
             self.connections_button.setEnabled(False)
+            self.hide_singeltons_button.setEnabled(False)
             self.show_selected_names_button.setEnabled(False)
             self.open_selected_button.setEnabled(False)
             self.data_mode_combo.setEnabled(False)
@@ -1041,6 +1067,7 @@ class MainWindow(QMainWindow):
             self.dimensions_view_combo.setEnabled(True)
         self.pval_widget.setEnabled(True)
         self.connections_button.setEnabled(True)
+        self.hide_singeltons_button.setEnabled(True)
         #self.add_text_button.setEnabled(True)
 
         if len(cfg.groups_by_categories[self.group_by]['groups']) > 0 and self.color_by == 'groups':
@@ -1229,6 +1256,30 @@ class MainWindow(QMainWindow):
                 error_msg = "An error occurred: cannot hide the connecting lines"
                 error_occurred(self.network_plot.hide_connections, 'hide_connections', err, error_msg)
 
+    def hide_singeltons(self):
+
+        # Hide the singeltons
+        if self.hide_singeltons_button.isChecked():
+            self.is_hide_singeltons = 1
+
+            try:
+                self.network_plot.hide_singeltons(self.dim_num, self.color_by, self.group_by,
+                                                  self.z_indexing_mode)
+            except Exception as err:
+                error_msg = "An error occurred: cannot display the connecting lines"
+                error_occurred(self.network_plot.hide_singeltons, 'hide_singeltons', err, error_msg)
+
+        # Hide the connections
+        else:
+            self.is_hide_singeltons = 0
+
+            try:
+                self.network_plot.show_singeltons(self.dim_num, self.color_by, self.group_by,
+                                                  self.z_indexing_mode)
+            except Exception as err:
+                error_msg = "An error occurred: cannot hide the connecting lines"
+                error_occurred(self.network_plot.show_singeltons, 'show_singeltons', err, error_msg)
+
     def update_cutoff(self):
 
         entered_pval = self.pval_widget.text()
@@ -1278,8 +1329,10 @@ class MainWindow(QMainWindow):
                 # If in subset mode, update the connections also for the subset
                 if self.is_subset_mode:
 
+                    subset_size = len(self.network_plot.selected_points)
+
                     try:
-                        sp.define_connected_sequences_list_subset()
+                        sp.define_connected_sequences_list_subset(subset_size)
                     except Exception as err:
                         error_msg = "An error occurred: cannot update the list of connected sequences in the subset"
                         error_occurred(sp.define_connected_sequences_list_subset,
@@ -1302,33 +1355,13 @@ class MainWindow(QMainWindow):
                     error_occurred(self.fr_object.update_connections, 'update_connections', err, error_msg)
                     return
 
-                # 3D view
-                if self.view_in_dimensions_num == 3:
-
-                    try:
-                        self.network_plot.update_connections(3)
-                    except Exception as err:
-                        error_msg = "An error occurred: cannot update the connecting lines in the graph"
-                        error_occurred(self.network_plot.update_connections, 'update_connections', err, error_msg)
-
-                # 2D view
-                else:
-                    # 3D clustering -> need to present the rotated-coordinates
-                    if cfg.run_params['dimensions_num_for_clustering'] == 3:
-
-                        try:
-                            self.network_plot.update_view(2, self.color_by)
-                        except Exception as err:
-                            error_msg = "An error occurred: cannot update the graph view to 2D"
-                            error_occurred(self.network_plot.update_view, 'update_view', err, error_msg)
-
-                    # 2D clustering
-                    else:
-                        try:
-                            self.network_plot.update_connections(2)
-                        except Exception as err:
-                            error_msg = "An error occurred: cannot update the connecting lines in the graph"
-                            error_occurred(self.network_plot.update_connections, 'update_connections', err, error_msg)
+                # Update the connections and singeltons (if needed) in the plot
+                try:
+                    self.network_plot.update_view(self.dim_num, self.color_by, self.group_by,
+                                                  self.z_indexing_mode)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot update the graph view to 2D"
+                    error_occurred(self.network_plot.update_view, 'update_view', err, error_msg)
 
         # The user entered invalid characters
         else:
@@ -1444,7 +1477,7 @@ class MainWindow(QMainWindow):
                 cfg.groups_by_categories[0]['nodes_outline_width'] = outline_width
 
                 try:
-                    self.network_plot.set_defaults(self.dim_num, self.color_by, self.group_by)
+                    self.network_plot.set_defaults(self.dim_num, self.color_by, self.group_by, self.z_indexing_mode)
                 except Exception as err:
                     error_msg = "An error occurred: cannot update the default nodes parameters."
                     error_occurred(self.network_plot.set_defaults, 'set_defaults', err, error_msg)
@@ -1457,7 +1490,6 @@ class MainWindow(QMainWindow):
     def conf_edges(self):
 
         try:
-
             conf_edges_dlg = cd.EdgesConfig()
 
             if conf_edges_dlg.exec_():
@@ -1466,7 +1498,7 @@ class MainWindow(QMainWindow):
                 cfg.run_params['edges_width'], cfg.run_params['edges_width_scale'] = conf_edges_dlg.get_parameters()
 
                 try:
-                    self.network_plot.set_defaults(self.dim_num, self.color_by, self.group_by)
+                    self.network_plot.update_view(self.dim_num, self.color_by, self.group_by, self.z_indexing_mode)
                 except Exception as err:
                     error_msg = "An error occurred: cannot update the default nodes parameters."
                     error_occurred(self.network_plot.set_defaults, 'set_defaults', err, error_msg)
@@ -1491,7 +1523,7 @@ class MainWindow(QMainWindow):
             # Not in init file mode
             if self.is_init == 0:
                 try:
-                    self.network_plot.set_3d_view(self.fr_object, self.color_by)
+                    self.network_plot.set_3d_view(self.fr_object, self.color_by, self.group_by, self.z_indexing_mode)
                 except Exception as err:
                     error_msg = "An error occurred: cannot set the graph to 3D view."
                     error_occurred(self.network_plot.set_3d_view, 'set_3d_view', err, error_msg)
@@ -1556,7 +1588,8 @@ class MainWindow(QMainWindow):
             # The view was already in 2D -> update the rotated positions
             if self.view_in_dimensions_num == 2:
                 try:
-                    self.network_plot.save_rotated_coordinates(2, self.fr_object, self.color_by)
+                    self.network_plot.save_rotated_coordinates(2, self.fr_object, self.color_by, self.group_by,
+                                                               self.z_indexing_mode)
                 except Exception as err:
                     error_msg = "An error occurred: cannot save the rotation"
                     error_occurred(self.network_plot.save_rotated_coordinates, 'save_rotated_coordinates', err,
@@ -1598,7 +1631,7 @@ class MainWindow(QMainWindow):
             if self.is_init == 0:
                 try:
                     self.network_plot.set_interactive_mode(self.view_in_dimensions_num, self.fr_object,
-                                                           self.color_by)
+                                                           self.color_by, self.group_by, self.z_indexing_mode)
                 except Exception as err:
                     error_msg = "An error occurred: cannot change the mode to \'Rotate/Pan graph\'"
                     error_occurred(self.network_plot.set_interactive_mode, 'set_interactive_mode', err, error_msg)
@@ -1625,6 +1658,7 @@ class MainWindow(QMainWindow):
                 error_msg = "An error occurred: cannot set the mouse default behaviour"
                 error_occurred(self.change_mode, 'change_mode', err, error_msg)
 
+        # Selection / Move visuals modes
         else:
             self.dim_num = 2
 
@@ -1655,11 +1689,6 @@ class MainWindow(QMainWindow):
                 error_occurred(self.network_plot.set_selection_mode, 'set_selection_mode', err, error_msg)
                 return
 
-            self.init_button.setEnabled(False)
-            self.start_button.setEnabled(False)
-            self.stop_button.setEnabled(False)
-            self.dimensions_clustering_combo.setEnabled(False)
-            self.pval_widget.setEnabled(False)
             self.dimensions_view_combo.setEnabled(False)
 
             if len(cfg.groups_by_categories[self.group_by]['groups']) > 0 and self.color_by == 'groups':
@@ -2052,7 +2081,8 @@ class MainWindow(QMainWindow):
             self.z_index_mode_combo.setEnabled(False)
 
             try:
-                self.network_plot.set_subset_view(self.view_in_dimensions_num, self.color_by, self.group_by)
+                self.network_plot.set_subset_view(self.view_in_dimensions_num, self.color_by, self.group_by,
+                                                  self.z_indexing_mode)
             except Exception as err:
                 error_msg = "An error occurred: cannot set the subset view"
                 error_occurred(self.network_plot.set_subset_view, 'set_subset_view', err, error_msg)
@@ -2097,7 +2127,8 @@ class MainWindow(QMainWindow):
                 return
 
             try:
-                self.network_plot.set_full_view(self.view_in_dimensions_num, self.color_by)
+                self.network_plot.set_full_view(self.view_in_dimensions_num, self.color_by, self.group_by,
+                                                self.z_indexing_mode)
             except Exception as err:
                 error_msg = "An error occurred: cannot set the full-data view"
                 error_occurred(self.network_plot.set_full_view, 'set_full_view', err, error_msg)

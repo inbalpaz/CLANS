@@ -537,7 +537,7 @@ class SearchResultsWindow(QWidget):
 
     def open_find_dialog(self):
 
-        find_dlg = FindDialog("Find in data")
+        find_dlg = FindDialog("Search in sequence headers")
         find_dlg.setGeometry(750, 500, 300, 100)
 
         if find_dlg.exec_():

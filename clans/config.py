@@ -34,6 +34,9 @@ text_size_small = 8
 
 max_groups_num = 300
 
+inactive_color = "#B5B5B5"
+hide_color = [1.0, 1.0, 1.0, 0.0]
+
 # Layout-related default parameters
 layouts = {'FR':
                {'name': 'Fruchterman-Reingold', 'is_default': 1, 'params':
@@ -144,10 +147,13 @@ similarity_values_list = []  # a list of the non-redundant significant HSPs ('se
 similarity_values_mtx = []  # a 2D matrix filled with Evalues for all pairs (redundant). The diagonal and non-significant pairs = 1
 attraction_values_mtx = []  # a 2D matrix filled with attraction values for all pairs (redundant). The diagonal and non-significant pairs = 0
 connected_sequences_mtx = []  # a boolean matrix (redundant). 1 for connected sequences (according to current Pvalue cutoff)
+connected_sequences_mtx_subset = []
 connected_sequences_list = []  # a 2D matrix listing the pairs of connected sequences according to the current P-value (non-redundant).
 att_values_for_connected_list = []  # a 2D matrix listing the attraction values of connected sequences according to the current P-value (non-redundant).
 connected_sequences_list_subset = []  # a 2D matrix listing the pairs of connected sequences according to the current P-value (non-redundant).
 att_values_for_connected_list_subset = []  # a 2D matrix listing the attraction values of connected sequences according to the current P-value (non-redundant).
+singeltons_list = []  # Boolean 1D array: contain 1 if sequence is a singelton (under a certain threshold)
+singeltons_list_subset = []
 
 # Taxonomy-related variables
 
