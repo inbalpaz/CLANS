@@ -2074,7 +2074,6 @@ class MainWindow(QMainWindow):
             # Disable all selection-related buttons
             self.mode_combo.setEnabled(False)
             self.mode_combo.setCurrentIndex(0)
-            self.select_by_text_button.setEnabled(False)
             self.select_all_button.setEnabled(False)
             self.clear_selection_button.setEnabled(False)
             self.z_index_mode_combo.setCurrentIndex(0)

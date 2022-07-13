@@ -182,9 +182,11 @@ class Network3D:
                 # Update the colors and size of the nodes that belongs to a group according to the group's information
                 if cfg.groups_by_categories[group_by]['sequences'][seq_index] > -1:
                     group_ID = cfg.groups_by_categories[group_by]['sequences'][seq_index]
-                    self.nodes_colors_array[seq_index] = cfg.groups_by_categories[group_by]['groups'][group_ID]['color_array']
+                    self.nodes_colors_array[seq_index] = \
+                        cfg.groups_by_categories[group_by]['groups'][group_ID]['color_array']
                     self.nodes_size_array[seq_index] = cfg.groups_by_categories[group_by]['groups'][group_ID]['size']
-                    self.nodes_outline_color_array[seq_index] = cfg.groups_by_categories[group_by]['groups'][group_ID]['outline_color']
+                    self.nodes_outline_color_array[seq_index] = \
+                        cfg.groups_by_categories[group_by]['groups'][group_ID]['outline_color']
 
                 # Update the parameters according to the category's definitions
                 else:
@@ -964,9 +966,11 @@ class Network3D:
             # Change the size and color according to the groups definition (if any)
             if cfg.groups_by_categories[group_by]['sequences'][seq_index] > -1:
                 group_ID = cfg.groups_by_categories[group_by]['sequences'][seq_index]
-                self.nodes_colors_array[seq_index] = cfg.groups_by_categories[group_by]['groups'][group_ID]['color_array']
+                self.nodes_colors_array[seq_index] = \
+                    cfg.groups_by_categories[group_by]['groups'][group_ID]['color_array']
                 self.nodes_size_array[seq_index] = cfg.groups_by_categories[group_by]['groups'][group_ID]['size']
-                self.nodes_outline_color_array[seq_index] = cfg.groups_by_categories[group_by]['groups'][group_ID]['outline_color']
+                self.nodes_outline_color_array[seq_index] = \
+                    cfg.groups_by_categories[group_by]['groups'][group_ID]['outline_color']
 
             # Use the category's definitions
             else:
@@ -1385,11 +1389,13 @@ class Network3D:
 
             # Update the group nodes with the new color and size
             for seq_index in cfg.groups_by_categories[group_by]['groups'][group_ID]['seqIDs']:
-                self.nodes_colors_array[seq_index] = cfg.groups_by_categories[group_by]['groups'][group_ID]['color_array']
+                self.nodes_colors_array[seq_index] = \
+                    cfg.groups_by_categories[group_by]['groups'][group_ID]['color_array']
 
                 if seq_index not in self.selected_points:
                     self.nodes_size_array[seq_index] = cfg.groups_by_categories[group_by]['groups'][group_ID]['size']
-                    self.nodes_outline_color_array[seq_index] = cfg.groups_by_categories[group_by]['groups'][group_ID]['outline_color']
+                    self.nodes_outline_color_array[seq_index] = \
+                        cfg.groups_by_categories[group_by]['groups'][group_ID]['outline_color']
 
             # Update the group name visual
             self.update_text_group_name_visual(group_by, group_ID)
@@ -1432,7 +1438,8 @@ class Network3D:
 
                 if seq_index not in self.selected_points:
                     self.nodes_size_array[seq_index] = cfg.groups_by_categories[group_by]['groups'][group_ID]['size']
-                    self.nodes_outline_color_array[seq_index] = cfg.groups_by_categories[group_by]['groups'][group_ID]['outline_color']
+                    self.nodes_outline_color_array[seq_index] = \
+                        cfg.groups_by_categories[group_by]['groups'][group_ID]['outline_color']
 
         self.update_members_by_groups(group_by)
 
@@ -1708,10 +1715,10 @@ class Network3D:
                 self.nodes_outline_color_array[seq_index] = self.selected_outline_color
                 self.nodes_size_array[seq_index] += 5
 
-        if dim_num == 3:
-            self.update_3d_view(color_by)
+        if self.is_subset_mode:
+            self.set_subset_view(dim_num, color_by, group_by, z_index_mode)
         else:
-            self.update_2d_view(z_index_mode, color_by, group_by)
+            self.update_view(dim_num, color_by, group_by, z_index_mode)
 
     def reset_selection(self, dim_num_view, z_index_mode, color_by, group_by, is_show_group_names,
                         group_names_display):
@@ -1749,10 +1756,7 @@ class Network3D:
 
         self.hide_sequences_names()
 
-        if dim_num_view == 3:
-            self.update_3d_view(color_by)
-        else:
-            self.update_2d_view(z_index_mode, color_by, group_by)
+        self.update_view(dim_num_view, color_by, group_by, z_index_mode)
 
     def highlight_selected_points(self, selected_dict, dim_num, z_index_mode, color_by, group_by):
 
@@ -1766,7 +1770,8 @@ class Network3D:
                     # The sequence belongs to a group
                     if cfg.groups_by_categories[group_by]['sequences'][seq_index] > -1:
                         group_ID = cfg.groups_by_categories[group_by]['sequences'][seq_index]
-                        self.nodes_size_array[seq_index] = cfg.groups_by_categories[group_by]['groups'][group_ID]['size'] + 10
+                        self.nodes_size_array[seq_index] = \
+                            cfg.groups_by_categories[group_by]['groups'][group_ID]['size'] + 10
                     # Use the category / default definitions
                     else:
                         self.nodes_size_array[seq_index] = cfg.groups_by_categories[group_by]['nodes_size'] + 10
@@ -1800,10 +1805,7 @@ class Network3D:
 
                 i += 1
 
-        if dim_num == 3:
-            self.update_3d_view(color_by)
-        else:
-            self.update_2d_view(z_index_mode, color_by, group_by)
+        self.update_view(dim_num, color_by, group_by, z_index_mode)
 
     def unhighlight_selected_points(self, selected_dict, dim_num, z_index_mode, color_by, group_by):
 
@@ -1861,10 +1863,7 @@ class Network3D:
 
                 i += 1
 
-        if dim_num == 3:
-            self.update_3d_view(color_by)
-        else:
-            self.update_2d_view(z_index_mode, color_by, group_by)
+        self.update_view(dim_num, color_by, group_by, z_index_mode)
 
     def start_dragging_rectangle(self, drag_start_screen_coor):
         trans = self.view.scene.transform
