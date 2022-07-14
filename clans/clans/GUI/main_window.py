@@ -424,21 +424,31 @@ class MainWindow(QMainWindow):
         self.clear_selection_button.setEnabled(False)
         self.clear_selection_button.released.connect(self.clear_selection)
 
-        # Add a button to show the selected sequences/groups names on screen
-        self.open_selected_button = QPushButton("Edit selected sequences")
-        self.open_selected_button.setEnabled(False)
-        self.open_selected_button.released.connect(self.open_selected_window)
-
-        # Add a button to show the selected sequences/groups names on screen
+        # Add a button to open the text-search window
         self.select_by_text_button = QPushButton("Select by text")
         self.select_by_text_button.setEnabled(False)
         self.select_by_text_button.released.connect(self.select_by_text)
 
+        # Add a button to open the searching by groups window
+        self.select_by_groups_button = QPushButton("Select by groups")
+        self.select_by_groups_button.setEnabled(False)
+        self.select_by_groups_button.released.connect(self.select_by_groups)
+
+        # Add a button to open the Selected Sequences window
+        self.open_selected_button = QPushButton("Edit selected sequences")
+        self.open_selected_button.setEnabled(False)
+        self.open_selected_button.released.connect(self.open_selected_window)
+
         # Add the widgets to the selection_layout
         self.selection_layout.addWidget(self.selection_label)
         self.selection_layout.addWidget(self.select_all_button)
+        self.selection_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.selection_layout.addWidget(self.clear_selection_button)
+        self.selection_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.selection_layout.addWidget(self.select_by_text_button)
+        self.selection_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        #self.selection_layout.addWidget(self.select_by_groups_button)
+        #self.selection_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.selection_layout.addWidget(self.open_selected_button)
         self.selection_layout.addStretch()
 
@@ -725,6 +735,7 @@ class MainWindow(QMainWindow):
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
             self.select_by_text_button.setEnabled(True)
+            self.select_by_groups_button.setEnabled(True)
             self.connections_button.setEnabled(True)
             self.hide_singeltons_button.setEnabled(True)
             #self.add_text_button.setEnabled(True)
@@ -1007,6 +1018,7 @@ class MainWindow(QMainWindow):
             self.select_all_button.setEnabled(False)
             self.clear_selection_button.setEnabled(False)
             self.select_by_text_button.setEnabled(False)
+            self.select_by_groups_button.setEnabled(False)
             self.edit_groups_button.setEnabled(False)
             self.add_to_group_button.setEnabled(False)
             self.remove_selected_button.setEnabled(False)
@@ -1085,7 +1097,9 @@ class MainWindow(QMainWindow):
             self.mode_combo.setEnabled(True)
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
-            self.select_by_text_button.setEnabled(True)
+
+        self.select_by_text_button.setEnabled(True)
+        self.select_by_groups_button.setEnabled(True)
 
         # If at least one point is selected -> enable all buttons related to actions on selected points
         if self.network_plot.selected_points != {}:
@@ -2059,6 +2073,9 @@ class MainWindow(QMainWindow):
             error_msg = "An error occurred: cannot open the search window"
             error_occurred(self.select_by_text, 'select_by_text', err, error_msg)
 
+    def select_by_groups(self):
+        pass
+
     def manage_subset_presentation(self):
 
         # Subset mode
@@ -2111,6 +2128,7 @@ class MainWindow(QMainWindow):
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
             self.select_by_text_button.setEnabled(True)
+            self.select_by_groups_button.setEnabled(True)
 
             if self.view_in_dimensions_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                 self.z_index_mode_combo.setEnabled(True)
