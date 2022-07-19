@@ -30,11 +30,10 @@ class AboutWindow(QWidget):
         self.version_label = QLabel("Version: " + cfg.version)
         self.version_label.setStyleSheet("color: maroon")
 
-        self.overview_label = QLabel("CLANS is a Python-based program for visualizing the relationship between "
-                                     "proteins\nbased on their pairwise sequence similarities.\n"
-                                     "The program implements a version of the Fruchterman-Reingold force directed\n"
-                                     "graph layout algorithm to visualize the sequence similarities in a 2D or 3D "
-                                     "space.")
+        self.overview_label = QLabel("CLANS 2.0 is a Python-based program for clustering sequences in the 2D or 3D "
+                                     "space,\nbased on their sequence similarities.\n"
+                                     "CLANS visualizes the dynamic clustering process and enables the user\n"
+                                     "to interactively control it and explore the cluster map in various ways.")
 
         self.layout.addWidget(self.version_label)
         self.layout.addWidget(self.overview_label)
