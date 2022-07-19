@@ -447,8 +447,8 @@ class MainWindow(QMainWindow):
         self.selection_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.selection_layout.addWidget(self.select_by_text_button)
         self.selection_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        #self.selection_layout.addWidget(self.select_by_groups_button)
-        #self.selection_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.selection_layout.addWidget(self.select_by_groups_button)
+        self.selection_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.selection_layout.addWidget(self.open_selected_button)
         self.selection_layout.addStretch()
 
@@ -523,6 +523,9 @@ class MainWindow(QMainWindow):
         # Create a window to display sequence search results (without showing it)
         self.search_window = windows.SearchResultsWindow(self, self.network_plot)
 
+        # Create a window to display the selection by groups (without showing it)
+        self.select_by_groups_window = windows.SelectByGroupsWindow(self, self.network_plot)
+
         # Create a text visual to display the 'loading file' message
         self.load_file_label = scene.widgets.Label("Loading the input file - please wait", bold=True,
                                                    font_size=15)
@@ -576,6 +579,7 @@ class MainWindow(QMainWindow):
         self.add_to_group_button.setEnabled(False)
         self.remove_selected_button.setEnabled(False)
         self.edit_groups_button.setEnabled(False)
+        self.select_by_groups_button.setEnabled(False)
         self.show_group_names_button.setChecked(False)
         self.show_group_names_button.setEnabled(False)
         self.reset_group_names_button.setEnabled(False)
@@ -596,8 +600,10 @@ class MainWindow(QMainWindow):
 
         # Reset the list of sequences in the 'selected sequences' window
         self.selected_seq_window.clear_list()
-        # Close the window
+        # Close the windows
         self.selected_seq_window.close_window()
+        self.select_by_groups_window.close_window()
+        self.search_window.close_window()
 
         self.is_init = 0
 
@@ -735,7 +741,6 @@ class MainWindow(QMainWindow):
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
             self.select_by_text_button.setEnabled(True)
-            self.select_by_groups_button.setEnabled(True)
             self.connections_button.setEnabled(True)
             self.hide_singeltons_button.setEnabled(True)
             #self.add_text_button.setEnabled(True)
@@ -770,6 +775,7 @@ class MainWindow(QMainWindow):
 
             # There is at least one valid pre-defined grouping category
             if groups_ok:
+                self.select_by_groups_button.setEnabled(True)
                 self.edit_categories_button.setEnabled(True)
                 self.edit_groups_button.setEnabled(True)
                 self.show_group_names_button.setEnabled(True)
@@ -784,7 +790,7 @@ class MainWindow(QMainWindow):
                     self.color_by_combo.addItem(param)
 
             # Update the file name in the selected sequences window
-            self.selected_seq_window.update_window_title(self.file_name)
+            #self.selected_seq_window.update_window_title(self.file_name)
 
             # Create and display the FR layout as scatter plot
             try:
@@ -853,35 +859,6 @@ class MainWindow(QMainWindow):
 
             cfg.run_params['input_file'] = opened_file
             cfg.run_params['input_format'] = 'clans'
-            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
-
-            # Define a runner for loading the file that will be executed in a different thread
-            self.load_file_worker = io.ReadInputWorker(cfg.run_params['input_format'])
-            self.load_input_file()
-
-    def load_mini_clans_file(self):
-
-        opened_file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "Clans files (*.clans)")
-
-        if opened_file:
-            print("Loading " + opened_file)
-
-            # Bring the controls to their initial state
-            self.reset_window()
-
-            # Clear the canvas
-            try:
-                self.network_plot.reset_data()
-            except Exception as err:
-                error_msg = "An error occurred: cannot reset the graph"
-                error_occurred(self.network_plot.reset_data, 'reset_data', err, error_msg)
-                return
-
-            # Initialize all the global data-structures
-            self.reset_variables()
-
-            cfg.run_params['input_file'] = opened_file
-            cfg.run_params['input_format'] = 'mini_clans'
             self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
 
             # Define a runner for loading the file that will be executed in a different thread
@@ -1082,14 +1059,14 @@ class MainWindow(QMainWindow):
         self.hide_singeltons_button.setEnabled(True)
         #self.add_text_button.setEnabled(True)
 
+        # Enable group-related options
         if len(cfg.groups_by_categories[self.group_by]['groups']) > 0 and self.color_by == 'groups':
             self.show_group_names_button.setEnabled(True)
+            self.edit_groups_button.setEnabled(True)
             if len(self.network_plot.selected_groups) > 0:
                 self.show_groups_combo.setEnabled(True)
-            self.edit_groups_button.setEnabled(True)
 
-            if self.is_subset_mode == 0 and self.view_in_dimensions_num == 2 and self.color_by == 'groups' and \
-                    len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
+            if self.is_subset_mode == 0 and self.view_in_dimensions_num == 2:
                 self.z_index_mode_combo.setEnabled(True)
 
         # Enable selection-related buttons only in full data mode
@@ -1099,7 +1076,9 @@ class MainWindow(QMainWindow):
             self.clear_selection_button.setEnabled(True)
 
         self.select_by_text_button.setEnabled(True)
-        self.select_by_groups_button.setEnabled(True)
+
+        if len(cfg.groups_by_categories) > 0 or len(cfg.groups_by_categories[0]['groups']) > 0:
+            self.select_by_groups_button.setEnabled(True)
 
         # If at least one point is selected -> enable all buttons related to actions on selected points
         if self.network_plot.selected_points != {}:
@@ -2065,16 +2044,20 @@ class MainWindow(QMainWindow):
             error_occurred(self.open_selected_window, 'open_selected_window', err, error_msg)
 
     def select_by_text(self):
-
         try:
             self.search_window.open_window()
 
         except Exception as err:
-            error_msg = "An error occurred: cannot open the search window"
+            error_msg = "An error occurred: cannot open the 'Select by text' window"
             error_occurred(self.select_by_text, 'select_by_text', err, error_msg)
 
     def select_by_groups(self):
-        pass
+        try:
+            self.select_by_groups_window.open_window()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot open the 'Select by groups' window"
+            error_occurred(self.select_by_groups, 'select_by_groups', err, error_msg)
 
     def manage_subset_presentation(self):
 
@@ -2367,6 +2350,7 @@ class MainWindow(QMainWindow):
 
             self.edit_groups_button.setEnabled(True)
             self.show_group_names_button.setEnabled(True)
+            self.select_by_groups_button.setEnabled(True)
 
             if self.mode_combo.currentIndex() == 1:
                 self.selection_type_combo.setEnabled(True)
@@ -2427,6 +2411,9 @@ class MainWindow(QMainWindow):
             self.selection_type_combo.setCurrentIndex(0)
             self.selection_type_combo.setEnabled(False)
             self.edit_groups_button.setEnabled(False)
+
+        if len(cfg.groups_by_categories) == 1 and len(cfg.groups_by_categories[0]['groups']) == 0:
+            self.select_by_groups_button.setEnabled(False)
 
     def group_by_taxonomy(self):
 

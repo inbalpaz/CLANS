@@ -435,8 +435,8 @@ class SearchResultsWindow(QWidget):
         self.items = []
         self.is_visible = 0
 
-        self.setWindowTitle("Search results")
-        self.setGeometry(650, 400, 600, 400)
+        self.setWindowTitle("Select by text results")
+        self.setGeometry(650, 280, 600, 400)
 
         self.main_layout = QVBoxLayout()
 
@@ -487,8 +487,6 @@ class SearchResultsWindow(QWidget):
             self.is_visible = 1
             self.show()
 
-            self.setGeometry(650, 400, 600, 400)
-
             # Open the 'find' dialog when this window opens
             self.open_find_dialog()
 
@@ -525,7 +523,7 @@ class SearchResultsWindow(QWidget):
     def open_find_dialog(self):
 
         find_dlg = FindDialog("Search in sequence headers")
-        find_dlg.setGeometry(750, 500, 300, 100)
+        find_dlg.setGeometry(750, 350, 300, 100)
 
         if find_dlg.exec_():
             text, is_case_sensitive = find_dlg.get_input()
@@ -693,5 +691,430 @@ class SearchResultsWindow(QWidget):
         except Exception as err:
             error_msg = "An error occurred: cannot set the sequences as the selected-subset"
             error_occurred(self.set_as_selected, 'set_as_selected', err, error_msg)
+
+
+class GroupsIntersectionResults(QWidget):
+
+    def __init__(self, main_window, net_plot):
+        super().__init__()
+
+        self.main_window_object = main_window
+        self.net_plot_object = net_plot
+
+        self.sorted_seq_indices = []
+        self.items = []
+        self.is_visible = 0
+
+        self.setWindowTitle("Select by groups results")
+        self.setGeometry(830, 310, 600, 400)
+
+        self.main_layout = QVBoxLayout()
+
+        # Add a message on top
+        self.message = QLabel("")
+        self.message.setStyleSheet("color: maroon;")
+
+        self.main_layout.addWidget(self.message)
+
+        # Add a list widget to display the sequences
+        self.seq_list = QListWidget()
+        self.seq_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
+        self.main_layout.addWidget(self.seq_list)
+
+        # Add a layout for buttons
+        self.buttons_layout = QHBoxLayout()
+
+        self.highlight_button = QPushButton("Highlight all")
+        self.highlight_button.setCheckable(True)
+        self.highlight_button.released.connect(self.highlight_all)
+
+        self.add_to_selected_button = QPushButton("Add to selected subset")
+        self.add_to_selected_button.released.connect(self.add_to_selected)
+
+        self.set_as_selected_button = QPushButton("Set as selected subset")
+        self.set_as_selected_button.released.connect(self.set_as_selected)
+
+        self.close_button = QPushButton("Close")
+        self.close_button.released.connect(self.close_window)
+
+        self.buttons_layout.addWidget(self.highlight_button)
+        self.buttons_layout.addWidget(self.add_to_selected_button)
+        self.buttons_layout.addWidget(self.set_as_selected_button)
+        self.buttons_layout.addWidget(self.close_button)
+        self.buttons_layout.addStretch()
+
+        self.main_layout.addLayout(self.buttons_layout)
+        self.setLayout(self.main_layout)
+
+    def open_window(self, sorted_seq_indices):
+        try:
+            self.is_visible = 1
+
+            # Create/update the sequences list
+            self.build_seq_list(sorted_seq_indices)
+
+            self.show()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot open the 'Select by groups' Window"
+            error_occurred(self.open_window, 'open_window', err, error_msg)
+
+    def close_window(self):
+        try:
+            self.clear_seq_list()
+            self.is_visible = 0
+            self.close()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot close the Search Results Window"
+            error_occurred(self.close_window, 'close_window', err, error_msg)
+
+    def highlight_all(self):
+        try:
+            # Select all items
+            if self.highlight_button.isChecked():
+                for i in range(len(self.items)):
+                    self.items[i].setSelected(True)
+
+            # De-select all items
+            else:
+                for i in range(len(self.items)):
+                    self.items[i].setSelected(False)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot mark all sequences as selected"
+            error_occurred(self.highlight_all, 'highlight_all', err, error_msg)
+
+    def clear_seq_list(self):
+        self.seq_list.clear()
+        self.highlight_button.setChecked(False)
+        self.sorted_seq_indices = []
+        self.items = []
+
+    def build_seq_list(self, sorted_seq_indices):
+
+        # Clear the previous list (if any)
+        self.clear_seq_list()
+
+        self.sorted_seq_indices = sorted_seq_indices
+        seq_num = len(self.sorted_seq_indices)
+
+        # Update the message
+        if seq_num == 0:
+            self.update_message("No sequences found")
+        else:
+            self.update_message("Found " + str(seq_num) + " matching sequences")
+
+        # Update the list
+        for i in range(seq_num):
+            seq_index = self.sorted_seq_indices[i]
+            seq_title = cfg.sequences_array[seq_index]['seq_title']
+
+            # The sequence header is the same as the index -> display only once
+            if str(seq_index) == seq_title:
+                line_str = str(seq_index)
+            else:
+                line_str = str(seq_index) + "  " + seq_title
+
+            self.items.append(QListWidgetItem(line_str))
+            self.seq_list.insertItem(i, self.items[i])
+
+    def update_message(self, message):
+        self.message.setText(message)
+
+    def add_to_selected(self):
+
+        try:
+            selected_indices = {}
+
+            for item in self.seq_list.selectedIndexes():
+                row_index = item.row()
+                selected_indices[self.sorted_seq_indices[row_index]] = 1
+
+            if len(selected_indices) > 0:
+
+                # Set the selected sequences as the selected subset
+                try:
+                    self.net_plot_object.select_subset(selected_indices, self.main_window_object.dim_num,
+                                                       self.main_window_object.z_indexing_mode,
+                                                       self.main_window_object.color_by,
+                                                       self.main_window_object.group_by)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot add to the selected subset"
+                    error_occurred(self.net_plot_object.select_subset, 'select_subset', err, error_msg)
+                    return
+
+                # Update the selected sequences window
+                try:
+                    self.main_window_object.selected_seq_window.update_sequences()
+                except Exception as err:
+                    error_msg = "An error occurred: cannot update the sequences list in the selected sequences window"
+                    error_occurred(self.main_window_object.selected_seq_window.update_sequences, 'update_sequences',
+                                   err, error_msg)
+
+                # Enable all the controls that are related to selected items in the Main Window
+                self.main_window_object.open_selected_button.setEnabled(True)
+                self.main_window_object.show_selected_names_button.setEnabled(True)
+                self.main_window_object.add_to_group_button.setEnabled(True)
+                self.main_window_object.remove_selected_button.setEnabled(True)
+                if len(self.net_plot_object.selected_points) >= 4:
+                    self.main_window_object.data_mode_combo.setEnabled(True)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot add to the selected subset"
+            error_occurred(self.add_to_selected, 'add_to_selected', err, error_msg)
+
+    def set_as_selected(self):
+
+        try:
+            selected_indices = {}
+
+            for item in self.seq_list.selectedIndexes():
+                row_index = item.row()
+                selected_indices[self.sorted_seq_indices[row_index]] = 1
+
+            if len(selected_indices) > 0:
+
+                # Clear the current selection
+                try:
+                    self.net_plot_object.reset_selection(self.main_window_object.dim_num,
+                                                         self.main_window_object.z_indexing_mode,
+                                                         self.main_window_object.color_by,
+                                                         self.main_window_object.group_by,
+                                                         self.main_window_object.is_show_group_names,
+                                                         self.main_window_object.group_names_display)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot clear the selected subset"
+                    error_occurred(self.net_plot_object.reset_selection, 'reset_selection', err, error_msg)
+                    return
+
+                # Set the selected sequences as the selected subset
+                try:
+                    self.net_plot_object.select_subset(selected_indices, self.main_window_object.dim_num,
+                                                       self.main_window_object.z_indexing_mode,
+                                                       self.main_window_object.color_by,
+                                                       self.main_window_object.group_by)
+                except Exception as err:
+                    error_msg = "An error occurred: cannot set the sequences as the selected-subset"
+                    error_occurred(self.net_plot_object.select_subset, 'select_subset', err, error_msg)
+                    return
+
+                # Update the selected sequences window
+                try:
+                    self.main_window_object.selected_seq_window.update_sequences()
+                except Exception as err:
+                    error_msg = "An error occurred: cannot update the sequences list in the selected sequences window"
+                    error_occurred(self.main_window_object.selected_seq_window.update_sequences, 'update_sequences',
+                                   err, error_msg)
+
+                # Enable all the controls that are related to selected items in the Main Window
+                self.main_window_object.open_selected_button.setEnabled(True)
+                self.main_window_object.show_selected_names_button.setEnabled(True)
+                self.main_window_object.add_to_group_button.setEnabled(True)
+                self.main_window_object.remove_selected_button.setEnabled(True)
+                if len(self.net_plot_object.selected_points) >= 4:
+                    self.main_window_object.data_mode_combo.setEnabled(True)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot set the sequences as the selected-subset"
+            error_occurred(self.set_as_selected, 'set_as_selected', err, error_msg)
+
+
+class SelectByGroupsWindow(QWidget):
+
+    def __init__(self, main_window, net_plot):
+        super().__init__()
+
+        self.main_window_object = main_window
+        self.net_plot_object = net_plot
+
+        # Build the results window, for later use
+        self.results_window = GroupsIntersectionResults(self.main_window_object, self.net_plot_object)
+
+        self.list_widgets_dict = {}
+        self.list_titles_dict = {}
+        self.name_to_group_ID = {}
+        self.is_visible = 0
+
+        self.setWindowTitle("Select by groups")
+        self.setGeometry(750, 350, 400, 700)
+
+        self.main_layout = QVBoxLayout()
+
+        self.space_line = QLabel("  ")
+        self.space_line.setFixedSize(60, 5)
+
+        # Add a message on top
+        self.message = QLabel("Select sequences which belong to the following group(s):\n"
+                              "(Multi-selection of groups is possible)\n\n"
+                              "Selecting groups from different grouping-categories is treated as intersection\n"
+                              "(AND logic operation)")
+        self.message.setStyleSheet("font-size: 14px")
+        self.main_layout.addWidget(self.message)
+        self.main_layout.addWidget(self.space_line)
+
+        # Create the lists widget inside a scrollable area
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+
+        self.lists_widget = QWidget()
+        self.lists_widget.setGeometry(750, 350, 400, 800)
+
+        self.lists_layout = QVBoxLayout()
+        self.lists_widget.setLayout(self.lists_layout)
+
+        self.scroll_area.setWidget(self.lists_widget)
+
+        self.main_layout.addWidget(self.scroll_area)
+
+        # Add a layout for buttons
+        self.buttons_layout = QHBoxLayout()
+
+        self.get_sequences_button = QPushButton("Get sequences by groups intersection")
+        self.get_sequences_button.released.connect(self.get_selected_sequences)
+
+        self.clear_button = QPushButton("Clear selection")
+        self.clear_button.released.connect(self.clear_selection)
+
+        self.close_button = QPushButton("Close")
+        self.close_button.released.connect(self.close_window)
+
+        self.buttons_layout.addWidget(self.get_sequences_button)
+        self.buttons_layout.addWidget(self.clear_button)
+        self.buttons_layout.addWidget(self.close_button)
+        self.buttons_layout.addStretch()
+
+        self.main_layout.addLayout(self.buttons_layout)
+
+        self.setLayout(self.main_layout)
+
+    def build_lists(self):
+
+        list_index = 0
+        for category_index in range(len(cfg.groups_by_categories)):
+            if len(cfg.groups_by_categories[category_index]['groups']) > 0:
+
+                # Add a list widget to display the groups of the grouping-category
+                self.list_widgets_dict[category_index] = QListWidget()
+                self.list_widgets_dict[category_index].setSelectionMode(QAbstractItemView.ExtendedSelection)
+
+                self.list_titles_dict[category_index] = QLabel()
+                self.list_titles_dict[category_index].setStyleSheet("color: maroon;")
+                self.list_titles_dict[category_index].setText(cfg.groups_by_categories[category_index]['name'])
+
+                # A loop over the groups to add them to the list
+                self.list_widgets_dict[category_index].addItem("---")
+
+                for group_ID in cfg.groups_by_categories[category_index]['groups']:
+                    group_name = cfg.groups_by_categories[category_index]['groups'][group_ID]['name']
+
+                    # Add the group name to the list widget
+                    self.list_widgets_dict[category_index].addItem(group_name)
+
+                    # Save mapping of the grouo_ID to group_name for later use
+                    self.name_to_group_ID[group_name] = group_ID
+
+                self.lists_layout.addWidget(self.list_titles_dict[category_index])
+                self.lists_layout.addWidget(self.list_widgets_dict[category_index])
+
+                list_index += 1
+
+    def open_window(self):
+
+        try:
+            self.is_visible = 1
+
+            # Clear the previous lists layout
+            for i in reversed(range(self.lists_layout.count())):
+                self.lists_layout.itemAt(i).widget().setParent(None)
+
+            # Build the updates lists
+            self.build_lists()
+
+            # Open the window
+            self.show()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot open the 'Select by groups' Window"
+            error_occurred(self.open_window, 'open_window', err, error_msg)
+
+    def close_window(self):
+        try:
+            self.is_visible = 0
+
+            # Close the results window
+            self.results_window.close_window()
+
+            self.close()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot close the 'Select by groups' Window"
+            error_occurred(self.close_window, 'close_window', err, error_msg)
+
+    def clear_selection(self):
+
+        for category_index in self.list_widgets_dict:
+            self.list_widgets_dict[category_index].setCurrentRow(0)
+
+        self.results_window.clear_seq_list()
+
+    def get_selected_sequences(self):
+
+        selected_indices_by_category = []
+        selected_indices_intersection = {}
+
+        selected_category_index = 0
+        for category_index in range(len(cfg.groups_by_categories)):
+            # Go over all the presented categories
+            if len(cfg.groups_by_categories[category_index]['groups']) > 0:
+                found_selected_group = 0
+
+                # Get the selected groups from this category list widget
+                for item in self.list_widgets_dict[category_index].selectedItems():
+                    group_name = item.text()
+                    if group_name != "---":
+                        group_ID = self.name_to_group_ID[group_name]
+
+                        # First selected group in the category
+                        if found_selected_group == 0:
+                            selected_indices_by_category.append(dict())
+
+                        found_selected_group = 1
+
+                        # Add the sequences that belong to the selected group to the by-category dictionary
+                        for seq_index in cfg.groups_by_categories[category_index]['groups'][group_ID]['seqIDs']:
+                            selected_indices_by_category[selected_category_index][seq_index] = 1
+
+                if found_selected_group:
+                    selected_category_index += 1
+
+        # Perform the intersection between the categories
+        selected_categories_num = len(selected_indices_by_category)
+        if selected_categories_num > 0:
+            for seq_index in selected_indices_by_category[0]:
+
+                # There are selected groups from more than one category -> check intersection
+                if selected_categories_num > 1:
+                    found_seq_in_category = 1
+
+                    # A loop over the rest of the categories
+                    for selected_category_index in range(1, selected_categories_num):
+                        if seq_index in selected_indices_by_category[selected_category_index]:
+                            found_seq_in_category += 1
+
+                    # Add the sequence to the selected set only if it appears in all selected categories
+                    if found_seq_in_category == selected_categories_num:
+                        selected_indices_intersection[seq_index] = 1
+
+                # There are groups only from one category -> add all the sequences to the selected set
+                else:
+                    selected_indices_intersection[seq_index] = 1
+
+        # Open / Update the results window, presenting the sequences
+        if self.results_window.is_visible:
+            self.results_window.build_seq_list(sorted(selected_indices_intersection))
+        else:
+            self.results_window.open_window(sorted(selected_indices_intersection))
 
 
