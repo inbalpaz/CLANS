@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='clans',
-    version='2.0.1_beta',
+    version='2.0.1',
     packages=find_packages(),
     package_data={'clans': [
         'clans/clans/taxonomy/names.dmp',
