@@ -473,7 +473,7 @@ class ClansFormat:
 
             # Update default / compatible categories
             cfg.groups_by_categories[0]['nodes_size'] = cfg.run_params['nodes_size']
-            if len(cfg.groups_by_categories) > 0 and cfg.groups_by_categories[1]['name'] == 'Input CLANS file':
+            if len(cfg.groups_by_categories) > 1 and cfg.groups_by_categories[1]['name'] == 'Input CLANS file':
                 cfg.groups_by_categories[1]['nodes_size'] = cfg.run_params['nodes_size']
 
         # The nodes size is not defined in the parameters -> define according to the data size
@@ -495,7 +495,7 @@ class ClansFormat:
 
             # Update default / compatible categories
             cfg.groups_by_categories[0]['nodes_outline_color'] = cfg.run_params['nodes_outline_color']
-            if len(cfg.groups_by_categories) > 0 and cfg.groups_by_categories[1]['name'] == 'Input CLANS file':
+            if len(cfg.groups_by_categories) > 1 and cfg.groups_by_categories[1]['name'] == 'Input CLANS file':
                 cfg.groups_by_categories[1]['nodes_outline_color'] = cfg.run_params['nodes_outline_color']
 
         if 'nodes_outline_width' in self.params:
@@ -503,7 +503,7 @@ class ClansFormat:
 
             # Update default / compatible categories
             cfg.groups_by_categories[0]['nodes_outline_width'] = cfg.run_params['nodes_outline_width']
-            if len(cfg.groups_by_categories) > 0 and cfg.groups_by_categories[1]['name'] == 'Input CLANS file':
+            if len(cfg.groups_by_categories) > 1 and cfg.groups_by_categories[1]['name'] == 'Input CLANS file':
                 cfg.groups_by_categories[1]['nodes_outline_width'] = cfg.run_params['nodes_outline_width']
 
         if 'is_taxonomy_available' in self.params:
@@ -513,8 +513,6 @@ class ClansFormat:
 
         # Apply the similarity cutoff
         if self.type_of_values == "hsp":
-            cfg.run_params['type_of_values'] = "hsp"
-            cfg.run_params['similarity_cutoff'] = cfg.similarity_cutoff
             sp.calculate_attraction_values()
             sp.define_connected_sequences('hsp')
         elif self.type_of_values == 'att':

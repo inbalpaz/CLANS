@@ -21,6 +21,9 @@ class DelimitedFormat:
 
         self.file_name = os.path.basename(file_path)
 
+        similarity_values_list = []
+        connections_dict = {}
+
         # Verify that the file exists
         if not os.path.isfile(file_path):
             self.file_is_valid = 0
@@ -114,8 +117,20 @@ class DelimitedFormat:
 
                     seq_index += 1
 
-                pair_tuple = (self.names_indices_dict[id1], self.names_indices_dict[id2], score)
-                cfg.similarity_values_list.append(pair_tuple)
+                if self.names_indices_dict[id1] < self.names_indices_dict[id2]:
+                    pair_tuple = (self.names_indices_dict[id1], self.names_indices_dict[id2], score)
+                    connection_str = str(self.names_indices_dict[id1]) + ":" + str(self.names_indices_dict[id2])
+                elif self.names_indices_dict[id1] > self.names_indices_dict[id2]:
+                    pair_tuple = (self.names_indices_dict[id2], self.names_indices_dict[id1], score)
+                    connection_str = str(self.names_indices_dict[id2]) + ":" + str(self.names_indices_dict[id1])
+                else:
+                    continue
+
+                # Verify that the connection appears only once before adding it to the list
+                if connection_str not in connections_dict:
+                    similarity_values_list.append(pair_tuple)
+                    cfg.similarity_values_list = sorted(similarity_values_list)
+                    connections_dict[connection_str] = 1
 
         # Get the total number of sequences
         cfg.run_params['total_sequences_num'] = seq_index
@@ -163,8 +178,6 @@ class DelimitedFormat:
 
         # Apply the similarity cutoff
         if self.type_of_values == "hsp":
-            cfg.run_params['type_of_values'] = "hsp"
-            cfg.run_params['similarity_cutoff'] = cfg.similarity_cutoff
             sp.calculate_attraction_values()
             sp.define_connected_sequences('hsp')
 

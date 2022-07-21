@@ -61,6 +61,7 @@ run_params = {  # a dict to hold all the running parameters (given by the user /
     'output_file': None,
     'output_format': output_format,
     'type_of_values': type_of_values,
+    'similarity_cutoff': similarity_cutoff,
     'is_debug_mode': False,
     'is_taxonomy_available': False,
     'finished_taxonomy_search': False,

@@ -42,7 +42,7 @@ class ReadInputWorker(QRunnable):
                     print(error)
                 cfg.run_params['is_problem'] = True
                 cfg.run_params['error'] = "An error has occurred: the input file has some problem or inconsistency.\n" \
-                                          "Please correct the file and try to reload."
+                                          #"Please correct the file and try to reload."
                 self.signals.finished.emit(1)
                 return
 

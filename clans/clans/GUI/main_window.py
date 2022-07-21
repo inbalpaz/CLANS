@@ -1367,6 +1367,9 @@ class MainWindow(QMainWindow):
         saved_file, _ = QFileDialog.getSaveFileName()
 
         if saved_file:
+            if saved_file[-6:] != '.clans':
+                saved_file += '.clans'
+
             file_object = clans_format.ClansFormat()
 
             try:
@@ -1384,6 +1387,9 @@ class MainWindow(QMainWindow):
         saved_file, _ = QFileDialog.getSaveFileName()
 
         if saved_file:
+            if saved_file[-6:] != '.clans':
+                saved_file += '.clans'
+
             file_object = clans_format.ClansFormat()
 
             try:
