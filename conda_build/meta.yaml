@@ -8,7 +8,7 @@ package:
 source:
   git_tag: 2.0.1
   url: https://github.com/inbalpaz/CLANS/releases/download/{{ version }}/CLANS_{{ version }}.tar.gz
-  sha256: 13b8e8498daab3f75ce4f46ffbb829a479a863982d8aeb998250085a426bf3f4
+  sha256: aea01cfe2554176b8c826d561ba8b9a94232f78be88960e27875fd0ffb752c47
 
 build:
   noarch: python
@@ -60,7 +60,7 @@ about:
   license: GPL-2.0-or-later
   license_family: GPL
   license_file: LICENSE.txt
-  doc_url: https://github.com/inbalpaz/CLANS/tree/master/manual/Manual.pdf
+  doc_url: https://github.com/inbalpaz/CLANS/blob/master/README.md
 
 extra:
   recipe-maintainers:

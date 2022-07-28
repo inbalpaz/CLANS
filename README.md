@@ -21,6 +21,16 @@ The BLAST search is only available in the command-line mode.
 
 **Requirements:** Anaconda installed on the target computer. An OS-specific version of Anaconda can be downloaded from: https://www.anaconda.com/.
 
+### From Anaconda repository:
+
+1.	Create a clean conda environment: `conda env create -n clans_2_0`
+
+2.	Activate the newly created environment: `conda activate clans_2_0`
+
+3.	Install the clans package from Anaconda repository by using the following command:
+
+    `conda install -c inbalpaz clans -c defaults -c conda-forge -c bioconda`
+
 ### From source using conda:
 
 1. Download CLANS latest release from: https://github.com/inbalpaz/CLANS/releases.
@@ -29,7 +39,7 @@ The BLAST search is only available in the command-line mode.
 
 3. Create a new conda environment using the ‘clans_2_0.yml’ file (located in the root directory of CLANS) using the following command:
 
-    `Conda env create -f clans_2_0.yml`
+    `conda env create -f clans_2_0.yml`
     
 **Windows users:** Use the environment file ‘clans_2_0_windows.yml’ and work from within Anaconda shell command prompt.
 
