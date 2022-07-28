@@ -1,7 +1,6 @@
 # The main script for running clans via the command-line (no graphics) #
 ########################################################################
 import time
-import os
 import clans.config as cfg
 import clans.clans.io.file_handler as fh
 import clans.clans.similarity_search.blast as blast
