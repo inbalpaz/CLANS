@@ -8,7 +8,7 @@ package:
 source:
   git_tag: 2.0.1
   url: https://github.com/inbalpaz/CLANS/releases/download/{{ version }}/CLANS_{{ version }}.tar.gz
-  sha256: aea01cfe2554176b8c826d561ba8b9a94232f78be88960e27875fd0ffb752c47
+  sha256: 1cd4ad7ddf47533cb23fec22a275e2a6cd91937e163585b9849cfc1bf00798cc
 
 build:
   noarch: python
@@ -26,9 +26,9 @@ requirements:
     - numba =0.53.1
     - vispy =0.8.1
     - pyqt =5.9.2
-    - biopython =1.77
+    - biopython >=1.77
     - pillow =8.3.1
-    - blast
+    #- blast
 
 test:
   imports:

@@ -23,7 +23,7 @@ The BLAST search is only available in the command-line mode.
 
 ### From Anaconda repository:
 
-1.	Create a clean conda environment: `conda env create -n clans_2_0`
+1.	Create a clean conda environment: `conda create -n clans_2_0`
 
 2.	Activate the newly created environment: `conda activate clans_2_0`
 
