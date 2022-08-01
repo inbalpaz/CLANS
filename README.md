@@ -15,7 +15,8 @@ displays them as a dynamic graph using the Fruchterman-Reingold force-directed l
 In addition to clustering the sequences in space, the visualization tool enables to explore the data in various ways, which include manual interaction with the graph (rotation, panning, zoom-in and out, selection of data-points), different views of the data, several selection options, grouping and coloring the data (or a subset of it) by different features.
 
 • **Command-line tool** (executed using the ‘-nogui’ flag), which can be used to obtain a matrix of sequence similarities by running all-against-all BLAST search. In addition, it can run the Fruchterman-Reingold force-directed graph layout for a defined number of iterations and save the results in a clans-formatted file which can later be loaded and presented in the visualization tool. This is recommended for large datasets (>5000 sequences, depending on the computer resources), in which the clustering process is slow and there is no advantage in visualizing it.
-The BLAST search is only available in the command-line mode.
+
+The BLAST search is only available in the command-line mode and requires an installation of Blast+ on the target computer.
 
 ## Installation
 
@@ -29,7 +30,7 @@ The BLAST search is only available in the command-line mode.
 
 3.	Install the clans package from Anaconda repository by using the following command:
 
-    `conda install -c inbalpaz clans -c defaults -c conda-forge -c bioconda`
+    `conda install -c inbalpaz clans -c defaults -c conda-forge`
 
 ### From source using conda:
 
@@ -41,9 +42,16 @@ The BLAST search is only available in the command-line mode.
 
     `conda env create -f clans_2_0.yml`
     
-**Windows users:** Use the environment file ‘clans_2_0_windows.yml’ and work from within Anaconda shell command prompt.
-
 ## Usage
+
+### Open the GUI-based visualisation tool
+
+Within the activated clans_2_0 conda environment, type:
+
+`python -m clans [-load <network file path>] [options]
+`
+
+When clans is executed without an input-file, the GUI is opened empty and an input-file can be loaded from the ‘File’ menu.
 
 ### Running CLANS in command-line mode
 
@@ -57,15 +65,6 @@ Within the activated clans_2_0 conda environment, type:
 or
 
 `python -m clans -nogui -load <network_file_path> -dorounds <number of iterations> -saveto <destination_file_path> [options]`
-
-### Open the GUI-based visualisation tool
-
-Within the activated clans_2_0 conda environment, type:
-
-`python -m clans [-load <network file path>] [options]
-`
-
-When clans is executed without an input-file, the GUI is opened empty and an input-file can be loaded from the ‘File’ menu.
 
 ## Tutorial
 

@@ -11,4 +11,3 @@ dependencies:
   - pyqt=5.9.2
   - biopython=1.77
   - pillow=8.3.1
-  - blast

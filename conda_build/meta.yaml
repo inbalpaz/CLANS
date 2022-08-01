@@ -1,20 +1,20 @@
 {% set name = "clans" %}
-{% set version = "2.0.1" %}
+{% set version = "2.0.2" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  git_tag: 2.0.1
+  git_tag: 2.0.2
   url: https://github.com/inbalpaz/CLANS/releases/download/{{ version }}/CLANS_{{ version }}.tar.gz
-  sha256: 1cd4ad7ddf47533cb23fec22a275e2a6cd91937e163585b9849cfc1bf00798cc
+  sha256: 9c48f1a9f105bfbd4a7014c06f81e5fffa4adc2a212ea59e488cb0ac24844eda
 
 build:
   noarch: python
   script: {{ PYTHON }} -m pip install . -vv
   number: 0
-  string: np_mkl
+  string: np_mkl_noblast
 
 requirements:
   host:
@@ -28,7 +28,6 @@ requirements:
     - pyqt =5.9.2
     - biopython >=1.77
     - pillow =8.3.1
-    #- blast
 
 test:
   imports:

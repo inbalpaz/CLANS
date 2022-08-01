@@ -330,7 +330,7 @@ class Network3D:
 
             # In 2D view, put the lines at the back of the scatter plot (since the ordering is not enough)
             if dim_num_view == 2:
-                pos_array[:, 2] = -1
+                pos_array[:, 2] = -0.01
 
             # Update the connecting lines
             for i in range(5):
@@ -377,7 +377,7 @@ class Network3D:
 
             # In 2D view, put the lines at the back of the scatter plot (since the ordering is not enough)
             if dim_num_view == 2:
-                selected_pos_array[:, 2] = -1
+                selected_pos_array[:, 2] = -0.01
 
             # Update the connecting lines
             for i in range(5):
@@ -523,7 +523,7 @@ class Network3D:
                 self.scatter_plot.parent = self.view.scene
 
                 # Update the lines with the updated rotation. Set the correct order
-                pos_array[:, 2] = -1  # Put the lines at the back of the scatter plot (since the ordering is not enough)
+                pos_array[:, 2] = -0.01  # Put the lines at the back of the scatter plot (since the ordering is not enough)
                 order = 6
                 for i in range(5):
                     line_color, line_width = set_edges(i)
@@ -541,7 +541,7 @@ class Network3D:
                 self.show_scatter_by_groups(group_by)
 
                 # Update the lines with the updated rotation. Set the correct order
-                pos_array[:, 2] = -1  # Put the lines at the back of the scatter plot (since the ordering is not enough)
+                pos_array[:, 2] = -0.01  # Put the lines at the back of the scatter plot (since the ordering is not enough)
                 order = len(self.groups_to_show) + 6
                 for i in range(5):
                     line_color, line_width = set_edges(i)
@@ -578,7 +578,7 @@ class Network3D:
             self.scatter_plot.parent = self.view.scene
 
             # Update the connecting lines
-            pos_array[:, 2] = -1  # Put the lines at the back of the scatter plot (since the ordering is not enough)
+            pos_array[:, 2] = -0.01  # Put the lines at the back of the scatter plot (since the ordering is not enough)
             order = 6
             for i in range(5):
                 line_color, line_width = set_edges(i)
@@ -830,7 +830,7 @@ class Network3D:
 
             # Put the lines at the back of the scatter plot (since the ordering is not enough)
             if dim_num == 2:
-                pos_array[:, 2] = -1
+                pos_array[:, 2] = -0.01
 
             for i in range(5):
                 line_color, line_width = set_edges(i)
@@ -842,7 +842,7 @@ class Network3D:
 
             # Put the lines at the back of the scatter plot (since the ordering is not enough)
             if dim_num == 2:
-                selected_pos_array[:, 2] = -1
+                selected_pos_array[:, 2] = -0.01
 
             for i in range(5):
                 line_color, line_width = set_edges(i)
