@@ -30,7 +30,7 @@ import clans.clans.GUI.conf_dialogs as cd
 def error_occurred(method, method_name, exception_err, error_msg):
 
     if cfg.run_params['is_debug_mode']:
-        print("\nError in " + method.__globals__['__file__']+ " (" + method_name + "):")
+        print("\nError in " + method.__globals__['__file__'] + " (" + method_name + "):")
         print(exception_err)
 
     msg_box = QMessageBox()
@@ -69,21 +69,23 @@ class MainWindow(QMainWindow):
         self.rounds_done = 0
         self.rounds_done_subset = 0
         self.view_in_dimensions_num = cfg.run_params['dimensions_num_for_clustering']
-        self.dim_num = self.view_in_dimensions_num  # The effective view (set by the user / selection mode / move data mode)
-        self.mode = "interactive"  # Modes of interaction: 'interactive' (rotate/pan) / 'selection'
+        self.dim_num = cfg.run_params['dimensions_num_for_clustering']  # The effective dimensions: 2D in case of
+        # selection and image modes
+        self.mode = "interactive"  # Modes of interaction with the graph: 'interactive' / 'selection' / 'text'
         self.selection_type = "sequences"  # switch between 'sequences' and 'groups' modes
         self.color_by = "groups"  # Color the nodes according to: 'groups' / 'param'
         self.group_by = 0  # The category_index of the active grouping category (default is 0 - 'Manual definition').
         self.is_subset_mode = 0  # In subset mode, only the selected data-points are displayed
         self.z_indexing_mode = "auto"  # Switch between 'auto' and 'groups' modes
         self.ctrl_key_pressed = 0
+        self.is_selection_drag_event = 0
         self.visual_to_move = None
         self.is_init = 0
         self.done_color_by_length = 0
         self.load_file_worker = None
 
-        self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
-        self.setGeometry(50, 50, 900, 850)
+        self.setWindowTitle("CLANS " + str(self.dim_num) + "D-View")
+        self.setGeometry(50, 50, 850, 850)
 
         # Define layouts within the main window
         self.main_layout = QVBoxLayout()
@@ -99,7 +101,7 @@ class MainWindow(QMainWindow):
 
         self.horizontal_spacer_long = QSpacerItem(18, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.horizontal_spacer_short = QSpacerItem(10, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.horizontal_spacer_tiny = QSpacerItem(5, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.horizontal_spacer_tiny = QSpacerItem(6, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         # Define a menu-bar
         self.main_menu = QMenuBar()
@@ -136,13 +138,27 @@ class MainWindow(QMainWindow):
         self.save_clans_submenu.addAction(self.save_clans_file_action)
         self.save_file_submenu.addAction(self.save_delimited_file_action)
 
-        self.save_image_action = QAction("Save as image", self)
+        self.save_image_submenu = self.file_menu.addMenu("Save as image")
+
+        self.save_image_action = QAction("Current graph view", self)
         self.save_image_action.triggered.connect(self.save_image)
+
+        self.save_image_connections_backwards_action = QAction("Move connections backwards", self)
+        self.save_image_connections_backwards_action.setEnabled(False)
+        self.save_image_connections_backwards_action.triggered.connect(self.save_image_connections_backwards)
+
+        #self.save_stereo_image_action = QAction("Create stereo image", self)
+        #if cfg.run_params['dimensions_num_for_clustering'] == 2:
+            #self.save_stereo_image_action.setEnabled(False)
+        #self.save_stereo_image_action.triggered.connect(self.create_stereo_image)
+
+        self.save_image_submenu.addAction(self.save_image_action)
+        self.save_image_submenu.addAction(self.save_image_connections_backwards_action)
+        #self.save_image_submenu.addAction(self.save_stereo_image_action)
 
         self.quit_action = QAction("Quit", self)
         self.quit_action.triggered.connect(qApp.quit)
 
-        self.file_menu.addAction(self.save_image_action)
         self.file_menu.addAction(self.quit_action)
 
         # Create the Configuration menu
@@ -256,6 +272,7 @@ class MainWindow(QMainWindow):
 
         # Add a text-field for the P-value / attraction-value threshold
         self.pval_label = QLabel("P-value threshold:")
+        self.pval_label.setStyleSheet("color: " + cfg.inactive_color + ";")
         self.pval_widget = QLineEdit()
         self.pval_widget.setFixedSize(90, 20)
         self.pval_widget.setText(str(cfg.run_params['similarity_cutoff']))
@@ -279,15 +296,16 @@ class MainWindow(QMainWindow):
         self.main_layout.addLayout(self.calc_layout)
 
         # Add a combo-box to switch between user-interaction modes
-        self.mode_label = QLabel("Interaction mode:")
+        self.mode_label = QLabel("Interaction:")
         self.mode_label.setStyleSheet("color: maroon; font-weight: bold;")
+        self.mode_label.setFixedSize(80, 20)
         self.mode_combo = QComboBox()
         self.mode_combo.addItems(["Rotate/Pan graph", "Select data-points", "Move/Edit text"])
         self.mode_combo.setEnabled(False)
         self.mode_combo.currentIndexChanged.connect(self.change_mode)
 
         self.selection_mode_label = QLabel("Selection mode:")
-        #self.selection_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
+        self.selection_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
 
         # Add a combo-box to switch between sequences / groups selection
         self.selection_type_combo = QComboBox()
@@ -297,7 +315,7 @@ class MainWindow(QMainWindow):
 
         # Add a combo-box to switch between color-by options
         self.color_by_label = QLabel("Color by:")
-        self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
+        self.color_by_label.setStyleSheet("color: " + cfg.inactive_color + ";font-weight: bold;")
 
         self.color_by_combo = QComboBox()
         self.color_by_combo.addItem("Groups/Default")
@@ -306,14 +324,13 @@ class MainWindow(QMainWindow):
 
         # Add the widgets to the mode layout
         self.mode_layout.addWidget(self.mode_label)
-        self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        #self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.mode_layout.addWidget(self.mode_combo)
-        self.mode_layout.addSpacerItem(self.horizontal_spacer_short)
+        self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.mode_layout.addWidget(self.selection_mode_label)
         self.mode_layout.addWidget(self.selection_type_combo)
         self.mode_layout.addSpacerItem(self.horizontal_spacer_long)
         self.mode_layout.addWidget(self.color_by_label)
-        self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.mode_layout.addWidget(self.color_by_combo)
         self.mode_layout.addStretch()
 
@@ -322,17 +339,14 @@ class MainWindow(QMainWindow):
 
         self.view_label = QLabel("View:")
         self.view_label.setStyleSheet("color: maroon; font-weight: bold;")
-        self.view_label.setFixedSize(80, 18)
-
-        # Add a combo-box to switch between 3D and 2D views
-        self.dimensions_view_combo = QComboBox()
-        self.dimensions_view_combo.addItems(["3D", "2D"])
-        self.dimensions_view_combo.setEnabled(False)
-        self.dimensions_view_combo.currentIndexChanged.connect(self.change_dimensions_view)
+        self.view_label.setFixedSize(80, 20)
 
         # Add a button to change the Z-indexing of nodes in 2D presentation
+        self.z_index_mode_label = QLabel("Z-index:")
+        self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
+
         self.z_index_mode_combo = QComboBox()
-        self.z_index_mode_combo.addItems(["Auto Z-index", "By groups order"])
+        self.z_index_mode_combo.addItems(["Automatic", "By groups order"])
         if self.dim_num == 3 or len(cfg.groups_by_categories[self.group_by]['groups']) == 0:
             self.z_index_mode_combo.setEnabled(False)
         self.z_index_mode_combo.currentIndexChanged.connect(self.manage_z_indexing)
@@ -351,8 +365,10 @@ class MainWindow(QMainWindow):
 
         # Add the widgets to the view_layout
         self.view_layout.addWidget(self.view_label)
-        self.view_layout.addWidget(self.dimensions_view_combo)
-        self.view_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        #self.view_layout.addWidget(self.color_by_label)
+        #self.view_layout.addWidget(self.color_by_combo)
+        #self.view_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.view_layout.addWidget(self.z_index_mode_label)
         self.view_layout.addWidget(self.z_index_mode_combo)
         self.view_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.view_layout.addWidget(self.data_mode_combo)
@@ -365,7 +381,7 @@ class MainWindow(QMainWindow):
 
         self.display_label = QLabel("Display:")
         self.display_label.setStyleSheet("color: maroon; font-weight: bold;")
-        self.display_label.setFixedSize(80, 18)
+        self.display_label.setFixedSize(80, 20)
 
         # Add a button to show/hide the connections
         self.connections_button = QPushButton("Connections")
@@ -412,7 +428,7 @@ class MainWindow(QMainWindow):
 
         self.selection_label = QLabel("Selection:")
         self.selection_label.setStyleSheet("color: maroon; font-weight: bold;")
-        self.selection_label.setFixedSize(80, 18)
+        self.selection_label.setFixedSize(80, 20)
 
         # Add a button to select all the sequences / groups
         self.select_all_button = QPushButton("Select all")
@@ -476,7 +492,7 @@ class MainWindow(QMainWindow):
         # Add a combo-box to switch between group-by options
         self.group_by_label = QLabel("Group by:")
         self.group_by_label.setStyleSheet("color: maroon; font-weight: bold;")
-        self.group_by_label.setFixedSize(80, 18)
+        self.group_by_label.setFixedSize(80, 20)
 
         self.group_by_combo = QComboBox()
         self.group_by_combo.addItem("Manual definition")
@@ -526,6 +542,9 @@ class MainWindow(QMainWindow):
         # Create a window to display the selection by groups (without showing it)
         self.select_by_groups_window = windows.SelectByGroupsWindow(self, self.network_plot)
 
+        # Create a window for the stereo presentation
+        #self.stereo_window = windows.StereoImageWindow(self)
+
         # Create a text visual to display the 'loading file' message
         self.load_file_label = scene.widgets.Label("Loading the input file - please wait", bold=True,
                                                    font_size=15)
@@ -560,13 +579,8 @@ class MainWindow(QMainWindow):
         self.selection_type_combo.setCurrentIndex(0)
         self.open_selected_button.setEnabled(False)
 
-        if cfg.run_params['dimensions_num_for_clustering'] == 3:
-            self.dimensions_view_combo.setCurrentIndex(0)
-        else:
-            self.dimensions_view_combo.setCurrentIndex(1)
-            self.dimensions_view_combo.setEnabled(False)
-
         self.z_index_mode_combo.setEnabled(False)
+        self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
         self.z_index_mode_combo.setCurrentIndex(0)
 
         self.connections_button.setChecked(False)
@@ -590,6 +604,7 @@ class MainWindow(QMainWindow):
         self.color_by_combo.clear()
         self.color_by_combo.addItem("Groups/Default")
         self.color_by_combo.setEnabled(False)
+        self.color_by_label.setStyleSheet("color: " + cfg.inactive_color + "; font-weight: bold;")
         self.colorbar_plot.hide_colorbar()
 
         # Remove all the group-by options except 'Manual' (the default)
@@ -683,12 +698,13 @@ class MainWindow(QMainWindow):
         self.rounds_done = 0
         self.rounds_done_subset = 0
         self.view_in_dimensions_num = cfg.run_params['dimensions_num_for_clustering']
-        self.dim_num = self.view_in_dimensions_num
+        self.dim_num = cfg.run_params['dimensions_num_for_clustering']
         self.mode = "interactive"  # Modes of interaction: 'interactive' (rotate/pan) / 'selection'
         self.selection_type = "sequences"  # switch between 'sequences' and 'groups' modes
         self.is_subset_mode = 0  # In subset mode, only the selected data-points are displayed
         self.z_indexing_mode = "auto"  # Switch between 'auto' and 'groups' modes
         self.ctrl_key_pressed = 0
+        self.is_selection_drag_event = 0
         self.done_color_by_length = 0
         self.color_by = 'groups'
 
@@ -724,19 +740,22 @@ class MainWindow(QMainWindow):
             self.fr_object = fr_class.FruchtermanReingold(cfg.sequences_array['x_coor'], cfg.sequences_array['y_coor'],
                                                           cfg.sequences_array['z_coor'])
 
+            # Update the dim_num with the parameter from the file
+            self.dim_num = cfg.run_params['dimensions_num_for_clustering']
+
             # Remove the 'loading file' message
             self.load_file_label.parent = None
 
             # Set the window title to include the file name
-            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View of " + self.file_name)
+            self.setWindowTitle("CLANS " + str(self.dim_num) + "D-View of " + self.file_name)
 
             # Enable the controls
             self.start_button.setEnabled(True)
             self.stop_button.setEnabled(True)
             self.init_button.setEnabled(True)
             self.dimensions_clustering_combo.setEnabled(True)
-            self.dimensions_view_combo.setEnabled(True)
             self.pval_widget.setEnabled(True)
+            self.pval_label.setStyleSheet("color: black;")
             self.mode_combo.setEnabled(True)
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
@@ -782,10 +801,14 @@ class MainWindow(QMainWindow):
                 self.group_by_combo.setEnabled(True)
                 self.group_by_combo.setCurrentIndex(1)
                 self.group_by = 1
+                if self.dim_num == 2:
+                    self.z_index_mode_combo.setEnabled(True)
+                    self.z_index_mode_label.setStyleSheet("color: black;")
 
             # If there are uploaded numeric parameters - enable the color-by combo-box
             if len(cfg.sequences_numeric_params) > 0:
                 self.color_by_combo.setEnabled(True)
+                self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
                 for param in cfg.sequences_numeric_params:
                     self.color_by_combo.addItem(param)
 
@@ -825,6 +848,14 @@ class MainWindow(QMainWindow):
             self.add_groups_from_metadata_action.setEnabled(True)
             self.color_by_param_action.setEnabled(True)
 
+            # Init the plots in the stereo window
+            #try:
+                #self.stereo_window.init_plot()
+            #except Exception as err:
+                #error_msg = "An error occurred: cannot initialize the data in the stereo window.\n"
+                #error_occurred(self.stereo_window.init_plot, 'init_plot', err, error_msg)
+                #return
+
         else:
             # Remove the 'loading file' message from the scene and put an error message instead
             self.load_file_label.parent = None
@@ -859,7 +890,7 @@ class MainWindow(QMainWindow):
 
             cfg.run_params['input_file'] = opened_file
             cfg.run_params['input_format'] = 'clans'
-            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
+            self.setWindowTitle("CLANS " + str(self.dim_num) + "D-View")
 
             # Define a runner for loading the file that will be executed in a different thread
             self.load_file_worker = io.ReadInputWorker(cfg.run_params['input_format'])
@@ -888,7 +919,7 @@ class MainWindow(QMainWindow):
 
             cfg.run_params['input_file'] = opened_file
             cfg.run_params['input_format'] = 'delimited'
-            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View")
+            self.setWindowTitle("CLANS " + str(self.dim_num) + "D-View")
 
             # Define a runner for loading the file that will be executed in a different thread
             self.load_file_worker = io.ReadInputWorker(cfg.run_params['input_format'])
@@ -963,12 +994,8 @@ class MainWindow(QMainWindow):
             # Disable the 'Add text' button
             #self.add_text_button.setEnabled(False)
 
-            # If the clustering is done in 3D -> Move back to 3D view
-            if cfg.run_params['dimensions_num_for_clustering'] == 3:
-                if self.view_in_dimensions_num == 2:
-                    self.dimensions_view_combo.setCurrentIndex(0)
             # 2D clustering
-            else:
+            if cfg.run_params['dimensions_num_for_clustering'] == 2:
                 # Move to automatic z-indexing
                 self.z_index_mode_combo.setCurrentIndex(0)
 
@@ -980,7 +1007,7 @@ class MainWindow(QMainWindow):
             self.start_button.setEnabled(False)
             self.dimensions_clustering_combo.setEnabled(False)
             self.pval_widget.setEnabled(False)
-            self.dimensions_view_combo.setEnabled(False)
+            self.pval_label.setStyleSheet("color: " + cfg.inactive_color + ";")
             self.connections_button.setEnabled(False)
             self.hide_singeltons_button.setEnabled(False)
             self.show_selected_names_button.setEnabled(False)
@@ -1000,7 +1027,9 @@ class MainWindow(QMainWindow):
             self.add_to_group_button.setEnabled(False)
             self.remove_selected_button.setEnabled(False)
             self.z_index_mode_combo.setEnabled(False)
+            self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
             self.color_by_combo.setEnabled(False)
+            self.color_by_label.setStyleSheet("color: " + cfg.inactive_color + "; font-weight: bold;")
             self.group_by_combo.setEnabled(False)
             self.edit_categories_button.setEnabled(False)
 
@@ -1010,7 +1039,7 @@ class MainWindow(QMainWindow):
     def update_plot(self):
 
         try:
-            self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by)
+            self.network_plot.update_data(self.dim_num, self.fr_object, 1, self.color_by)
         except Exception as err:
             error_msg = "An error occurred: cannot update the graph"
             error_occurred(self.network_plot.update_data, 'update_data', err, error_msg)
@@ -1052,9 +1081,8 @@ class MainWindow(QMainWindow):
         self.init_button.setEnabled(True)
         self.start_button.setEnabled(True)
         self.dimensions_clustering_combo.setEnabled(True)
-        if cfg.run_params['dimensions_num_for_clustering'] == 3:
-            self.dimensions_view_combo.setEnabled(True)
         self.pval_widget.setEnabled(True)
+        self.pval_label.setStyleSheet("color: black;")
         self.connections_button.setEnabled(True)
         self.hide_singeltons_button.setEnabled(True)
         #self.add_text_button.setEnabled(True)
@@ -1066,8 +1094,9 @@ class MainWindow(QMainWindow):
             if len(self.network_plot.selected_groups) > 0:
                 self.show_groups_combo.setEnabled(True)
 
-            if self.is_subset_mode == 0 and self.view_in_dimensions_num == 2:
+            if self.is_subset_mode == 0 and self.dim_num == 2:
                 self.z_index_mode_combo.setEnabled(True)
+                self.z_index_mode_label.setStyleSheet("color: black;")
 
         # Enable selection-related buttons only in full data mode
         if self.is_subset_mode == 0:
@@ -1091,6 +1120,7 @@ class MainWindow(QMainWindow):
         # Enable the 'color by' combo box if the color-by-param was already done once
         if self.done_color_by_length or len(cfg.sequences_numeric_params) > 0:
             self.color_by_combo.setEnabled(True)
+            self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
 
         # Enable the 'group-by' combo box if is more than one grouping option
         if self.group_by_combo.count() > 1 and self.color_by == 'groups':
@@ -1186,7 +1216,7 @@ class MainWindow(QMainWindow):
                     return
 
             try:
-                self.network_plot.update_data(self.view_in_dimensions_num, self.fr_object, 1, self.color_by)
+                self.network_plot.update_data(self.dim_num, self.fr_object, 1, self.color_by)
             except Exception as err:
                 error_msg = "An error occurred: cannot update the graph"
                 error_occurred(self.network_plot.update_data, 'update_data', err, error_msg)
@@ -1205,13 +1235,8 @@ class MainWindow(QMainWindow):
             # Move back to interactive mode
             self.mode_combo.setCurrentIndex(0)
 
-            # If the clustering is done in 3D -> Move to 3D view and reset the turntable camera
-            if cfg.run_params['dimensions_num_for_clustering'] == 3:
-                self.dimensions_view_combo.setCurrentIndex(0)
-
-            else:
-                if self.z_indexing_mode == 'groups':
-                    self.z_index_mode_combo.setCurrentIndex(0)
+            if cfg.run_params['dimensions_num_for_clustering'] == 2 and self.z_indexing_mode == 'groups':
+                self.z_index_mode_combo.setCurrentIndex(0)
 
             try:
                 self.network_plot.reset_rotation()
@@ -1239,6 +1264,9 @@ class MainWindow(QMainWindow):
                 error_msg = "An error occurred: cannot display the connecting lines"
                 error_occurred(self.network_plot.show_connections, 'show_connections', err, error_msg)
 
+            if self.dim_num == 3:
+                self.save_image_connections_backwards_action.setEnabled(True)
+
         # Hide the connections
         else:
             self.is_show_connections = 0
@@ -1248,6 +1276,8 @@ class MainWindow(QMainWindow):
             except Exception as err:
                 error_msg = "An error occurred: cannot hide the connecting lines"
                 error_occurred(self.network_plot.hide_connections, 'hide_connections', err, error_msg)
+
+            self.save_image_connections_backwards_action.setEnabled(False)
 
     def hide_singeltons(self):
 
@@ -1441,6 +1471,22 @@ class MainWindow(QMainWindow):
             error_msg = "An error occurred: cannot save the session as an image."
             error_occurred(self.save_image, 'save_image', err, error_msg)
 
+    def save_image_connections_backwards(self):
+
+        # Move view to 2D in order to display the connections at the back
+        self.dim_num = 2
+        self.change_dimensions_view()
+
+        self.save_image()
+
+        # Move view back to 3D
+        self.dim_num = 3
+        self.change_dimensions_view()
+
+    #def create_stereo_image(self):
+
+        #self.stereo_window.open_window()
+
     def conf_FR_layout(self):
 
         try:
@@ -1509,15 +1555,13 @@ class MainWindow(QMainWindow):
 
     def change_dimensions_view(self):
 
+        # Update the window title
+        self.setWindowTitle("CLANS " + str(self.dim_num) + "D-View of " + self.file_name)
+
         # 3D view
-        if self.dimensions_view_combo.currentIndex() == 0:
-            self.view_in_dimensions_num = 3
-            self.dim_num = self.view_in_dimensions_num
-
-            # Update the window title
-            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View of " + self.file_name)
-
+        if self.dim_num == 3:
             self.z_index_mode_combo.setEnabled(False)
+            self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
 
             # Not in init file mode
             if self.is_init == 0:
@@ -1529,16 +1573,11 @@ class MainWindow(QMainWindow):
 
         # 2D view
         else:
-            self.view_in_dimensions_num = 2
-            self.dim_num = self.view_in_dimensions_num
-
-            # Update the window title
-            self.setWindowTitle("CLANS " + str(self.view_in_dimensions_num) + "D-View of " + self.file_name)
-
             # Only in full data and color-by groups modes
             if self.is_subset_mode == 0 and len(cfg.groups_by_categories[self.group_by]['groups']) > 0 \
                     and self.color_by == 'groups':
                 self.z_index_mode_combo.setEnabled(True)
+                self.z_index_mode_label.setStyleSheet("color: black;")
 
             # Not in init file mode
             if self.is_init == 0:
@@ -1553,6 +1592,10 @@ class MainWindow(QMainWindow):
         # 3D clustering
         if self.dimensions_clustering_combo.currentIndex() == 0:
             cfg.run_params['dimensions_num_for_clustering'] = 3
+
+            if self.is_show_connections:
+                self.save_image_connections_backwards_action.setEnabled(True)
+            #self.save_stereo_image_action.setEnabled(True)
 
             # Update the coordinates in the Fruchterman-Reingold object
             # Full data mode
@@ -1575,28 +1618,19 @@ class MainWindow(QMainWindow):
                     error_msg = "An error occurred: cannot change the clustering to 3D"
                     error_occurred(self.fr_object.init_coordinates, 'init_coordinates', err, error_msg)
 
-            self.dimensions_view_combo.setCurrentIndex(0)
-            self.dimensions_view_combo.setEnabled(True)
-
         # 2D clustering
         else:
             cfg.run_params['dimensions_num_for_clustering'] = 2
 
-            self.dimensions_view_combo.setEnabled(False)
+            self.save_image_connections_backwards_action.setEnabled(False)
+            #self.save_stereo_image_action.setEnabled(False)
 
-            # The view was already in 2D -> update the rotated positions
-            if self.view_in_dimensions_num == 2:
-                try:
-                    self.network_plot.save_rotated_coordinates(2, self.fr_object, self.color_by, self.group_by,
-                                                               self.z_indexing_mode)
-                except Exception as err:
-                    error_msg = "An error occurred: cannot save the rotation"
-                    error_occurred(self.network_plot.save_rotated_coordinates, 'save_rotated_coordinates', err,
-                                   error_msg)
+        # Update the effective dim_num parameter if found in interactive mode
+        if self.mode == 'interactive':
+            self.dim_num = cfg.run_params['dimensions_num_for_clustering']
 
-            # Set 2D view
-            else:
-                self.dimensions_view_combo.setCurrentIndex(1)
+        # Update the graph view according to the dimensions
+        self.change_dimensions_view()
 
     def manage_z_indexing(self):
 
@@ -1621,7 +1655,7 @@ class MainWindow(QMainWindow):
         if self.mode_combo.currentIndex() == 0:
             self.mode = "interactive"
 
-            self.dim_num = self.view_in_dimensions_num
+            self.dim_num = cfg.run_params['dimensions_num_for_clustering']
 
             if cfg.run_params['is_debug_mode']:
                 print("Interactive mode")
@@ -1629,7 +1663,7 @@ class MainWindow(QMainWindow):
             # Not in init file mode
             if self.is_init == 0:
                 try:
-                    self.network_plot.set_interactive_mode(self.view_in_dimensions_num, self.fr_object,
+                    self.network_plot.set_interactive_mode(self.dim_num, self.fr_object,
                                                            self.color_by, self.group_by, self.z_indexing_mode)
                 except Exception as err:
                     error_msg = "An error occurred: cannot change the mode to \'Rotate/Pan graph\'"
@@ -1641,11 +1675,21 @@ class MainWindow(QMainWindow):
             self.stop_button.setEnabled(True)
             self.dimensions_clustering_combo.setEnabled(True)
             self.pval_widget.setEnabled(True)
+            self.pval_label.setStyleSheet("color: black;")
             self.selection_type_combo.setEnabled(False)
-            if cfg.run_params['dimensions_num_for_clustering'] == 3:
-                self.dimensions_view_combo.setEnabled(True)
-            if self.view_in_dimensions_num == 3:
+            self.selection_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
+
+            if self.dim_num == 3:
                 self.z_index_mode_combo.setEnabled(False)
+                self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
+
+                if self.is_show_connections:
+                    self.save_image_connections_backwards_action.setEnabled(True)
+                #self.save_stereo_image_action.setEnabled(True)
+
+            else:
+                self.save_image_connections_backwards_action.setEnabled(False)
+                #self.save_stereo_image_action.setEnabled(False)
 
             # Disconnect the selection-special special mouse-events and connect back the default behaviour of the
             # viewbox when the mouse moves
@@ -1657,13 +1701,18 @@ class MainWindow(QMainWindow):
                 error_msg = "An error occurred: cannot set the mouse default behaviour"
                 error_occurred(self.change_mode, 'change_mode', err, error_msg)
 
-        # Selection / Move visuals modes
+        # Selection / Text modes
         else:
             self.dim_num = 2
+
+            self.save_image_connections_backwards_action.setEnabled(False)
+            #self.save_stereo_image_action.setEnabled(False)
 
             # Selection mode
             if self.mode_combo.currentIndex() == 1:
                 self.mode = "selection"
+
+                self.selection_mode_label.setStyleSheet("color: black;")
 
                 if len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                     self.selection_type_combo.setEnabled(True)
@@ -1673,25 +1722,25 @@ class MainWindow(QMainWindow):
 
             # Move visuals mode
             elif self.mode_combo.currentIndex() == 2:
-                self.mode = "move_visuals"
+                self.mode = "text"
+
+                self.selection_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
 
                 self.selection_type_combo.setEnabled(False)
 
                 if cfg.run_params['is_debug_mode']:
-                    print("move_visuals mode")
+                    print("Move/Edit text mode")
 
             try:
-                self.network_plot.set_selection_mode(self.view_in_dimensions_num, self.z_indexing_mode,
-                                                     self.fr_object, self.color_by, self.group_by)
+                self.network_plot.set_selection_mode(self.z_indexing_mode, self.color_by, self.group_by)
             except Exception as err:
                 error_msg = "An error occurred: cannot set the selection mode"
                 error_occurred(self.network_plot.set_selection_mode, 'set_selection_mode', err, error_msg)
                 return
 
-            self.dimensions_view_combo.setEnabled(False)
-
             if len(cfg.groups_by_categories[self.group_by]['groups']) > 0 and self.color_by == 'groups':
                 self.z_index_mode_combo.setEnabled(True)
+                self.z_index_mode_label.setStyleSheet("color: black;")
 
             # Disconnect the default behaviour of the viewbox when the mouse moves
             # and connect special callbacks for mouse_move and mouse_release
@@ -1725,6 +1774,7 @@ class MainWindow(QMainWindow):
             self.color_by_combo.addItem('Seq. length')
             self.color_by_combo.setCurrentText('Seq. length')
             self.color_by_combo.setEnabled(True)
+            self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
 
         else:
             try:
@@ -1786,6 +1836,7 @@ class MainWindow(QMainWindow):
 
                 if self.dim_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                     self.z_index_mode_combo.setEnabled(True)
+                    self.z_index_mode_label.setStyleSheet("color: black;")
 
                 # Enable the 'group-by' combo box if is more than one grouping option
                 if self.group_by_combo.count() > 1:
@@ -1825,6 +1876,7 @@ class MainWindow(QMainWindow):
                     self.z_index_mode_combo.setCurrentIndex(0)
 
                 self.z_index_mode_combo.setEnabled(False)
+                self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
 
     def color_by_user_param(self, param):
 
@@ -1871,6 +1923,7 @@ class MainWindow(QMainWindow):
 
                     self.color_by_combo.setCurrentText(selected_param)
                     self.color_by_combo.setEnabled(True)
+                    self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
 
                     # Update the colors of the selected parameter
                     cfg.sequences_numeric_params[selected_param]['min_color'] = min_param_color
@@ -1892,8 +1945,10 @@ class MainWindow(QMainWindow):
                 self.z_index_mode_combo.setCurrentIndex(0)
                 if not self.is_subset_mode and len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                     self.z_index_mode_combo.setEnabled(True)
+                    self.z_index_mode_label.setStyleSheet("color: black;")
                 else:
                     self.z_index_mode_combo.setEnabled(False)
+                    self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
 
             try:
                 self.network_plot.hide_group_names()
@@ -2084,9 +2139,10 @@ class MainWindow(QMainWindow):
             self.clear_selection_button.setEnabled(False)
             self.z_index_mode_combo.setCurrentIndex(0)
             self.z_index_mode_combo.setEnabled(False)
+            self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
 
             try:
-                self.network_plot.set_subset_view(self.view_in_dimensions_num, self.color_by, self.group_by,
+                self.network_plot.set_subset_view(self.dim_num, self.color_by, self.group_by,
                                                   self.z_indexing_mode)
             except Exception as err:
                 error_msg = "An error occurred: cannot set the subset view"
@@ -2119,8 +2175,9 @@ class MainWindow(QMainWindow):
             self.select_by_text_button.setEnabled(True)
             self.select_by_groups_button.setEnabled(True)
 
-            if self.view_in_dimensions_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
+            if self.dim_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                 self.z_index_mode_combo.setEnabled(True)
+                self.z_index_mode_label.setStyleSheet("color: black;")
 
             # Update the coordinates in the fruchterman-reingold object
             try:
@@ -2133,7 +2190,7 @@ class MainWindow(QMainWindow):
                 return
 
             try:
-                self.network_plot.set_full_view(self.view_in_dimensions_num, self.color_by, self.group_by,
+                self.network_plot.set_full_view(self.dim_num, self.color_by, self.group_by,
                                                 self.z_indexing_mode)
             except Exception as err:
                 error_msg = "An error occurred: cannot set the full-data view"
@@ -2345,6 +2402,7 @@ class MainWindow(QMainWindow):
             # Update the look of the selected data-points according to the new group definitions
             if self.dim_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                 self.z_index_mode_combo.setEnabled(True)
+                self.z_index_mode_label.setStyleSheet("color: black;")
 
             try:
                 self.network_plot.add_to_group(self.network_plot.selected_points, group_ID, self.dim_num,
@@ -2673,7 +2731,10 @@ class MainWindow(QMainWindow):
                     return
 
             # Drag event
-            else:
+            elif self.is_selection_drag_event:
+
+                self.is_selection_drag_event = 0
+
                 try:
                     self.network_plot.remove_dragging_rectangle()
                 except Exception as err:
@@ -2714,19 +2775,14 @@ class MainWindow(QMainWindow):
                 error_occurred(self.selected_seq_window.update_sequences, 'update_sequences', err, error_msg)
 
         # The event is done in the 'Move visuals' mode
-        elif self.mode == 'move_visuals':
+        elif self.mode == 'text':
 
             # Finish the move of a group name
-            if self.visual_to_move == "text":
-                try:
-                    self.network_plot.finish_group_name_move()
-                except Exception as err:
-                    error_msg = "An error occurred: cannot move the group name"
-                    error_occurred(self.network_plot.finish_group_name_move, 'finish_group_name_move', err, error_msg)
-
-            ## Disabled currently
-            #elif self.visual_to_move == "data":
-                #self.network_plot.finish_points_move(self.view_in_dimensions_num, self.fr_object)
+            try:
+                self.network_plot.finish_group_name_move()
+            except Exception as err:
+                error_msg = "An error occurred: cannot move the group name"
+                error_occurred(self.network_plot.finish_group_name_move, 'finish_group_name_move', err, error_msg)
 
             self.visual_to_move = None
 
@@ -2734,28 +2790,46 @@ class MainWindow(QMainWindow):
 
         pos_array = event.trail()
 
-        # Regular dragging event for selection
         if self.mode == "selection":
 
-            # Initiation of dragging -> create a rectangle visual
-            if len(pos_array) == 3:
-                try:
-                    self.network_plot.start_dragging_rectangle(pos_array[0])
-                except Exception as err:
-                    error_msg = "An error occurred: cannot start drag event"
-                    error_occurred(self.network_plot.start_dragging_rectangle, 'start_dragging_rectangle', err,
-                                   error_msg)
+            # CTRL key is pressed - move the selected data points
+            if self.ctrl_key_pressed:
+                if len(pos_array) >= 2:
 
-            # Mouse dragging continues -> update the rectangle
-            elif len(pos_array) > 3:
-                # Update the rectangle if the mouse position was actually changed
-                if pos_array[-1][0] != pos_array[-2][0] and pos_array[-1][1] != pos_array[-2][1]:
+                    # Update points location if the mouse position was changed above a certain distance
+                    distance = np.linalg.norm(pos_array[-1] - pos_array[-2])
+                    if distance >= 1:
+                        try:
+                            self.network_plot.move_selected_points(self.dim_num, pos_array[-2],
+                                                                   pos_array[-1], self.z_indexing_mode, self.color_by,
+                                                                   self.group_by)
+                        except Exception as err:
+                            error_msg = "An error occurred: cannot move the selected points"
+                            error_occurred(self.network_plot.move_selected_points, 'move_selected_points', err, error_msg)
+
+            # Regular dragging event for selection
+            else:
+                self.is_selection_drag_event = 1
+
+                # Initiation of dragging -> create a rectangle visual
+                if len(pos_array) == 3:
                     try:
-                        self.network_plot.update_dragging_rectangle(pos_array[0], pos_array[-1])
+                        self.network_plot.start_dragging_rectangle(pos_array[0])
                     except Exception as err:
-                        error_msg = "An error occurred: cannot mark drag event"
-                        error_occurred(self.network_plot.update_dragging_rectangle, 'update_dragging_rectangle', err,
+                        error_msg = "An error occurred: cannot start drag event"
+                        error_occurred(self.network_plot.start_dragging_rectangle, 'start_dragging_rectangle', err,
                                        error_msg)
+
+                # Mouse dragging continues -> update the rectangle
+                elif len(pos_array) > 3:
+                    # Update the rectangle if the mouse position was actually changed
+                    if pos_array[-1][0] != pos_array[-2][0] and pos_array[-1][1] != pos_array[-2][1]:
+                        try:
+                            self.network_plot.update_dragging_rectangle(pos_array[0], pos_array[-1])
+                        except Exception as err:
+                            error_msg = "An error occurred: cannot mark drag event"
+                            error_occurred(self.network_plot.update_dragging_rectangle, 'update_dragging_rectangle', err,
+                                           error_msg)
 
         # Interactive mode
         elif self.mode == "interactive":
@@ -2767,7 +2841,7 @@ class MainWindow(QMainWindow):
                 distance = np.linalg.norm(pos_array[-1] - pos_array[-2])
                 if distance >= 1:
                     try:
-                        self.network_plot.move_selected_points(self.view_in_dimensions_num, pos_array[-2],
+                        self.network_plot.move_selected_points(self.dim_num, pos_array[-2],
                                                                pos_array[-1], self.z_indexing_mode, self.color_by,
                                                                self.group_by)
                     except Exception as err:
@@ -2827,7 +2901,7 @@ class MainWindow(QMainWindow):
         #print(pos_array)
         #print(pos_array[0])
 
-        if self.mode == 'move_visuals':
+        if self.mode == 'text':
             try:
                 visual_to_edit = self.network_plot.find_visual(self.canvas, pos_array)
             except Exception as err:
@@ -2870,9 +2944,9 @@ class MainWindow(QMainWindow):
     def canvas_CTRL_release(self, event):
         self.ctrl_key_pressed = 0
 
-        if self.mode == "interactive":
+        if self.mode == "interactive" or self.mode == "selection":
             try:
-                self.network_plot.update_moved_positions(self.network_plot.selected_points, self.view_in_dimensions_num)
+                self.network_plot.update_moved_positions(self.network_plot.selected_points, self.dim_num)
             except Exception as err:
                 error_msg = "An error occurred: cannot update the positions of the data-points"
                 error_occurred(self.network_plot.update_moved_positions, 'update_moved_positions', err, error_msg)

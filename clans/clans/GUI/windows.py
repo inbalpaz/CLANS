@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import *
+from vispy import scene
 import re
 import clans.config as cfg
+import clans.clans.graphics.network3d as net
 
 
 def error_occurred(method, method_name, exception_err, error_msg):
@@ -1115,5 +1117,185 @@ class SelectByGroupsWindow(QWidget):
             self.results_window.build_seq_list(sorted(selected_indices_intersection))
         else:
             self.results_window.open_window(sorted(selected_indices_intersection))
+
+
+class StereoImageWindow(QWidget):
+
+    def __init__(self, main_window):
+        super().__init__()
+
+        self.main_window_object = main_window
+
+        self.is_visible = 0
+        self.offset_angle = 30
+        self.elevation_offset = 270
+        self.is_show_connections = 0
+
+        self.setGeometry(150, 150, 1000, 750)
+
+        self.main_layout = QVBoxLayout()
+
+        # Create the canvas (the graph area)
+        self.canvas = scene.SceneCanvas(size=(1000, 700), keys='interactive', show=False, bgcolor='w')
+        self.main_layout.addWidget(self.canvas.native)
+
+        # Add a grid for two view-boxes
+        self.grid = self.canvas.central_widget.add_grid()
+        self.left_view = self.grid.add_view(0, 0)
+        self.right_view = self.grid.add_view(0, 1)
+
+        # Add a layout for buttons
+        self.buttons_layout = QHBoxLayout()
+
+        self.horizontal_spacer_tiny = QSpacerItem(6, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.set_offset_button = QPushButton("Set offset angle")
+        self.set_offset_button.released.connect(self.set_offset_angle)
+
+        self.connections_button = QPushButton("Connections")
+        self.connections_button.setCheckable(True)
+        self.connections_button.released.connect(self.manage_connections)
+
+        self.connections_backwards_button = QPushButton("Move backwards")
+        self.connections_backwards_button.released.connect(self.bring_connections_backwards)
+
+        self.save_image_button = QPushButton("Save image")
+        self.save_image_button.released.connect(self.save_image)
+
+        self.close_button = QPushButton("Close")
+        self.close_button.released.connect(self.close_window)
+
+        self.buttons_layout.addWidget(self.set_offset_button)
+        self.buttons_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.buttons_layout.addWidget(self.connections_button)
+        self.buttons_layout.addWidget(self.connections_backwards_button)
+        self.buttons_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.buttons_layout.addWidget(self.save_image_button)
+        self.buttons_layout.addWidget(self.close_button)
+        self.buttons_layout.addStretch()
+
+        self.main_layout.addLayout(self.buttons_layout)
+
+        self.setLayout(self.main_layout)
+
+        # Create the graph object
+        self.left_plot = net.Network3D(self.left_view)
+        self.right_plot = net.Network3D(self.right_view)
+
+        # Link the two cameras
+        #self.left_view.camera.link(self.right_view.camera)
+
+    def init_plot(self):
+
+        ## Debug
+        print("Left plot azimuth = " + str(self.left_view.camera.azimuth))
+        print("Right plot azimuth = " + str(self.right_view.camera.azimuth))
+
+        # Define an offset
+        self.right_plot.initial_azimuth = self.offset_angle
+        self.right_plot.initial_elevation = self.elevation_offset
+        self.right_view.camera.azimuth = self.right_plot.initial_azimuth
+        self.right_view.camera.elevation = self.right_plot.initial_elevation
+
+        # Link the two cameras
+        self.left_view.camera.link(self.right_view.camera)
+
+        ## Debug
+        print("Left plot azimuth after link = " + str(self.left_view.camera.azimuth))
+        print("Right plot azimuth  after link = " + str(self.right_view.camera.azimuth))
+
+        self.left_plot.init_data(self.main_window_object.fr_object, self.main_window_object.group_by)
+        self.right_plot.init_data(self.main_window_object.fr_object, self.main_window_object.group_by)
+
+        ## Debug
+        print("Left plot azimuth after init_data = " + str(self.left_view.camera.azimuth))
+        print("Right plot azimuth after init_data = " + str(self.right_view.camera.azimuth))
+
+    def open_window(self):
+
+        try:
+            self.is_visible = 1
+
+            self.setWindowTitle("Stereo presentation of " + self.main_window_object.file_name)
+
+            self.left_plot.update_data(self.main_window_object.dim_num, self.main_window_object.fr_object, 1,
+                                       self.main_window_object.color_by)
+            self.right_plot.update_data(self.main_window_object.dim_num, self.main_window_object.fr_object, 1,
+                                        self.main_window_object.color_by)
+
+            ## Debug
+            print("Left plot azimuth = " + str(self.left_view.camera.azimuth))
+            print("Right plot azimuth = " + str(self.right_view.camera.azimuth))
+
+            self.is_show_connections = self.main_window_object.is_show_connections
+            if self.is_show_connections:
+                self.connections_button.setChecked(True)
+            else:
+                self.connections_button.setChecked(False)
+            self.manage_connections()
+
+            # Show the canvas
+            self.canvas.show()
+
+            # Open the window
+            self.show()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot open the 'Stereo presentation' Window"
+            error_occurred(self.open_window, 'open_window', err, error_msg)
+
+    def close_window(self):
+        try:
+            self.is_visible = 0
+
+            self.close()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot close the 'Stereo presentation' Window"
+            error_occurred(self.close_window, 'close_window', err, error_msg)
+
+    def set_offset_angle(self):
+        pass
+
+    def manage_connections(self):
+
+        # Show the connections
+        if self.connections_button.isChecked():
+            self.is_show_connections = 1
+
+            # Display the connecting lines
+            try:
+                self.left_plot.show_connections()
+            except Exception as err:
+                error_msg = "An error occurred: cannot display the connecting lines"
+                error_occurred(self.left_plot.show_connections, 'show_connections', err, error_msg)
+
+            try:
+                self.right_plot.show_connections()
+            except Exception as err:
+                error_msg = "An error occurred: cannot display the connecting lines"
+                error_occurred(self.right_plot.show_connections, 'show_connections', err, error_msg)
+
+        # Hide the connections
+        else:
+            self.is_show_connections = 0
+
+            try:
+                self.left_plot.hide_connections()
+            except Exception as err:
+                error_msg = "An error occurred: cannot hide the connecting lines"
+                error_occurred(self.left_plot.hide_connections, 'hide_connections', err, error_msg)
+
+            try:
+                self.right_plot.hide_connections()
+            except Exception as err:
+                error_msg = "An error occurred: cannot hide the connecting lines"
+                error_occurred(self.right_plot.hide_connections, 'hide_connections', err, error_msg)
+
+    def bring_connections_backwards(self):
+        pass
+
+    def save_image(self):
+        pass
 
 

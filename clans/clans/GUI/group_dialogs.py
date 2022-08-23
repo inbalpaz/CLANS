@@ -325,9 +325,9 @@ class ManageGroupsDialog(QDialog):
         self.move_down_button.released.connect(self.move_down_group)
 
         self.buttons_layout.addWidget(self.edit_group_button)
-        self.buttons_layout.addWidget(self.delete_group_button)
         self.buttons_layout.addWidget(self.move_up_button)
         self.buttons_layout.addWidget(self.move_down_button)
+        self.buttons_layout.addWidget(self.delete_group_button)
         self.buttons_layout.addStretch()
 
         self.main_layout.addLayout(self.buttons_layout)

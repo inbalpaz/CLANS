@@ -3,7 +3,7 @@ from vispy.color import ColorArray
 import clans
 
 ## Defaults
-version = "2.0.1"
+version = "2.0.4"
 
 # i/o related parameters
 type_of_values = 'hsp'
@@ -34,7 +34,8 @@ text_size_small = 8
 
 max_groups_num = 300
 
-inactive_color = "#B5B5B5"
+inactive_color = "#A0A0A0"
+title_color = "maroon"
 hide_color = [1.0, 1.0, 1.0, 0.0]
 
 # Layout-related default parameters

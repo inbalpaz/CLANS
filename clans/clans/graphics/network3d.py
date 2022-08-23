@@ -142,6 +142,9 @@ class Network3D:
         # Create a dict of text visuals that the user can add to the scene
         #self.general_text_visual = {}
 
+        # For debugging purposes
+        #self.xyz = scene.visuals.XYZAxis(parent=self.view.scene)
+
     # Set the plot data for the first time
     def init_data(self, fr_object, group_by):
 
@@ -674,11 +677,12 @@ class Network3D:
         self.update_view(dim_num, color_by, group_by, z_index_mode)
         self.calculate_initial_angles()
 
-    def set_selection_mode(self, dim_num_view, z_index_mode, fr_object, color_by, group_by):
+    def set_selection_mode(self, z_index_mode, color_by, group_by):
+    # def set_selection_mode(self, dim_num_view, z_index_mode, fr_object, color_by, group_by):
 
-        if dim_num_view == 2 and cfg.run_params['dimensions_num_for_clustering'] == 3:
+        #if dim_num_view == 2 and cfg.run_params['dimensions_num_for_clustering'] == 3:
             # Save the rotated coordinates as the normal ones from now on
-            self.save_rotated_coordinates(2, fr_object, color_by, group_by, z_index_mode)
+            #self.save_rotated_coordinates(2, fr_object, color_by, group_by, z_index_mode)
 
         # Rotate the coordinates and bring the camera back to its initial position
         self.calculate_rotation()
@@ -740,10 +744,11 @@ class Network3D:
         elevation_change_in_radians = np.radians(elevation_change)
 
         if azimuth_change != 0 or elevation_change != 0:
-            #print("Azimuth was changed in " + str(azimuth_change) + " degrees")
-            #print("Elevation was changed in " + str(elevation_change) + " degrees")
-            #print("The new azimuth is: " + str(self.view.camera.azimuth))
-            #print("The new elevation is: " + str(self.view.camera.elevation))
+            if cfg.run_params['is_debug_mode']:
+                print("Azimuth was changed in " + str(azimuth_change) + " degrees")
+                print("Elevation was changed in " + str(elevation_change) + " degrees")
+                print("The new azimuth is: " + str(self.view.camera.azimuth))
+                print("The new elevation is: " + str(self.view.camera.elevation))
 
             # Correct the data coordinates (for display) according to the change in azimuth and/or elevation
             self.set_rotated_coordinates(azimuth_change_in_radians, elevation_change_in_radians)
