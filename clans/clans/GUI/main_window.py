@@ -85,17 +85,14 @@ class MainWindow(QMainWindow):
         self.load_file_worker = None
 
         self.setWindowTitle("CLANS " + str(self.dim_num) + "D-View")
-        self.setGeometry(50, 50, 850, 850)
+        self.setGeometry(50, 50, 1300, 1000)
 
         # Define layouts within the main window
         self.main_layout = QVBoxLayout()
-        self.round_layout = QHBoxLayout()
         self.calc_layout = QHBoxLayout()
-        self.selection_layout = QHBoxLayout()
         self.mode_layout = QHBoxLayout()
-        self.view_layout = QHBoxLayout()
-        self.groups_layout = QHBoxLayout()
         self.display_layout = QHBoxLayout()
+        self.groups_layout = QHBoxLayout()
 
         self.main_layout.setSpacing(4)
 
@@ -123,15 +120,20 @@ class MainWindow(QMainWindow):
         self.load_file_submenu.addAction(self.load_delimited_file_action)
 
         self.save_file_submenu = self.file_menu.addMenu("Save to file")
+        self.save_file_submenu.setEnabled(False)
         self.save_clans_submenu = self.save_file_submenu.addMenu("CLANS format")
+        self.save_clans_submenu.setEnabled(False)
 
         self.save_full_clans_file_action = QAction("CLANS", self)
+        self.save_full_clans_file_action.setEnabled(False)
         self.save_full_clans_file_action.triggered.connect(self.save_full_clans_file)
 
         self.save_clans_file_action = QAction("Legacy CLANS", self)
+        self.save_clans_file_action.setEnabled(False)
         self.save_clans_file_action.triggered.connect(self.save_clans_file)
 
         self.save_delimited_file_action = QAction("Tab-delimited format", self)
+        self.save_delimited_file_action.setEnabled(False)
         self.save_delimited_file_action.triggered.connect(self.save_delimited_file)
 
         self.save_clans_submenu.addAction(self.save_full_clans_file_action)
@@ -139,8 +141,10 @@ class MainWindow(QMainWindow):
         self.save_file_submenu.addAction(self.save_delimited_file_action)
 
         self.save_image_submenu = self.file_menu.addMenu("Save as image")
+        self.save_image_submenu.setEnabled(False)
 
         self.save_image_action = QAction("Current graph view", self)
+        self.save_image_action.setEnabled(False)
         self.save_image_action.triggered.connect(self.save_image)
 
         self.save_image_connections_backwards_action = QAction("Move connections backwards", self)
@@ -164,23 +168,36 @@ class MainWindow(QMainWindow):
         # Create the Configuration menu
         self.conf_menu = self.main_menu.addMenu("Configure")
 
+        # Configure layout parameters
         self.conf_layout_submenu = self.conf_menu.addMenu("Layout parameters")
         self.conf_FR_layout_action = QAction("Fruchterman-Reingold", self)
         self.conf_FR_layout_action.triggered.connect(self.conf_FR_layout)
         self.conf_layout_submenu.addAction(self.conf_FR_layout_action)
 
+        # Configure nodes settings
         self.conf_nodes_action = QAction("Data-points general settings", self)
+        self.conf_nodes_action.setEnabled(False)
         self.conf_nodes_action.triggered.connect(self.conf_nodes)
         self.conf_menu.addAction(self.conf_nodes_action)
 
+        # Configure edges settings
         self.conf_edges_action = QAction("Connections (edges) settings", self)
+        self.conf_edges_action.setEnabled(False)
         self.conf_edges_action.triggered.connect(self.conf_edges)
         self.conf_menu.addAction(self.conf_edges_action)
+
+        # Configure grouping-categories
+        self.manage_categories_action = QAction("Manage grouping categories", self)
+        self.manage_categories_action.setEnabled(False)
+        self.manage_categories_action.triggered.connect(self.edit_categories)
+        self.conf_menu.addAction(self.manage_categories_action)
 
         # Create the Tools menu
         self.tools_menu = self.main_menu.addMenu("Tools")
         self.group_by_submenu = self.tools_menu.addMenu("Group data by:")
+        self.group_by_submenu.setEnabled(False)
         self.color_by_submenu = self.tools_menu.addMenu("Color data by:")
+        self.color_by_submenu.setEnabled(False)
 
         # Group by taxonomy action
         self.group_by_tax_action = QAction("NCBI Taxonomy", self)
@@ -189,12 +206,22 @@ class MainWindow(QMainWindow):
 
         self.group_by_submenu.addAction(self.group_by_tax_action)
 
-        # Group-by user-defined param action
-        self.add_groups_from_metadata_action = QAction("Add custom grouping category", self)
+        self.add_category_submenu = self.group_by_submenu.addMenu("Add custom grouping category")
+        self.add_category_submenu.setEnabled(False)
+
+        # Group-by user-defined param (from metadata file) action
+        self.add_groups_from_metadata_action = QAction("From metadata file", self)
         self.add_groups_from_metadata_action.setEnabled(False)
         self.add_groups_from_metadata_action.triggered.connect(self.add_groups_from_metadata)
 
-        self.group_by_submenu.addAction(self.add_groups_from_metadata_action)
+        self.add_category_submenu.addAction(self.add_groups_from_metadata_action)
+
+        # Add empty category action
+        self.add_category_action = QAction("Add empty category (define groups manually)", self)
+        self.add_category_action.setEnabled(False)
+        self.add_category_action.triggered.connect(self.add_empty_category)
+
+        self.add_category_submenu.addAction(self.add_category_action)
 
         # Color by seq_length action
         self.color_by_length_action = QAction("Sequence length", self)
@@ -223,7 +250,7 @@ class MainWindow(QMainWindow):
         self.help_menu.addAction(self.manual_action)
 
         # Create the canvas (the graph area)
-        self.canvas = scene.SceneCanvas(size=(800, 750), keys='interactive', show=True, bgcolor='w')
+        self.canvas = scene.SceneCanvas(size=(1150, 900), keys='interactive', show=True, bgcolor='w')
         self.canvas.events.mouse_move.connect(self.on_canvas_mouse_move)
         self.canvas.events.mouse_double_click.connect(self.on_canvas_mouse_double_click)
         self.canvas.events.key_press.connect(self.on_canvas_key_press)
@@ -238,29 +265,19 @@ class MainWindow(QMainWindow):
         self.error_label = QLabel("")
         self.error_label.setStyleSheet("color: red;")
 
-        # Add a label for displaying the number of rounds done
-        self.rounds_label = QLabel("Round: " + str(self.rounds_done))
-
-        self.round_layout.addStretch()
-        self.round_layout.addWidget(self.rounds_label)
-        self.round_layout.addStretch()
-
-        self.main_layout.addLayout(self.round_layout)
-
         self.calc_label = QLabel("Clustering:")
         self.calc_label.setStyleSheet("color: maroon; font-weight: bold;")
-        self.calc_label.setFixedSize(80, 20)
 
         # Add calculation buttons (Init, Start, Stop)
-        self.start_button = QPushButton("Start")
+        self.start_button = QPushButton("Start clustering")
         self.start_button.setEnabled(False)
         self.start_button.pressed.connect(self.run_calc)
 
-        self.stop_button = QPushButton("Stop")
+        self.stop_button = QPushButton("Stop clustering")
         self.stop_button.setEnabled(False)
         self.stop_button.pressed.connect(self.stop_calc)
 
-        self.init_button = QPushButton("Initialize")
+        self.init_button = QPushButton("Initialize coordinates")
         self.init_button.setEnabled(False)
         self.init_button.pressed.connect(self.init_coor)
 
@@ -279,26 +296,37 @@ class MainWindow(QMainWindow):
         self.pval_widget.setEnabled(False)
         self.pval_widget.returnPressed.connect(self.update_cutoff)
 
+        # Add a label for displaying the number of rounds done
+        self.rounds_label = QLabel("Round: " + str(self.rounds_done))
+        self.rounds_label.setStyleSheet("color: " + cfg.inactive_color + ";")
+
         # Add the widgets to the calc_layout
         self.calc_layout.addWidget(self.calc_label)
+        self.calc_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.calc_layout.addWidget(self.init_button)
         self.calc_layout.addWidget(self.start_button)
         self.calc_layout.addWidget(self.stop_button)
-        self.calc_layout.addSpacerItem(self.horizontal_spacer_short)
+        self.calc_layout.addSpacerItem(self.horizontal_spacer_long)
         self.calc_layout.addWidget(self.dimensions_clustering_combo)
         self.calc_layout.addSpacerItem(self.horizontal_spacer_long)
         self.calc_layout.addWidget(self.pval_label)
         self.calc_layout.addWidget(self.pval_widget)
         self.calc_layout.addWidget(self.error_label)
+        self.calc_layout.addSpacerItem(self.horizontal_spacer_long)
+        self.calc_layout.addWidget(self.rounds_label)
         self.calc_layout.addStretch()
 
         # Add the calc_layout to the main layout
         self.main_layout.addLayout(self.calc_layout)
 
+        self.separator_line1 = QFrame()
+        self.separator_line1.setFrameShape(QFrame.HLine)
+        self.separator_line1.setFrameShadow(QFrame.Raised)
+        self.main_layout.addWidget(self.separator_line1)
+
         # Add a combo-box to switch between user-interaction modes
-        self.mode_label = QLabel("Interaction:")
+        self.mode_label = QLabel("Interaction mode:")
         self.mode_label.setStyleSheet("color: maroon; font-weight: bold;")
-        self.mode_label.setFixedSize(80, 20)
         self.mode_combo = QComboBox()
         self.mode_combo.addItems(["Rotate/Pan graph", "Select data-points", "Move/Edit text"])
         self.mode_combo.setEnabled(False)
@@ -313,75 +341,65 @@ class MainWindow(QMainWindow):
         self.selection_type_combo.setEnabled(False)
         self.selection_type_combo.currentIndexChanged.connect(self.change_selection_type)
 
-        # Add a combo-box to switch between color-by options
-        self.color_by_label = QLabel("Color by:")
-        self.color_by_label.setStyleSheet("color: " + cfg.inactive_color + ";font-weight: bold;")
+        self.selection_label = QLabel("Selection:")
+        self.selection_label.setStyleSheet("color: maroon; font-weight: bold;")
 
-        self.color_by_combo = QComboBox()
-        self.color_by_combo.addItem("Groups/Default")
-        self.color_by_combo.setEnabled(False)
-        self.color_by_combo.currentIndexChanged.connect(self.change_coloring)
+        # Add a button to select all the sequences / groups
+        self.select_all_button = QPushButton("Select all")
+        self.select_all_button.setEnabled(False)
+        self.select_all_button.released.connect(self.select_all)
+
+        # Add a button to clear the current selection
+        self.clear_selection_button = QPushButton("Clear")
+        self.clear_selection_button.setEnabled(False)
+        self.clear_selection_button.released.connect(self.clear_selection)
+
+        # Add a button to open the text-search window
+        self.select_by_text_button = QPushButton("Select by text")
+        self.select_by_text_button.setEnabled(False)
+        self.select_by_text_button.released.connect(self.select_by_text)
+
+        # Add a button to open the searching by groups window
+        self.select_by_groups_button = QPushButton("Select by groups")
+        self.select_by_groups_button.setEnabled(False)
+        self.select_by_groups_button.released.connect(self.select_by_groups)
+
+        # Add a button to open the Selected Sequences window
+        self.open_selected_button = QPushButton("Edit selected sequences")
+        self.open_selected_button.setEnabled(False)
+        self.open_selected_button.released.connect(self.open_selected_window)
 
         # Add the widgets to the mode layout
         self.mode_layout.addWidget(self.mode_label)
-        #self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.mode_layout.addWidget(self.mode_combo)
         self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.mode_layout.addWidget(self.selection_mode_label)
         self.mode_layout.addWidget(self.selection_type_combo)
         self.mode_layout.addSpacerItem(self.horizontal_spacer_long)
-        self.mode_layout.addWidget(self.color_by_label)
-        self.mode_layout.addWidget(self.color_by_combo)
+        self.mode_layout.addWidget(self.selection_label)
+        self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.mode_layout.addWidget(self.select_all_button)
+        self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.mode_layout.addWidget(self.clear_selection_button)
+        self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.mode_layout.addWidget(self.select_by_text_button)
+        self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.mode_layout.addWidget(self.select_by_groups_button)
+        self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.mode_layout.addWidget(self.open_selected_button)
         self.mode_layout.addStretch()
 
         # Add the mode_layout to the main layout
         self.main_layout.addLayout(self.mode_layout)
 
-        self.view_label = QLabel("View:")
-        self.view_label.setStyleSheet("color: maroon; font-weight: bold;")
-        self.view_label.setFixedSize(80, 20)
-
-        # Add a button to change the Z-indexing of nodes in 2D presentation
-        self.z_index_mode_label = QLabel("Z-index:")
-        self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
-
-        self.z_index_mode_combo = QComboBox()
-        self.z_index_mode_combo.addItems(["Automatic", "By groups order"])
-        if self.dim_num == 3 or len(cfg.groups_by_categories[self.group_by]['groups']) == 0:
-            self.z_index_mode_combo.setEnabled(False)
-        self.z_index_mode_combo.currentIndexChanged.connect(self.manage_z_indexing)
-
-        # Add a combo-box to move between full-data mode and selected subset mode
-        self.data_mode_combo = QComboBox()
-        self.data_mode_combo.addItems(["Full dataset", "Selected subset"])
-        self.data_mode_combo.setEnabled(False)
-        self.data_mode_combo.currentIndexChanged.connect(self.manage_subset_presentation)
-
-        # Add a button to hide singeltons
-        self.hide_singeltons_button = QPushButton("Hide singeltons")
-        self.hide_singeltons_button.setCheckable(True)
-        self.hide_singeltons_button.setEnabled(False)
-        self.hide_singeltons_button.released.connect(self.hide_singeltons)
-
-        # Add the widgets to the view_layout
-        self.view_layout.addWidget(self.view_label)
-        #self.view_layout.addWidget(self.color_by_label)
-        #self.view_layout.addWidget(self.color_by_combo)
-        #self.view_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.view_layout.addWidget(self.z_index_mode_label)
-        self.view_layout.addWidget(self.z_index_mode_combo)
-        self.view_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.view_layout.addWidget(self.data_mode_combo)
-        self.view_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.view_layout.addWidget(self.hide_singeltons_button)
-        self.view_layout.addStretch()
-
-        # Add the view_layout to the main layout
-        self.main_layout.addLayout(self.view_layout)
+        self.separator_line2 = QFrame()
+        self.separator_line2.setFrameShape(QFrame.HLine)
+        self.separator_line2.setFrameShadow(QFrame.Raised)
+        self.main_layout.addWidget(self.separator_line2)
 
         self.display_label = QLabel("Display:")
         self.display_label.setStyleSheet("color: maroon; font-weight: bold;")
-        self.display_label.setFixedSize(80, 20)
 
         # Add a button to show/hide the connections
         self.connections_button = QPushButton("Connections")
@@ -413,7 +431,33 @@ class MainWindow(QMainWindow):
         self.reset_group_names_button.setEnabled(False)
         self.reset_group_names_button.pressed.connect(self.reset_group_names_positions)
 
+        self.view_label = QLabel("View:")
+        self.view_label.setStyleSheet("color: maroon; font-weight: bold;")
+
+        # Add a button to change the Z-indexing of nodes in 2D presentation
+        self.z_index_mode_label = QLabel("Z-index:")
+        self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
+
+        self.z_index_mode_combo = QComboBox()
+        self.z_index_mode_combo.addItems(["Automatic", "By groups order"])
+        if self.dim_num == 3 or len(cfg.groups_by_categories[self.group_by]['groups']) == 0:
+            self.z_index_mode_combo.setEnabled(False)
+        self.z_index_mode_combo.currentIndexChanged.connect(self.manage_z_indexing)
+
+        # Add a combo-box to move between full-data mode and selected subset mode
+        self.data_mode_combo = QComboBox()
+        self.data_mode_combo.addItems(["Full dataset", "Selected subset"])
+        self.data_mode_combo.setEnabled(False)
+        self.data_mode_combo.currentIndexChanged.connect(self.manage_subset_presentation)
+
+        # Add a button to hide singeltons
+        self.hide_singeltons_button = QPushButton("Hide singeltons")
+        self.hide_singeltons_button.setCheckable(True)
+        self.hide_singeltons_button.setEnabled(False)
+        self.hide_singeltons_button.released.connect(self.hide_singeltons)
+
         self.display_layout.addWidget(self.display_label)
+        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.display_layout.addWidget(self.connections_button)
         self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.display_layout.addWidget(self.show_selected_names_button)
@@ -421,55 +465,42 @@ class MainWindow(QMainWindow):
         self.display_layout.addWidget(self.show_group_names_button)
         self.display_layout.addWidget(self.show_groups_combo)
         self.display_layout.addWidget(self.reset_group_names_button)
+        self.display_layout.addSpacerItem(self.horizontal_spacer_long)
+        self.display_layout.addWidget(self.view_label)
+        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.display_layout.addWidget(self.z_index_mode_label)
+        self.display_layout.addWidget(self.z_index_mode_combo)
+        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.display_layout.addWidget(self.data_mode_combo)
+        self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.display_layout.addWidget(self.hide_singeltons_button)
         self.display_layout.addStretch()
 
         # Add the view_layout to the main layout
         self.main_layout.addLayout(self.display_layout)
 
-        self.selection_label = QLabel("Selection:")
-        self.selection_label.setStyleSheet("color: maroon; font-weight: bold;")
-        self.selection_label.setFixedSize(80, 20)
+        self.separator_line3 = QFrame()
+        self.separator_line3.setFrameShape(QFrame.HLine)
+        self.separator_line3.setFrameShadow(QFrame.Raised)
+        self.main_layout.addWidget(self.separator_line3)
 
-        # Add a button to select all the sequences / groups
-        self.select_all_button = QPushButton("Select all")
-        self.select_all_button.setEnabled(False)
-        self.select_all_button.released.connect(self.select_all)
+        # Add a combo-box to switch between color-by options
+        self.color_by_label = QLabel("Color data by:")
+        self.color_by_label.setStyleSheet("color: maroon;font-weight: bold;")
 
-        # Add a button to clear the current selection
-        self.clear_selection_button = QPushButton("Clear")
-        self.clear_selection_button.setEnabled(False)
-        self.clear_selection_button.released.connect(self.clear_selection)
+        self.color_by_combo = QComboBox()
+        self.color_by_combo.addItem("Groups/Default")
+        self.color_by_combo.setEnabled(False)
+        self.color_by_combo.currentIndexChanged.connect(self.change_coloring)
 
-        # Add a button to open the text-search window
-        self.select_by_text_button = QPushButton("Select by text")
-        self.select_by_text_button.setEnabled(False)
-        self.select_by_text_button.released.connect(self.select_by_text)
+        # Add a combo-box to switch between group-by options
+        self.group_by_label = QLabel("Grouping category:")
+        self.group_by_label.setStyleSheet("color: maroon; font-weight: bold;")
 
-        # Add a button to open the searching by groups window
-        self.select_by_groups_button = QPushButton("Select by groups")
-        self.select_by_groups_button.setEnabled(False)
-        self.select_by_groups_button.released.connect(self.select_by_groups)
-
-        # Add a button to open the Selected Sequences window
-        self.open_selected_button = QPushButton("Edit selected sequences")
-        self.open_selected_button.setEnabled(False)
-        self.open_selected_button.released.connect(self.open_selected_window)
-
-        # Add the widgets to the selection_layout
-        self.selection_layout.addWidget(self.selection_label)
-        self.selection_layout.addWidget(self.select_all_button)
-        self.selection_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.selection_layout.addWidget(self.clear_selection_button)
-        self.selection_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.selection_layout.addWidget(self.select_by_text_button)
-        self.selection_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.selection_layout.addWidget(self.select_by_groups_button)
-        self.selection_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.selection_layout.addWidget(self.open_selected_button)
-        self.selection_layout.addStretch()
-
-        # Add the selection_layout to the main layout
-        self.main_layout.addLayout(self.selection_layout)
+        self.group_by_combo = QComboBox()
+        self.group_by_combo.addItem("Manual definition")
+        self.group_by_combo.setEnabled(False)
+        self.group_by_combo.currentIndexChanged.connect(self.change_grouping)
 
         self.groups_label = QLabel("Groups:")
         self.groups_label.setStyleSheet("color: maroon; font-weight: bold;")
@@ -480,37 +511,25 @@ class MainWindow(QMainWindow):
         self.edit_groups_button.released.connect(self.edit_groups)
 
         # Add a button for adding the selected sequences to a new / existing (opens a dialog)
-        self.add_to_group_button = QPushButton("Add to group")
+        self.add_to_group_button = QPushButton("Add selected to group")
         self.add_to_group_button.released.connect(self.open_add_to_group_dialog)
         self.add_to_group_button.setEnabled(False)
 
         # Add a button for removing the selected sequences from their group(s)
-        self.remove_selected_button = QPushButton("Remove from group(s)")
+        self.remove_selected_button = QPushButton("Remove selected from group(s)")
         self.remove_selected_button.released.connect(self.remove_selected_from_group)
         self.remove_selected_button.setEnabled(False)
 
-        # Add a combo-box to switch between group-by options
-        self.group_by_label = QLabel("Group by:")
-        self.group_by_label.setStyleSheet("color: maroon; font-weight: bold;")
-        self.group_by_label.setFixedSize(80, 20)
-
-        self.group_by_combo = QComboBox()
-        self.group_by_combo.addItem("Manual definition")
-        self.group_by_combo.setEnabled(False)
-        self.group_by_combo.currentIndexChanged.connect(self.change_grouping)
-
-        # Add a button to edit the grouping-categories (opens the editing-categories window)
-        self.edit_categories_button = QPushButton("Edit categories")
-        self.edit_categories_button.setEnabled(False)
-        self.edit_categories_button.released.connect(self.edit_categories)
-
-        self.groups_layout.addWidget(self.group_by_label)
-        self.groups_layout.addWidget(self.group_by_combo)
+        self.groups_layout.addWidget(self.color_by_label)
         self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
-        self.groups_layout.addWidget(self.edit_categories_button)
+        self.groups_layout.addWidget(self.color_by_combo)
+        self.groups_layout.addSpacerItem(self.horizontal_spacer_long)
+        self.groups_layout.addWidget(self.group_by_label)
+        self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.groups_layout.addWidget(self.group_by_combo)
         self.groups_layout.addSpacerItem(self.horizontal_spacer_long)
         self.groups_layout.addWidget(self.groups_label)
-        self.groups_layout.addSpacerItem(self.horizontal_spacer_short)
+        self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.groups_layout.addWidget(self.edit_groups_button)
         self.groups_layout.addWidget(self.add_to_group_button)
         self.groups_layout.addWidget(self.remove_selected_button)
@@ -572,7 +591,7 @@ class MainWindow(QMainWindow):
         self.add_groups_from_metadata_action.setEnabled(False)
         self.color_by_param_action.setEnabled(False)
 
-        self.start_button.setText("Start")
+        self.start_button.setText("Start clustering")
         self.dimensions_clustering_combo.setCurrentIndex(0)
 
         self.mode_combo.setCurrentIndex(0)
@@ -604,14 +623,13 @@ class MainWindow(QMainWindow):
         self.color_by_combo.clear()
         self.color_by_combo.addItem("Groups/Default")
         self.color_by_combo.setEnabled(False)
-        self.color_by_label.setStyleSheet("color: " + cfg.inactive_color + "; font-weight: bold;")
         self.colorbar_plot.hide_colorbar()
 
         # Remove all the group-by options except 'Manual' (the default)
         self.group_by_combo.clear()
         self.group_by_combo.addItem("Manual definition")
         self.group_by_combo.setEnabled(False)
-        self.edit_categories_button.setEnabled(False)
+        self.manage_categories_action.setEnabled(False)
 
         # Reset the list of sequences in the 'selected sequences' window
         self.selected_seq_window.clear_list()
@@ -749,6 +767,27 @@ class MainWindow(QMainWindow):
             # Set the window title to include the file name
             self.setWindowTitle("CLANS " + str(self.dim_num) + "D-View of " + self.file_name)
 
+            # Enable the menu items
+            self.save_file_submenu.setEnabled(True)
+            self.save_clans_submenu.setEnabled(True)
+            self.save_full_clans_file_action.setEnabled(True)
+            self.save_clans_file_action.setEnabled(True)
+            self.save_delimited_file_action.setEnabled(True)
+            self.save_image_submenu.setEnabled(True)
+            self.save_image_action.setEnabled(True)
+            self.conf_nodes_action.setEnabled(True)
+            self.conf_edges_action.setEnabled(True)
+            self.group_by_submenu.setEnabled(True)
+            self.group_by_tax_action.setEnabled(True)
+            self.add_category_submenu.setEnabled(True)
+            self.add_groups_from_metadata_action.setEnabled(True)
+            self.add_category_action.setEnabled(True)
+            self.color_by_submenu.setEnabled(True)
+            self.color_by_param_action.setEnabled(True)
+
+            if cfg.run_params['input_format'] == 'clans':
+                self.color_by_length_action.setEnabled(True)
+
             # Enable the controls
             self.start_button.setEnabled(True)
             self.stop_button.setEnabled(True)
@@ -756,6 +795,7 @@ class MainWindow(QMainWindow):
             self.dimensions_clustering_combo.setEnabled(True)
             self.pval_widget.setEnabled(True)
             self.pval_label.setStyleSheet("color: black;")
+            self.rounds_label.setStyleSheet("color: black;")
             self.mode_combo.setEnabled(True)
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
@@ -795,7 +835,7 @@ class MainWindow(QMainWindow):
             # There is at least one valid pre-defined grouping category
             if groups_ok:
                 self.select_by_groups_button.setEnabled(True)
-                self.edit_categories_button.setEnabled(True)
+                self.manage_categories_action.setEnabled(True)
                 self.edit_groups_button.setEnabled(True)
                 self.show_group_names_button.setEnabled(True)
                 self.group_by_combo.setEnabled(True)
@@ -808,7 +848,6 @@ class MainWindow(QMainWindow):
             # If there are uploaded numeric parameters - enable the color-by combo-box
             if len(cfg.sequences_numeric_params) > 0:
                 self.color_by_combo.setEnabled(True)
-                self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
                 for param in cfg.sequences_numeric_params:
                     self.color_by_combo.addItem(param)
 
@@ -828,7 +867,7 @@ class MainWindow(QMainWindow):
             self.rounds_done = cfg.run_params['rounds_done']
             self.rounds_label.setText("Round: " + str(self.rounds_done))
             if self.rounds_done > 0:
-                self.start_button.setText("Resume")
+                self.start_button.setText("Resume clustering")
 
             # Update the text-field for the threshold according to the type of values
             if cfg.run_params['type_of_values'] == 'att':
@@ -839,14 +878,6 @@ class MainWindow(QMainWindow):
 
             if cfg.run_params['dimensions_num_for_clustering'] == 2:
                 self.dimensions_clustering_combo.setCurrentIndex(1)
-
-            # Calculate the sequence length parameter for this dataset (if input contains sequences)
-            if cfg.run_params['input_format'] == 'clans':
-                self.color_by_length_action.setEnabled(True)
-
-            self.group_by_tax_action.setEnabled(True)
-            self.add_groups_from_metadata_action.setEnabled(True)
-            self.color_by_param_action.setEnabled(True)
 
             # Init the plots in the stereo window
             #try:
@@ -1029,9 +1060,7 @@ class MainWindow(QMainWindow):
             self.z_index_mode_combo.setEnabled(False)
             self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
             self.color_by_combo.setEnabled(False)
-            self.color_by_label.setStyleSheet("color: " + cfg.inactive_color + "; font-weight: bold;")
             self.group_by_combo.setEnabled(False)
-            self.edit_categories_button.setEnabled(False)
 
             # Execute
             self.threadpool.start(self.run_calc_worker)
@@ -1074,7 +1103,7 @@ class MainWindow(QMainWindow):
             if cfg.run_params['is_debug_mode']:
                 print("The calculation of " + str(self.rounds_done) + " rounds took " + str(duration) + " seconds")
 
-        self.start_button.setText("Resume")
+        self.start_button.setText("Resume clustering")
         self.is_running_calc = 0
 
         # Enable all settings buttons
@@ -1120,12 +1149,10 @@ class MainWindow(QMainWindow):
         # Enable the 'color by' combo box if the color-by-param was already done once
         if self.done_color_by_length or len(cfg.sequences_numeric_params) > 0:
             self.color_by_combo.setEnabled(True)
-            self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
 
         # Enable the 'group-by' combo box if is more than one grouping option
         if self.group_by_combo.count() > 1 and self.color_by == 'groups':
             self.group_by_combo.setEnabled(True)
-            self.edit_categories_button.setEnabled(True)
 
         # Whole data calculation mode
         if self.is_subset_mode == 0:
@@ -1171,7 +1198,7 @@ class MainWindow(QMainWindow):
     def init_coor(self):
         # Initialize the coordinates only if the calculation is not running
         if self.is_running_calc == 0:
-            self.start_button.setText("Start")
+            self.start_button.setText("Start clustering")
             self.before = None
             self.after = None
             self.is_running_calc = 0
@@ -1774,7 +1801,6 @@ class MainWindow(QMainWindow):
             self.color_by_combo.addItem('Seq. length')
             self.color_by_combo.setCurrentText('Seq. length')
             self.color_by_combo.setEnabled(True)
-            self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
 
         else:
             try:
@@ -1841,7 +1867,7 @@ class MainWindow(QMainWindow):
                 # Enable the 'group-by' combo box if is more than one grouping option
                 if self.group_by_combo.count() > 1:
                     self.group_by_combo.setEnabled(True)
-                    self.edit_categories_button.setEnabled(True)
+                    self.manage_categories_action.setEnabled(True)
 
                 self.color_by_groups()
 
@@ -1860,7 +1886,6 @@ class MainWindow(QMainWindow):
             self.show_group_names_button.setEnabled(False)
             self.selection_type_combo.setEnabled(False)
             self.group_by_combo.setEnabled(False)
-            self.edit_categories_button.setEnabled(False)
 
             if self.is_init == 0:
                 # Color the data by sequence length
@@ -1923,7 +1948,6 @@ class MainWindow(QMainWindow):
 
                     self.color_by_combo.setCurrentText(selected_param)
                     self.color_by_combo.setEnabled(True)
-                    self.color_by_label.setStyleSheet("color: maroon; font-weight: bold;")
 
                     # Update the colors of the selected parameter
                     cfg.sequences_numeric_params[selected_param]['min_color'] = min_param_color
@@ -2128,7 +2152,7 @@ class MainWindow(QMainWindow):
 
             print("Displaying selected subset")
 
-            self.start_button.setText("Start")
+            self.start_button.setText("Start clustering")
             self.rounds_label.setText("Round: 0")
             self.rounds_done_subset = 0
 
@@ -2163,9 +2187,9 @@ class MainWindow(QMainWindow):
             print("Back to full-data view")
 
             if self.rounds_done > 0:
-                self.start_button.setText("Resume")
+                self.start_button.setText("Resume clustering")
             else:
-                self.start_button.setText("Start")
+                self.start_button.setText("Start clustering")
             self.rounds_label.setText("Round: " + str(self.rounds_done))
 
             # Enable all selection-related buttons
@@ -2291,8 +2315,8 @@ class MainWindow(QMainWindow):
                 self.group_by_combo.setCurrentIndex(selected_category_index)
 
                 # No categories left except from 'Manual definition'
-                if selected_category_index == 0:
-                    self.edit_categories_button.setEnabled(False)
+                if len(cfg.groups_by_categories) == 1:
+                    self.manage_categories_action.setEnabled(False)
 
         except Exception as err:
             error_msg = "An error occurred: cannot edit the grouping-categories"
@@ -2572,7 +2596,7 @@ class MainWindow(QMainWindow):
 
             self.group_by_combo.setCurrentText(category_name)
             self.group_by_combo.setEnabled(True)
-            self.edit_categories_button.setEnabled(True)
+            self.manage_categories_action.setEnabled(True)
 
     def add_groups_from_metadata(self):
 
@@ -2663,9 +2687,83 @@ class MainWindow(QMainWindow):
                     self.group_by_combo.addItem(category)
                     self.group_by_combo.setCurrentText(category)
                     self.group_by_combo.setEnabled(True)
-                    self.edit_categories_button.setEnabled(True)
+                    self.manage_categories_action.setEnabled(True)
 
                 self.group_by = category_index
+
+    def add_empty_category(self):
+
+        # Append a new empty category to the main categories list
+        cfg.groups_by_categories.append(dict())
+        category_index = len(cfg.groups_by_categories) - 1
+        cfg.groups_by_categories[category_index]['name'] = "Category_" + str(category_index)
+        cfg.groups_by_categories[category_index]['nodes_size'] = cfg.run_params['nodes_size']
+        cfg.groups_by_categories[category_index]['text_size'] = cfg.run_params['text_size']
+        cfg.groups_by_categories[category_index]['nodes_outline_color'] = cfg.run_params['nodes_outline_color']
+        cfg.groups_by_categories[category_index]['nodes_outline_width'] = cfg.run_params['nodes_outline_width']
+        cfg.groups_by_categories[category_index]['is_bold'] = True
+        cfg.groups_by_categories[category_index]['is_italic'] = False
+        cfg.groups_by_categories[category_index]['groups'] = dict()
+        cfg.groups_by_categories[category_index]['sequences'] = np.full(cfg.run_params['total_sequences_num'], -1)
+
+        # Open the Edit Category dialog to let the user configure the new category
+        try:
+            edit_category_dlg = gd.EditCategoryDialog(category_index)
+        except Exception as err:
+            error_msg = "An error occurred: cannot create EditCategoryDialog object"
+            error_occurred(self.add_empty_category, 'add_empty_category', err, error_msg)
+            return
+
+        if edit_category_dlg.exec_():
+
+            try:
+                category_name, points_size, outline_color, outline_width, names_size, is_bold, is_italic = \
+                    edit_category_dlg.get_info()
+            except Exception as err:
+                error_msg = "An error occurred: cannot get category parameters"
+                error_occurred(edit_category_dlg.get_info, 'get_info', err, error_msg)
+                return
+
+            if category_name != "":
+                # Update the category name in the main list
+                cfg.groups_by_categories[category_index]['name'] = category_name
+
+            is_changed_points_size = 0
+            is_changed_names_size = 0
+            is_changed_outline_color = 0
+            is_changed_bold = 0
+            is_changed_italic = 0
+
+            if points_size != cfg.groups_by_categories[category_index]['nodes_size']:
+                is_changed_points_size = 1
+            cfg.groups_by_categories[category_index]['nodes_size'] = points_size
+
+            if names_size != cfg.groups_by_categories[category_index]['text_size']:
+                is_changed_names_size = 1
+            cfg.groups_by_categories[category_index]['text_size'] = names_size
+
+            if ColorArray(outline_color).hex != \
+                    ColorArray(cfg.groups_by_categories[category_index]['nodes_outline_color']).hex:
+                is_changed_outline_color = 1
+            cfg.groups_by_categories[category_index]['nodes_outline_color'] = outline_color
+
+            if is_bold != cfg.groups_by_categories[category_index]['is_bold']:
+                is_changed_bold = 1
+            cfg.groups_by_categories[category_index]['is_bold'] = is_bold
+
+            if is_italic != cfg.groups_by_categories[category_index]['is_italic']:
+                is_changed_italic = 1
+            cfg.groups_by_categories[category_index]['is_italic'] = is_italic
+
+            cfg.groups_by_categories[category_index]['nodes_outline_width'] = outline_width
+
+            # Add the new category to the group-by combo-box, enable it and update the grouping
+            self.group_by_combo.addItem(cfg.groups_by_categories[category_index]['name'])
+            self.group_by_combo.setCurrentText(cfg.groups_by_categories[category_index]['name'])
+            self.group_by_combo.setEnabled(True)
+            self.manage_categories_action.setEnabled(True)
+
+            self.group_by = category_index
 
     def open_about_window(self):
         try:

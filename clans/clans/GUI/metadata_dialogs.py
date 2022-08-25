@@ -318,7 +318,8 @@ class GroupByParamDialog(QDialog):
         self.layout = QGridLayout()
         self.colors_layout = QGridLayout()
 
-        self.file_label = QLabel("Upload a metadata file with pre-defined groups")
+        self.file_label = QLabel("Upload a metadata file (tab-delimited)\ncontaining at least one feature with "
+                                 "pre-defined groups")
 
         self.upload_file_button = QPushButton("Upload file")
         self.upload_file_button.pressed.connect(self.upload_file)

@@ -744,11 +744,11 @@ class Network3D:
         elevation_change_in_radians = np.radians(elevation_change)
 
         if azimuth_change != 0 or elevation_change != 0:
-            if cfg.run_params['is_debug_mode']:
-                print("Azimuth was changed in " + str(azimuth_change) + " degrees")
-                print("Elevation was changed in " + str(elevation_change) + " degrees")
-                print("The new azimuth is: " + str(self.view.camera.azimuth))
-                print("The new elevation is: " + str(self.view.camera.elevation))
+            #if cfg.run_params['is_debug_mode']:
+                #print("Azimuth was changed in " + str(azimuth_change) + " degrees")
+                #print("Elevation was changed in " + str(elevation_change) + " degrees")
+                #print("The new azimuth is: " + str(self.view.camera.azimuth))
+                #print("The new elevation is: " + str(self.view.camera.elevation))
 
             # Correct the data coordinates (for display) according to the change in azimuth and/or elevation
             self.set_rotated_coordinates(azimuth_change_in_radians, elevation_change_in_radians)

@@ -18,6 +18,26 @@ def error_occurred(method, method_name, exception_err, error_msg):
         return
 
 
+class DeleteVerification(QDialog):
+
+    def __init__(self, msg):
+        super().__init__()
+
+        self.layout = QVBoxLayout()
+
+        self.title = QLabel(msg)
+
+        # Add the OK/Cancel standard buttons
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+        self.layout.addWidget(self.title)
+        self.layout.addWidget(self.button_box)
+
+        self.setLayout(self.layout)
+
+
 class AddToGroupDialog(QDialog):
 
     def __init__(self, group_by):
@@ -864,7 +884,7 @@ class EditCategoriesDialog(QDialog):
         self.color_by = color_by
         self.group_by = group_by
 
-        self.setWindowTitle("Edit grouping categories")
+        self.setWindowTitle("Manage grouping categories")
 
         self.main_layout = QVBoxLayout()
 
@@ -880,6 +900,9 @@ class EditCategoriesDialog(QDialog):
         # Add a layout for buttons
         self.buttons_layout = QHBoxLayout()
 
+        self.add_button = QPushButton("Add empty category")
+        self.add_button.released.connect(self.add_category)
+
         self.edit_button = QPushButton("Edit category")
         self.edit_button.released.connect(self.edit_category)
 
@@ -889,9 +912,10 @@ class EditCategoriesDialog(QDialog):
         self.move_down_button = QPushButton("Move down")
         self.move_down_button.released.connect(self.move_down_category)
 
-        self.delete_category_button = QPushButton("Delete category")
+        self.delete_category_button = QPushButton("Delete")
         self.delete_category_button.released.connect(self.delete_category)
 
+        self.buttons_layout.addWidget(self.add_button)
         self.buttons_layout.addWidget(self.edit_button)
         self.buttons_layout.addWidget(self.move_up_button)
         self.buttons_layout.addWidget(self.move_down_button)
@@ -908,6 +932,79 @@ class EditCategoriesDialog(QDialog):
         self.main_layout.addWidget(self.button_box)
 
         self.setLayout(self.main_layout)
+
+    def add_category(self):
+
+        # Append a new empty category to the main categories list
+        cfg.groups_by_categories.append(dict())
+        category_index = len(cfg.groups_by_categories) - 1
+        cfg.groups_by_categories[category_index]['name'] = "Category_" + str(category_index)
+        cfg.groups_by_categories[category_index]['nodes_size'] = cfg.run_params['nodes_size']
+        cfg.groups_by_categories[category_index]['text_size'] = cfg.run_params['text_size']
+        cfg.groups_by_categories[category_index]['nodes_outline_color'] = cfg.run_params['nodes_outline_color']
+        cfg.groups_by_categories[category_index]['nodes_outline_width'] = cfg.run_params['nodes_outline_width']
+        cfg.groups_by_categories[category_index]['is_bold'] = True
+        cfg.groups_by_categories[category_index]['is_italic'] = False
+        cfg.groups_by_categories[category_index]['groups'] = dict()
+        cfg.groups_by_categories[category_index]['sequences'] = np.full(cfg.run_params['total_sequences_num'], -1)
+
+        # Open the Edit Category dialog to let the user configure the new category
+        try:
+            edit_category_dlg = EditCategoryDialog(category_index)
+        except Exception as err:
+            error_msg = "An error occurred: cannot create EditCategoryDialog object"
+            error_occurred(self.add_category, 'add_category', err, error_msg)
+            return
+
+        if edit_category_dlg.exec_():
+
+            try:
+                category_name, points_size, outline_color, outline_width, names_size, is_bold, is_italic = \
+                    edit_category_dlg.get_info()
+            except Exception as err:
+                error_msg = "An error occurred: cannot get category parameters"
+                error_occurred(edit_category_dlg.get_info, 'get_info', err, error_msg)
+                return
+
+            if category_name != "":
+                # Update the category name in the main list
+                cfg.groups_by_categories[category_index]['name'] = category_name
+
+            # Add the category name to the items list
+            item = QListWidgetItem(cfg.groups_by_categories[category_index]['name'])
+            self.categories_list.insertItem(category_index+1, item)
+
+            is_changed_points_size = 0
+            is_changed_names_size = 0
+            is_changed_outline_color = 0
+            is_changed_bold = 0
+            is_changed_italic = 0
+
+            if points_size != cfg.groups_by_categories[category_index]['nodes_size']:
+                is_changed_points_size = 1
+            cfg.groups_by_categories[category_index]['nodes_size'] = points_size
+
+            if names_size != cfg.groups_by_categories[category_index]['text_size']:
+                is_changed_names_size = 1
+            cfg.groups_by_categories[category_index]['text_size'] = names_size
+
+            if ColorArray(outline_color).hex != \
+                    ColorArray(cfg.groups_by_categories[category_index]['nodes_outline_color']).hex:
+                is_changed_outline_color = 1
+            cfg.groups_by_categories[category_index]['nodes_outline_color'] = outline_color
+
+            if is_bold != cfg.groups_by_categories[category_index]['is_bold']:
+                is_changed_bold = 1
+            cfg.groups_by_categories[category_index]['is_bold'] = is_bold
+
+            if is_italic != cfg.groups_by_categories[category_index]['is_italic']:
+                is_changed_italic = 1
+            cfg.groups_by_categories[category_index]['is_italic'] = is_italic
+
+            cfg.groups_by_categories[category_index]['nodes_outline_width'] = outline_width
+
+            # Mark the new category's line
+            self.categories_list.setCurrentRow(category_index-1)
 
     def edit_category(self):
         category_in_list_index = self.categories_list.currentRow()  # The index of the category in the list
@@ -1006,15 +1103,19 @@ class EditCategoriesDialog(QDialog):
         category_in_list_index = self.categories_list.currentRow()  # The index of the category in the list
         category_index = category_in_list_index + 1  # The list doesn't include the default entry ('Manual definition')
 
-        try:
-            gr.delete_grouping_category(category_index)
-        except Exception as err:
-            error_msg = "An error occurred: cannot delete the grouping-category"
-            error_occurred(gr.delete_grouping_category, 'delete_grouping_category', err, error_msg)
-            return
+        msg = "You are about to delete grouping category \'" + cfg.groups_by_categories[category_index]['name'] + "\'"
+        delete_dlg = DeleteVerification(msg)
 
-        # Remove the group from the presented list
-        self.categories_list.takeItem(category_in_list_index)
+        if delete_dlg.exec_():
+            try:
+                gr.delete_grouping_category(category_index)
+            except Exception as err:
+                error_msg = "An error occurred: cannot delete the grouping-category"
+                error_occurred(gr.delete_grouping_category, 'delete_grouping_category', err, error_msg)
+                return
+
+            # Remove the group from the presented list
+            self.categories_list.takeItem(category_in_list_index)
 
     def move_up_category(self):
 
@@ -1073,7 +1174,7 @@ class EditCategoryDialog(QDialog):
     def __init__(self, category_index):
         super().__init__()
 
-        self.setWindowTitle("Edit category name")
+        self.setWindowTitle("Edit grouping-category parameters")
 
         self.main_layout = QVBoxLayout()
         self.grid_layout = QGridLayout()
@@ -1086,8 +1187,11 @@ class EditCategoryDialog(QDialog):
         self.grid_layout.addWidget(self.name_label, 0, 0)
         self.grid_layout.addWidget(self.name_widget, 0, 1)
 
+        self.space_label = QLabel(" ")
+        self.grid_layout.addWidget(self.space_label, 1, 0)
+
         self.group_params_label = QLabel("General parameters for the groups:")
-        self.grid_layout.addWidget(self.group_params_label, 1, 0, 1, 3)
+        self.grid_layout.addWidget(self.group_params_label, 2, 0, 1, 3)
 
         # Set the data points size
         self.points_size_label = QLabel("Data-points size:")
@@ -1102,8 +1206,8 @@ class EditCategoryDialog(QDialog):
             i += 1
         self.points_size_combo.setCurrentIndex(default_index)
 
-        self.grid_layout.addWidget(self.points_size_label, 2, 0)
-        self.grid_layout.addWidget(self.points_size_combo, 2, 1)
+        self.grid_layout.addWidget(self.points_size_label, 3, 0)
+        self.grid_layout.addWidget(self.points_size_combo, 3, 1)
 
         self.outline_color_label = QLabel("Outline color:")
         self.outline_color = ColorArray(cfg.groups_by_categories[category_index]['nodes_outline_color'])
@@ -1112,9 +1216,9 @@ class EditCategoryDialog(QDialog):
         self.outline_color_button = QPushButton("Change color")
         self.outline_color_button.pressed.connect(self.change_outline_color)
 
-        self.grid_layout.addWidget(self.outline_color_label, 3, 0)
-        self.grid_layout.addWidget(self.outline_color_box, 3, 1)
-        self.grid_layout.addWidget(self.outline_color_button, 3, 2)
+        self.grid_layout.addWidget(self.outline_color_label, 4, 0)
+        self.grid_layout.addWidget(self.outline_color_box, 4, 1)
+        self.grid_layout.addWidget(self.outline_color_button, 4, 2)
 
         self.outline_width_label = QLabel("Outline width:")
         self.outline_width_combo = QComboBox()
@@ -1128,8 +1232,8 @@ class EditCategoryDialog(QDialog):
             i += 1
         self.outline_width_combo.setCurrentIndex(default_index)
 
-        self.grid_layout.addWidget(self.outline_width_label, 4, 0)
-        self.grid_layout.addWidget(self.outline_width_combo, 4, 1)
+        self.grid_layout.addWidget(self.outline_width_label, 5, 0)
+        self.grid_layout.addWidget(self.outline_width_combo, 5, 1)
 
         # Set the size of the group names
         self.group_name_size_label = QLabel("Group names text size:")
@@ -1144,8 +1248,8 @@ class EditCategoryDialog(QDialog):
             i += 1
         self.group_name_size.setCurrentIndex(default_index)
 
-        self.grid_layout.addWidget(self.group_name_size_label, 5, 0)
-        self.grid_layout.addWidget(self.group_name_size, 5, 1)
+        self.grid_layout.addWidget(self.group_name_size_label, 6, 0)
+        self.grid_layout.addWidget(self.group_name_size, 6, 1)
 
         # Add Bold and Italic options
         self.bold_label = QLabel("Bold")
@@ -1164,8 +1268,8 @@ class EditCategoryDialog(QDialog):
         self.italic_layout.addWidget(self.italic_label)
         self.italic_layout.addStretch()
 
-        self.grid_layout.addLayout(self.bold_layout, 6, 0)
-        self.grid_layout.addLayout(self.italic_layout, 6, 1)
+        self.grid_layout.addLayout(self.bold_layout, 7, 0)
+        self.grid_layout.addLayout(self.italic_layout, 7, 1)
 
         # Add the OK/Cancel standard buttons
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
