@@ -105,7 +105,7 @@ run_params = {  # a dict to hold all the running parameters (given by the user /
 # 'in_subset' is a boolean flag, stating whether the index is found in the selected subset or not (False by default)
 # the subset coordinates are used to save the subset new coordinates in case it was clustered separately.
 # They are initialized with the whole dataset coordinates at the beginning and whenever the view returns to full dataset.
-seq_dt = np.dtype([('seq_ID', 'U300'), ('seq_title', 'U300'), ('sequence', 'U3000'), ('seq_length', 'int16'),
+seq_dt = np.dtype([('seq_ID', 'U300'), ('sequence', 'U3000'), ('seq_length', 'int16'),
                    ('norm_seq_length', 'float32'), ('organism', 'U100'), ('tax_ID', 'U20'),
                    ('x_coor', 'float32'), ('y_coor', 'float32'), ('z_coor', 'float32'), ('in_subset', 'bool'),
                    ('x_coor_subset', 'float32'), ('y_coor_subset', 'float32'), ('z_coor_subset', 'float32')])

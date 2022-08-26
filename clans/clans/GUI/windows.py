@@ -171,7 +171,7 @@ class SelectedSeqWindow(QWidget):
         if len(self.sorted_seq_indices) > 0:
             for i in range(len(self.sorted_seq_indices)):
                 seq_index = self.sorted_seq_indices[i]
-                seq_title = cfg.sequences_array[seq_index]['seq_title'][0:]
+                seq_title = cfg.sequences_array[seq_index]['seq_ID'][0:]
 
                 # The sequence header is the same as the index -> display only once
                 if str(seq_index) == seq_title:
@@ -371,7 +371,7 @@ class SelectedSeqWindow(QWidget):
 
                     i = 0
                     for seq_index in self.sorted_seq_indices:
-                        seq_title = cfg.sequences_array[seq_index]['seq_title']
+                        seq_title = cfg.sequences_array[seq_index]['seq_ID']
 
                         if is_case_sensitive:
                             m = re.search(text, seq_title)
@@ -552,7 +552,7 @@ class SearchResultsWindow(QWidget):
 
         i = 0
         for seq_index in range(cfg.run_params['total_sequences_num']):
-            seq_title = cfg.sequences_array[seq_index]['seq_title']
+            seq_title = cfg.sequences_array[seq_index]['seq_ID']
 
             if is_case_sensitive:
                 m = re.search(text, seq_title)
@@ -810,7 +810,7 @@ class GroupsIntersectionResults(QWidget):
         # Update the list
         for i in range(seq_num):
             seq_index = self.sorted_seq_indices[i]
-            seq_title = cfg.sequences_array[seq_index]['seq_title']
+            seq_title = cfg.sequences_array[seq_index]['seq_ID']
 
             # The sequence header is the same as the index -> display only once
             if str(seq_index) == seq_title:

@@ -34,7 +34,7 @@ class FastaFormat:
                 x_coor = self.generate_rand_pos()
                 y_coor = self.generate_rand_pos()
                 z_coor = self.generate_rand_pos()
-                coor_tuple = (seq_id, seq_title, sequence, seq_length, norm_seq_length, organism, tax_ID, x_coor, y_coor,
+                coor_tuple = (seq_id, sequence, seq_length, norm_seq_length, organism, tax_ID, x_coor, y_coor,
                               z_coor, False, x_coor, y_coor, z_coor)
                 self.sequences_list.append(coor_tuple)
                 cfg.sequences_ID_to_index[seq_id] = seq_index

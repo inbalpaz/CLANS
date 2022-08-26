@@ -686,7 +686,7 @@ class EditGroupDialog(QDialog):
 
         for i in range(len(self.sorted_seq_list)):
             name_str = str(self.sorted_seq_list[i]) + "  " + \
-                       cfg.sequences_array['seq_title'][self.sorted_seq_list[i]][1:]
+                       cfg.sequences_array['seq_ID'][self.sorted_seq_list[i]][1:]
             item = QListWidgetItem(name_str)
             self.members_list.insertItem(i, item)
 

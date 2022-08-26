@@ -88,7 +88,7 @@ class DelimitedFormat:
                     organism = ""
                     tax_ID = ""
 
-                    seq_tuple = (id1, id1, sequence, seq_length, norm_seq_length, organism, tax_ID, pos_x, pos_y,
+                    seq_tuple = (id1, sequence, seq_length, norm_seq_length, organism, tax_ID, pos_x, pos_y,
                                  pos_z, False, pos_x, pos_y, pos_z)
                     self.sequences_list.append(seq_tuple)
                     cfg.sequences_ID_to_index[id1] = seq_index
@@ -110,7 +110,7 @@ class DelimitedFormat:
                     organism = ""
                     tax_ID = ""
 
-                    seq_tuple = (id2, id2, sequence, seq_length, norm_seq_length, organism, tax_ID, pos_x, pos_y,
+                    seq_tuple = (id2, sequence, seq_length, norm_seq_length, organism, tax_ID, pos_x, pos_y,
                                  pos_z, False, pos_x, pos_y, pos_z)
                     self.sequences_list.append(seq_tuple)
                     cfg.sequences_ID_to_index[id2] = seq_index
@@ -128,8 +128,7 @@ class DelimitedFormat:
 
                 # Verify that the connection appears only once before adding it to the list
                 if connection_str not in connections_dict:
-                    similarity_values_list.append(pair_tuple)
-                    cfg.similarity_values_list = sorted(similarity_values_list)
+                    cfg.similarity_values_list.append(pair_tuple)
                     connections_dict[connection_str] = 1
 
         # Get the total number of sequences
@@ -200,6 +199,9 @@ class DelimitedFormat:
 
     def write_file(self, file_path):
 
+        # Sort the connection pairs
+        cfg.similarity_values_list = sorted(cfg.similarity_values_list)
+
         output = open(file_path, "w")
 
         output.write("ID_1\tID_2\tSimilarity_score\tType_of_score\n")
@@ -209,8 +211,22 @@ class DelimitedFormat:
             index2 = cfg.similarity_values_list[i][1]
             score = cfg.similarity_values_list[i][2]
 
-            pair_str = cfg.sequences_array[int(index1)]['seq_ID'] + "\t" + cfg.sequences_array[int(index2)]['seq_ID'] \
-                       + "\t" + score + "\t" + cfg.run_params['type_of_values'] + "\n"
+            # Create the sequence names for the file (seq_ID up to 15 characters without spaces + seq index)
+            m = re.search("^(\S+)", cfg.sequences_array[int(index1)]['seq_ID'])
+            if m:
+                seq1_name = m.group(1)
+            if len(seq1_name) > 15:
+                seq1_name = seq1_name[:15]
+            seq1_name += "_" + str(index1)
+
+            m = re.search("^(\S+)", cfg.sequences_array[int(index2)]['seq_ID'])
+            if m:
+                seq2_name = m.group(1)
+            if len(seq2_name) > 15:
+                seq2_name = seq2_name[:15]
+            seq2_name += "_" + str(index2)
+
+            pair_str = seq1_name + "\t" + seq2_name + "\t" + score + "\t" + cfg.run_params['type_of_values'] + "\n"
             output.write(pair_str)
 
         output.close()

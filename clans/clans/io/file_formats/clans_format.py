@@ -102,7 +102,7 @@ class ClansFormat:
                             norm_seq_length = 0.0
                             organism = ""
                             tax_ID = ""
-                            t = (seq_id, title, sequence, seq_length, norm_seq_length, organism, tax_ID)
+                            t = (seq_id, sequence, seq_length, norm_seq_length, organism, tax_ID)
                             self.sequences_list.append(t)
                             cfg.sequences_ID_to_index[seq_id] = seq_index
                             seq_index += 1
@@ -527,6 +527,9 @@ class ClansFormat:
         seq_block = ""
         pos_block = ""
 
+        # Sort the connection pairs
+        cfg.similarity_values_list = sorted(cfg.similarity_values_list)
+
         output = open(file_path, "w")
         output.write('sequences=' + str(cfg.run_params['total_sequences_num']) + '\n')
 
@@ -553,7 +556,7 @@ class ClansFormat:
 
         # Write the sequences block
         for seq in range(cfg.run_params['total_sequences_num']):
-            seq_block += '>' + cfg.sequences_array['seq_title'][seq] + '\n' + cfg.sequences_array['sequence'][seq] + '\n'
+            seq_block += '>' + cfg.sequences_array['seq_ID'][seq] + '\n' + cfg.sequences_array['sequence'][seq] + '\n'
             pos_block += str(seq) + ' ' + str(cfg.sequences_array['x_coor'][seq]) + ' ' + \
                          str(cfg.sequences_array['y_coor'][seq]) + ' ' + str(cfg.sequences_array['z_coor'][seq]) + '\n'
 
@@ -609,6 +612,9 @@ class ClansFormat:
         seq_block = ""
         pos_block = ""
 
+        # Sort the connection pairs
+        cfg.similarity_values_list = sorted(cfg.similarity_values_list)
+
         output = open(file_path, "w")
         output.write('sequences=' + str(cfg.run_params['total_sequences_num']) + '\n')
 
@@ -642,7 +648,7 @@ class ClansFormat:
 
         # Write the sequences block
         for seq in range(cfg.run_params['total_sequences_num']):
-            seq_block += '>' + cfg.sequences_array['seq_title'][seq] + '\n' + cfg.sequences_array['sequence'][
+            seq_block += '>' + cfg.sequences_array['seq_ID'][seq] + '\n' + cfg.sequences_array['sequence'][
                 seq] + '\n'
             pos_block += str(seq) + ' ' + str(cfg.sequences_array['x_coor'][seq]) + ' ' + \
                          str(cfg.sequences_array['y_coor'][seq]) + ' ' + str(cfg.sequences_array['z_coor'][seq]) + '\n'

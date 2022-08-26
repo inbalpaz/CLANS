@@ -108,12 +108,12 @@ class MainWindow(QMainWindow):
         # Create the File menu
         self.file_menu = self.main_menu.addMenu("File")
 
-        self.load_file_submenu = self.file_menu.addMenu("Load file")
+        self.load_file_submenu = self.file_menu.addMenu("Load input file")
 
         self.load_clans_file_action = QAction("CLANS format", self)
         self.load_clans_file_action.triggered.connect(self.load_clans_file)
 
-        self.load_delimited_file_action = QAction("Tab-delimited format", self)
+        self.load_delimited_file_action = QAction("Network format (tab-delimited)", self)
         self.load_delimited_file_action.triggered.connect(self.load_delimited_file)
 
         self.load_file_submenu.addAction(self.load_clans_file_action)
@@ -132,7 +132,7 @@ class MainWindow(QMainWindow):
         self.save_clans_file_action.setEnabled(False)
         self.save_clans_file_action.triggered.connect(self.save_clans_file)
 
-        self.save_delimited_file_action = QAction("Tab-delimited format", self)
+        self.save_delimited_file_action = QAction("Network format (tab-delimited)", self)
         self.save_delimited_file_action.setEnabled(False)
         self.save_delimited_file_action.triggered.connect(self.save_delimited_file)
 

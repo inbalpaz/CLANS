@@ -8,7 +8,7 @@ package:
 source:
   git_tag: {{ version }}
   url: https://github.com/inbalpaz/CLANS/releases/download/{{ version }}/CLANS_{{ version }}.tar.gz
-  sha256: 677ba2e8d2e9e1e8020a6010e14d2ac4b253652ce4dbff05c02abf497cb18ce0
+  sha256: c6929ec468ada2519e65c52770e3b5cee2c73f767573b4a501724dab3847ba14
 
 build:
   noarch: python
