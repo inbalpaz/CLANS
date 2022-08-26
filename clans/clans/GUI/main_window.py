@@ -170,6 +170,7 @@ class MainWindow(QMainWindow):
 
         # Configure layout parameters
         self.conf_layout_submenu = self.conf_menu.addMenu("Layout parameters")
+        self.conf_menu.addSeparator()
         self.conf_FR_layout_action = QAction("Fruchterman-Reingold", self)
         self.conf_FR_layout_action.triggered.connect(self.conf_FR_layout)
         self.conf_layout_submenu.addAction(self.conf_FR_layout_action)
@@ -185,6 +186,8 @@ class MainWindow(QMainWindow):
         self.conf_edges_action.setEnabled(False)
         self.conf_edges_action.triggered.connect(self.conf_edges)
         self.conf_menu.addAction(self.conf_edges_action)
+
+        self.conf_menu.addSeparator()
 
         # Configure grouping-categories
         self.manage_categories_action = QAction("Manage grouping categories", self)
