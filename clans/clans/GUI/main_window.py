@@ -151,14 +151,14 @@ class MainWindow(QMainWindow):
         self.save_image_connections_backwards_action.setEnabled(False)
         self.save_image_connections_backwards_action.triggered.connect(self.save_image_connections_backwards)
 
-        #self.save_stereo_image_action = QAction("Create stereo image", self)
-        #if cfg.run_params['dimensions_num_for_clustering'] == 2:
-            #self.save_stereo_image_action.setEnabled(False)
-        #self.save_stereo_image_action.triggered.connect(self.create_stereo_image)
+        self.save_stereo_image_action = QAction("Create stereo image", self)
+        if cfg.run_params['dimensions_num_for_clustering'] == 2:
+            self.save_stereo_image_action.setEnabled(False)
+        self.save_stereo_image_action.triggered.connect(self.create_stereo_image)
 
         self.save_image_submenu.addAction(self.save_image_action)
         self.save_image_submenu.addAction(self.save_image_connections_backwards_action)
-        #self.save_image_submenu.addAction(self.save_stereo_image_action)
+        self.save_image_submenu.addAction(self.save_stereo_image_action)
 
         self.quit_action = QAction("Quit", self)
         self.quit_action.triggered.connect(qApp.quit)
@@ -565,7 +565,7 @@ class MainWindow(QMainWindow):
         self.select_by_groups_window = windows.SelectByGroupsWindow(self, self.network_plot)
 
         # Create a window for the stereo presentation
-        #self.stereo_window = windows.StereoImageWindow(self)
+        self.stereo_window = windows.StereoImageWindow(self)
 
         # Create a text visual to display the 'loading file' message
         self.load_file_label = scene.widgets.Label("Loading the input file - please wait", bold=True,
@@ -640,6 +640,7 @@ class MainWindow(QMainWindow):
         self.selected_seq_window.close_window()
         self.select_by_groups_window.close_window()
         self.search_window.close_window()
+        self.stereo_window.close_window()
 
         self.is_init = 0
 
@@ -883,12 +884,12 @@ class MainWindow(QMainWindow):
                 self.dimensions_clustering_combo.setCurrentIndex(1)
 
             # Init the plots in the stereo window
-            #try:
-                #self.stereo_window.init_plot()
-            #except Exception as err:
-                #error_msg = "An error occurred: cannot initialize the data in the stereo window.\n"
-                #error_occurred(self.stereo_window.init_plot, 'init_plot', err, error_msg)
-                #return
+            try:
+                self.stereo_window.init_plot()
+            except Exception as err:
+                error_msg = "An error occurred: cannot initialize the data in the stereo window.\n"
+                error_occurred(self.stereo_window.init_plot, 'init_plot', err, error_msg)
+                return
 
         else:
             # Remove the 'loading file' message from the scene and put an error message instead
@@ -919,6 +920,15 @@ class MainWindow(QMainWindow):
                 error_occurred(self.network_plot.reset_data, 'reset_data', err, error_msg)
                 return
 
+            # Clear the canvas of the stereo window
+            try:
+                self.stereo_window.left_plot.reset_data()
+                self.stereo_window.right_plot.reset_data()
+            except Exception as err:
+                error_msg = "An error occurred: cannot reset the stereo canvas"
+                error_occurred(self.stereo_window.left_plot.reset_data, 'reset_data', err, error_msg)
+                return
+
             # Initialize all the global data-structures
             self.reset_variables()
 
@@ -946,6 +956,15 @@ class MainWindow(QMainWindow):
             except Exception as err:
                 error_msg = "An error occurred: cannot reset the graph"
                 error_occurred(self.network_plot.reset_data, 'reset_data', err, error_msg)
+                return
+
+            # Clear the canvas of the stereo window
+            try:
+                self.stereo_window.left_plot.reset_data()
+                self.stereo_window.right_plot.reset_data()
+            except Exception as err:
+                error_msg = "An error occurred: cannot reset the stereo canvas"
+                error_occurred(self.stereo_window.left_plot.reset_data, 'reset_data', err, error_msg)
                 return
 
             # Initialize all the global data-structures
@@ -1505,17 +1524,19 @@ class MainWindow(QMainWindow):
 
         # Move view to 2D in order to display the connections at the back
         self.dim_num = 2
+        #self.z_indexing_mode = 'groups'
         self.change_dimensions_view()
 
         self.save_image()
 
         # Move view back to 3D
         self.dim_num = 3
+        #self.z_indexing_mode = 'auto'
         self.change_dimensions_view()
 
-    #def create_stereo_image(self):
+    def create_stereo_image(self):
 
-        #self.stereo_window.open_window()
+        self.stereo_window.open_window()
 
     def conf_FR_layout(self):
 
@@ -1625,11 +1646,12 @@ class MainWindow(QMainWindow):
 
             if self.is_show_connections:
                 self.save_image_connections_backwards_action.setEnabled(True)
-            #self.save_stereo_image_action.setEnabled(True)
 
             # Update the coordinates in the Fruchterman-Reingold object
             # Full data mode
             if self.is_subset_mode == 0:
+                self.save_stereo_image_action.setEnabled(True)
+
                 try:
                     self.fr_object.init_coordinates(cfg.sequences_array['x_coor'],
                                                     cfg.sequences_array['y_coor'],
@@ -1653,7 +1675,7 @@ class MainWindow(QMainWindow):
             cfg.run_params['dimensions_num_for_clustering'] = 2
 
             self.save_image_connections_backwards_action.setEnabled(False)
-            #self.save_stereo_image_action.setEnabled(False)
+            self.save_stereo_image_action.setEnabled(False)
 
         # Update the effective dim_num parameter if found in interactive mode
         if self.mode == 'interactive':
@@ -1715,11 +1737,13 @@ class MainWindow(QMainWindow):
 
                 if self.is_show_connections:
                     self.save_image_connections_backwards_action.setEnabled(True)
-                #self.save_stereo_image_action.setEnabled(True)
+
+                if self.is_subset_mode == 0:
+                    self.save_stereo_image_action.setEnabled(True)
 
             else:
                 self.save_image_connections_backwards_action.setEnabled(False)
-                #self.save_stereo_image_action.setEnabled(False)
+                self.save_stereo_image_action.setEnabled(False)
 
             # Disconnect the selection-special special mouse-events and connect back the default behaviour of the
             # viewbox when the mouse moves
@@ -1736,7 +1760,7 @@ class MainWindow(QMainWindow):
             self.dim_num = 2
 
             self.save_image_connections_backwards_action.setEnabled(False)
-            #self.save_stereo_image_action.setEnabled(False)
+            self.save_stereo_image_action.setEnabled(False)
 
             # Selection mode
             if self.mode_combo.currentIndex() == 1:
@@ -2168,6 +2192,9 @@ class MainWindow(QMainWindow):
             self.z_index_mode_combo.setEnabled(False)
             self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
 
+            # Disable save as stereo
+            self.save_stereo_image_action.setEnabled(False)
+
             try:
                 self.network_plot.set_subset_view(self.dim_num, self.color_by, self.group_by,
                                                   self.z_indexing_mode)
@@ -2201,6 +2228,10 @@ class MainWindow(QMainWindow):
             self.clear_selection_button.setEnabled(True)
             self.select_by_text_button.setEnabled(True)
             self.select_by_groups_button.setEnabled(True)
+
+            # Enable save as stereo
+            if cfg.run_params['dimensions_num_for_clustering'] == 3:
+                self.save_stereo_image_action.setEnabled(True)
 
             if self.dim_num == 2 and len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                 self.z_index_mode_combo.setEnabled(True)

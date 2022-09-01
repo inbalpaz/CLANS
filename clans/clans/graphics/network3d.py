@@ -661,7 +661,7 @@ class Network3D:
             seq.update_positions(self.rotated_pos_array.T, 'full')
 
             fr_object.init_coordinates(cfg.sequences_array['x_coor'], cfg.sequences_array['y_coor'],
-                                        cfg.sequences_array['z_coor'])
+                                       cfg.sequences_array['z_coor'])
 
             self.pos_array = self.rotated_pos_array.copy()
 
@@ -678,11 +678,6 @@ class Network3D:
         self.calculate_initial_angles()
 
     def set_selection_mode(self, z_index_mode, color_by, group_by):
-    # def set_selection_mode(self, dim_num_view, z_index_mode, fr_object, color_by, group_by):
-
-        #if dim_num_view == 2 and cfg.run_params['dimensions_num_for_clustering'] == 3:
-            # Save the rotated coordinates as the normal ones from now on
-            #self.save_rotated_coordinates(2, fr_object, color_by, group_by, z_index_mode)
 
         # Rotate the coordinates and bring the camera back to its initial position
         self.calculate_rotation()

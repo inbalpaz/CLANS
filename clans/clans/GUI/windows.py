@@ -1,8 +1,11 @@
 from PyQt5.QtWidgets import *
-from vispy import scene
+from vispy import scene, util
 import re
+import numpy as np
+from PIL import Image
 import clans.config as cfg
 import clans.clans.graphics.network3d as net
+import clans.clans.graphics.colors as colors
 
 
 def error_occurred(method, method_name, exception_err, error_msg):
@@ -1119,6 +1122,55 @@ class SelectByGroupsWindow(QWidget):
             self.results_window.open_window(sorted(selected_indices_intersection))
 
 
+class SetAngleDialog(QDialog):
+
+    def __init__(self, current_angle):
+        super().__init__()
+
+        try:
+            self.current_angle = current_angle
+
+            self.setWindowTitle("Set the offset angle")
+
+            self.main_layout = QVBoxLayout()
+            self.angle_layout = QHBoxLayout()
+
+            self.title_label = QLabel("Set the offset angle between the left and right images")
+
+            self.main_layout.addWidget(self.title_label)
+
+            # Set the group name
+            self.angle_label = QLabel("Angle (in degrees):")
+            self.angle_widget = QLineEdit()
+            self.angle_widget.setText(str(self.current_angle))
+
+            self.angle_layout.addWidget(self.angle_label)
+            self.angle_layout.addWidget(self.angle_widget)
+
+            self.main_layout.addLayout(self.angle_layout)
+
+            # Add the OK/Cancel standard buttons
+            self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            self.button_box.accepted.connect(self.accept)
+            self.button_box.rejected.connect(self.reject)
+
+            self.main_layout.addWidget(self.button_box)
+            self.setLayout(self.main_layout)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot init SetAngleDialog"
+            error_occurred(self.__init__, 'init', err, error_msg)
+
+    def get_angle(self):
+
+        if self.angle_widget.text() != "":
+            entered_angle = self.angle_widget.text()
+        else:
+            entered_angle = self.current_angle
+
+        return entered_angle
+
+
 class StereoImageWindow(QWidget):
 
     def __init__(self, main_window):
@@ -1127,16 +1179,19 @@ class StereoImageWindow(QWidget):
         self.main_window_object = main_window
 
         self.is_visible = 0
-        self.offset_angle = 30
-        self.elevation_offset = 270
+        self.offset_angle = 4
         self.is_show_connections = 0
+        self.dim_num = self.main_window_object.dim_num
+        self.z_indexing_mode = self.main_window_object.z_indexing_mode
+        self.group_by = self.main_window_object.group_by
+        self.color_by = self.main_window_object.color_by
 
         self.setGeometry(150, 150, 1000, 750)
 
         self.main_layout = QVBoxLayout()
 
         # Create the canvas (the graph area)
-        self.canvas = scene.SceneCanvas(size=(1000, 700), keys='interactive', show=False, bgcolor='w')
+        self.canvas = scene.SceneCanvas(size=(1000, 700), keys=None, show=False, bgcolor='w')
         self.main_layout.addWidget(self.canvas.native)
 
         # Add a grid for two view-boxes
@@ -1152,12 +1207,12 @@ class StereoImageWindow(QWidget):
         self.set_offset_button = QPushButton("Set offset angle")
         self.set_offset_button.released.connect(self.set_offset_angle)
 
-        self.connections_button = QPushButton("Connections")
+        self.connections_button = QPushButton("Display connections")
         self.connections_button.setCheckable(True)
         self.connections_button.released.connect(self.manage_connections)
 
-        self.connections_backwards_button = QPushButton("Move backwards")
-        self.connections_backwards_button.released.connect(self.bring_connections_backwards)
+        self.update_image_button = QPushButton("Update image")
+        self.update_image_button.released.connect(self.update_image)
 
         self.save_image_button = QPushButton("Save image")
         self.save_image_button.released.connect(self.save_image)
@@ -1167,8 +1222,9 @@ class StereoImageWindow(QWidget):
 
         self.buttons_layout.addWidget(self.set_offset_button)
         self.buttons_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.buttons_layout.addWidget(self.update_image_button)
+        self.buttons_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.buttons_layout.addWidget(self.connections_button)
-        self.buttons_layout.addWidget(self.connections_backwards_button)
         self.buttons_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.buttons_layout.addWidget(self.save_image_button)
         self.buttons_layout.addWidget(self.close_button)
@@ -1182,80 +1238,44 @@ class StereoImageWindow(QWidget):
         self.left_plot = net.Network3D(self.left_view)
         self.right_plot = net.Network3D(self.right_view)
 
-        # Link the two cameras
-        #self.left_view.camera.link(self.right_view.camera)
-
-    def init_plot(self):
-
-        ## Debug
-        print("Left plot azimuth = " + str(self.left_view.camera.azimuth))
-        print("Right plot azimuth = " + str(self.right_view.camera.azimuth))
-
-        # Define an offset
-        self.right_plot.initial_azimuth = self.offset_angle
-        self.right_plot.initial_elevation = self.elevation_offset
-        self.right_view.camera.azimuth = self.right_plot.initial_azimuth
-        self.right_view.camera.elevation = self.right_plot.initial_elevation
+        # For debugging purposes
+        #self.left_plot.xyz.parent = self.left_view.scene
+        #self.right_plot.xyz.parent = self.right_view.scene
 
         # Link the two cameras
         self.left_view.camera.link(self.right_view.camera)
 
-        ## Debug
-        print("Left plot azimuth after link = " + str(self.left_view.camera.azimuth))
-        print("Right plot azimuth  after link = " + str(self.right_view.camera.azimuth))
+    def init_plot(self):
 
-        self.left_plot.init_data(self.main_window_object.fr_object, self.main_window_object.group_by)
-        self.right_plot.init_data(self.main_window_object.fr_object, self.main_window_object.group_by)
+        self.dim_num = self.main_window_object.dim_num
+        self.z_indexing_mode = self.main_window_object.z_indexing_mode
+        self.group_by = self.main_window_object.group_by
+        self.color_by = self.main_window_object.color_by
 
-        ## Debug
-        print("Left plot azimuth after init_data = " + str(self.left_view.camera.azimuth))
-        print("Right plot azimuth after init_data = " + str(self.right_view.camera.azimuth))
+        self.left_plot.init_data(self.main_window_object.fr_object, self.group_by)
+        self.right_plot.init_data(self.main_window_object.fr_object, self.group_by)
 
-    def open_window(self):
+        self.is_show_connections = self.main_window_object.is_show_connections
+        if self.is_show_connections:
+            self.connections_button.setChecked(True)
+        else:
+            self.connections_button.setChecked(False)
+        self.manage_connections()
 
-        try:
-            self.is_visible = 1
+    def update_plot_with_rotation(self, plot_obj):
 
-            self.setWindowTitle("Stereo presentation of " + self.main_window_object.file_name)
+        plot_obj.update_data(self.dim_num, self.main_window_object.fr_object, 1,
+                             self.main_window_object.color_by)
 
-            self.left_plot.update_data(self.main_window_object.dim_num, self.main_window_object.fr_object, 1,
-                                       self.main_window_object.color_by)
-            self.right_plot.update_data(self.main_window_object.dim_num, self.main_window_object.fr_object, 1,
-                                        self.main_window_object.color_by)
+        # Calculate the rotation of the main graph
+        self.main_window_object.network_plot.calculate_rotation()
 
-            ## Debug
-            print("Left plot azimuth = " + str(self.left_view.camera.azimuth))
-            print("Right plot azimuth = " + str(self.right_view.camera.azimuth))
+        # Save the coordinated in the rotated state
+        plot_obj.pos_array = self.main_window_object.network_plot.rotated_pos_array.copy()
+        plot_obj.rotated_pos_array = plot_obj.pos_array.copy()
 
-            self.is_show_connections = self.main_window_object.is_show_connections
-            if self.is_show_connections:
-                self.connections_button.setChecked(True)
-            else:
-                self.connections_button.setChecked(False)
-            self.manage_connections()
-
-            # Show the canvas
-            self.canvas.show()
-
-            # Open the window
-            self.show()
-
-        except Exception as err:
-            error_msg = "An error occurred: cannot open the 'Stereo presentation' Window"
-            error_occurred(self.open_window, 'open_window', err, error_msg)
-
-    def close_window(self):
-        try:
-            self.is_visible = 0
-
-            self.close()
-
-        except Exception as err:
-            error_msg = "An error occurred: cannot close the 'Stereo presentation' Window"
-            error_occurred(self.close_window, 'close_window', err, error_msg)
-
-    def set_offset_angle(self):
-        pass
+        plot_obj.update_view(self.dim_num, self.main_window_object.color_by,
+                             self.main_window_object.group_by, self.main_window_object.z_indexing_mode)
 
     def manage_connections(self):
 
@@ -1292,10 +1312,160 @@ class StereoImageWindow(QWidget):
                 error_msg = "An error occurred: cannot hide the connecting lines"
                 error_occurred(self.right_plot.hide_connections, 'hide_connections', err, error_msg)
 
-    def bring_connections_backwards(self):
-        pass
+    def update_image(self):
+
+        self.dim_num = self.main_window_object.dim_num
+        self.z_indexing_mode = self.main_window_object.z_indexing_mode
+
+        # Update the color-by parameter
+        if self.color_by != self.main_window_object.color_by:
+            self.color_by = self.main_window_object.color_by
+
+            # Color by groups
+            if self.color_by == 'groups':
+                # Update the group-by parameter
+                if self.group_by != self.main_window_object.group_by:
+                    self.group_by = self.main_window_object.group_by
+                    self.left_plot.update_group_by(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+                    self.right_plot.update_group_by(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+
+            # Color by param
+            else:
+                param = self.main_window_object.color_by_combo.currentText()
+                # Color by seq. length
+                if param == 'Seq. length':
+                    gradient_colormap = colors.generate_colormap_gradient_2_colors(cfg.short_color, cfg.long_color)
+                    self.left_plot.color_by_param(gradient_colormap, cfg.sequences_array['norm_seq_length'],
+                                                  self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+                    self.right_plot.color_by_param(gradient_colormap, cfg.sequences_array['norm_seq_length'],
+                                                  self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+                # Color by custom parameter
+                else:
+                    min_param_color = cfg.sequences_numeric_params[param]['min_color']
+                    max_param_color = cfg.sequences_numeric_params[param]['max_color']
+                    gradient_colormap = colors.generate_colormap_gradient_2_colors(min_param_color, max_param_color)
+                    self.left_plot.color_by_param(gradient_colormap, cfg.sequences_numeric_params[param]['norm'],
+                                                  self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+                    self.right_plot.color_by_param(gradient_colormap, cfg.sequences_numeric_params[param]['norm'],
+                                                  self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+
+        # Color by has not changed
+        else:
+            # Color by groups
+            if self.color_by == 'groups':
+                # Update the group-by parameter
+                if self.group_by != self.main_window_object.group_by:
+                    self.group_by = self.main_window_object.group_by
+                    self.left_plot.update_group_by(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+                    self.right_plot.update_group_by(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+
+            # Color by param
+            else:
+                param = self.main_window_object.color_by_combo.currentText()
+                # Color by seq. length
+                if param == 'Seq. length':
+                    gradient_colormap = colors.generate_colormap_gradient_2_colors(cfg.short_color, cfg.long_color)
+                    self.left_plot.color_by_param(gradient_colormap, cfg.sequences_array['norm_seq_length'],
+                                                  self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+                    self.right_plot.color_by_param(gradient_colormap, cfg.sequences_array['norm_seq_length'],
+                                                   self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+                # Color by custom parameter
+                else:
+                    min_param_color = cfg.sequences_numeric_params[param]['min_color']
+                    max_param_color = cfg.sequences_numeric_params[param]['max_color']
+                    gradient_colormap = colors.generate_colormap_gradient_2_colors(min_param_color, max_param_color)
+                    self.left_plot.color_by_param(gradient_colormap, cfg.sequences_numeric_params[param]['norm'],
+                                                  self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+                    self.right_plot.color_by_param(gradient_colormap, cfg.sequences_numeric_params[param]['norm'],
+                                                   self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+
+        self.update_plot_with_rotation(self.left_plot)
+        self.update_plot_with_rotation(self.right_plot)
+
+        # Create offset coordinates in the right plot
+        rotation_mtx = util.transforms.rotate(-self.offset_angle, [0, 1, 0])
+        pos_array_4 = np.append(self.left_plot.pos_array, np.full((cfg.run_params['total_sequences_num'], 1), 1.0),
+                                axis=1)
+        offset_pos_array_4 = np.dot(pos_array_4, rotation_mtx)
+        self.right_plot.pos_array = offset_pos_array_4[:, :3]
+        self.right_plot.rotated_pos_array = self.right_plot.pos_array.copy()
+
+        self.left_plot.update_view(2, self.main_window_object.color_by,
+                                   self.main_window_object.group_by, self.z_indexing_mode)
+        self.right_plot.update_view(2, self.main_window_object.color_by,
+                                    self.main_window_object.group_by, self.z_indexing_mode)
+
+        self.is_show_connections = self.main_window_object.is_show_connections
+        if self.is_show_connections:
+            self.connections_button.setChecked(True)
+        else:
+            self.connections_button.setChecked(False)
+        self.manage_connections()
+
+    def open_window(self):
+
+        try:
+            self.is_visible = 1
+
+            self.setWindowTitle("Stereo presentation of " + self.main_window_object.file_name)
+
+            self.update_image()
+
+            # Show the canvas
+            self.canvas.show = True
+
+            # Open the window
+            self.show()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot open the 'Stereo presentation' Window"
+            error_occurred(self.open_window, 'open_window', err, error_msg)
+
+    def close_window(self):
+        try:
+            self.is_visible = 0
+
+            self.close()
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot close the 'Stereo presentation' Window"
+            error_occurred(self.close_window, 'close_window', err, error_msg)
+
+    def set_offset_angle(self):
+
+        dlg = SetAngleDialog(self.offset_angle)
+
+        if dlg.exec_():
+            angle = dlg.get_angle()
+
+            # The value is a number
+            if re.search("^\d+$", angle):
+                if 0 <= int(angle) <= 360:
+                    self.offset_angle = int(angle)
+
+                    self.update_image()
 
     def save_image(self):
-        pass
+
+        try:
+            # Convert the canvas to numpy image array
+            img_array = self.canvas.render(alpha=False)
+
+            # Create a PIL.Image object from the array
+            img = Image.fromarray(img_array)
+
+            # Open a save file dialog with the following format options:  png, tiff, jpeg, eps
+            saved_file, _ = QFileDialog.getSaveFileName(self, "Save image", "", "PNG (*.png);; Tiff (*.tiff);; "
+                                                                            "Jpeg (*.jpg);; EPS (*.eps)")
+
+            if saved_file:
+                # Save the image array in the format specified by the file extension
+                img.save(saved_file)
+
+                print("Stereo Image was saved in file " + str(saved_file))
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot save the stereo presentation as an image."
+            error_occurred(self.save_image, 'save_image', err, error_msg)
 
 
