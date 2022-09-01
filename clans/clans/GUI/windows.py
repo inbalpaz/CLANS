@@ -1191,7 +1191,7 @@ class StereoImageWindow(QWidget):
         self.main_layout = QVBoxLayout()
 
         # Create the canvas (the graph area)
-        self.canvas = scene.SceneCanvas(size=(1000, 700), keys=None, show=False, bgcolor='w')
+        self.canvas = scene.SceneCanvas(size=(1000, 700), keys='interactive', show=False, bgcolor='w')
         self.main_layout.addWidget(self.canvas.native)
 
         # Add a grid for two view-boxes
@@ -1237,6 +1237,11 @@ class StereoImageWindow(QWidget):
         # Create the graph object
         self.left_plot = net.Network3D(self.left_view)
         self.right_plot = net.Network3D(self.right_view)
+
+        self.left_view.camera._viewbox.events.mouse_move.disconnect(self.left_view.camera.viewbox_mouse_event)
+        self.left_view.camera._viewbox.events.mouse_press.disconnect(self.left_view.camera.viewbox_mouse_event)
+        self.right_view.camera._viewbox.events.mouse_move.disconnect(self.right_view.camera.viewbox_mouse_event)
+        self.right_view.camera._viewbox.events.mouse_press.disconnect(self.right_view.camera.viewbox_mouse_event)
 
         # For debugging purposes
         #self.left_plot.xyz.parent = self.left_view.scene
@@ -1383,12 +1388,12 @@ class StereoImageWindow(QWidget):
         self.update_plot_with_rotation(self.right_plot)
 
         # Create offset coordinates in the right plot
-        rotation_mtx = util.transforms.rotate(-self.offset_angle, [0, 1, 0])
-        pos_array_4 = np.append(self.left_plot.pos_array, np.full((cfg.run_params['total_sequences_num'], 1), 1.0),
+        rotation_mtx = util.transforms.rotate(self.offset_angle, [0, 1, 0])
+        pos_array_4 = np.append(self.right_plot.pos_array, np.full((cfg.run_params['total_sequences_num'], 1), 1.0),
                                 axis=1)
         offset_pos_array_4 = np.dot(pos_array_4, rotation_mtx)
-        self.right_plot.pos_array = offset_pos_array_4[:, :3]
-        self.right_plot.rotated_pos_array = self.right_plot.pos_array.copy()
+        self.left_plot.pos_array = offset_pos_array_4[:, :3]
+        self.left_plot.rotated_pos_array = self.left_plot.pos_array.copy()
 
         self.left_plot.update_view(2, self.main_window_object.color_by,
                                    self.main_window_object.group_by, self.z_indexing_mode)

@@ -3,7 +3,7 @@ from vispy.color import ColorArray
 import clans
 
 ## Defaults
-version = "2.0.4"
+version = "2.0.5"
 
 # i/o related parameters
 type_of_values = 'hsp'
