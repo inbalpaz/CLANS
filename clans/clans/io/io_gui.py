@@ -29,8 +29,6 @@ class ReadInputWorker(QRunnable):
 
     def load_complete(self):
 
-        print("in load_complete")
-
         # If the file is valid without errors, fill the sequences information in the related global variables
         if self.format_object.file_is_valid == 1:
 
@@ -91,7 +89,6 @@ class ReadInputWorker(QRunnable):
         # Read the input file
         try:
             self.format_object.read_file(cfg.run_params['input_file'])
-            print("after read_file")
 
         except Exception as error:
             if cfg.run_params['is_debug_mode']:
@@ -108,7 +105,7 @@ class ReadInputWorker(QRunnable):
             duration = (self.after - self.before)
             print("Reading the file took " + str(duration) + " seconds")
 
-        # Create and fill the the main data-structures
+        # Create and fill the main data-structures
         self.load_complete()
 
 
