@@ -202,12 +202,22 @@ class NodesConfig(QDialog):
         self.layout.addWidget(self.outline_width_label, 3, 0)
         self.layout.addWidget(self.outline_width_combo, 3, 1)
 
+        self.reset_button = QPushButton("Reset to defaults")
+        self.reset_button.pressed.connect(self.reset)
+
+        self.layout.addWidget(self.reset_button, 4, 0, 1, 1)
+
+        self.note = QLabel("Note: changes to data-points color only apply if they are not assigned to any group.\n"
+                           "The color of the groups can be changed using the 'Edit groups' dialog.")
+        self.note.setStyleSheet("color: " + cfg.title_color + ";")
+
         # Add the OK/Cancel standard buttons
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
 
         self.main_layout.addLayout(self.layout)
+        self.main_layout.addWidget(self.note)
         self.main_layout.addWidget(self.button_box)
 
         self.setLayout(self.main_layout)
@@ -233,6 +243,45 @@ class NodesConfig(QDialog):
 
             self.outline_color = ColorArray(hex_color)
             self.outline_color_box.setStyleSheet("background-color: " + hex_color)
+
+    def reset(self):
+
+        # Set the default nodes size according to the dataset size
+        if cfg.run_params['total_sequences_num'] <= 1000:
+            cfg.run_params['nodes_size'] = cfg.nodes_size_large
+        elif 1000 < cfg.run_params['total_sequences_num'] <= 4000:
+            cfg.run_params['nodes_size'] = cfg.nodes_size_medium
+        elif 4000 < cfg.run_params['total_sequences_num'] <= 10000:
+            cfg.run_params['nodes_size'] = cfg.nodes_size_small
+        else:
+            cfg.run_params['nodes_size'] = cfg.nodes_size_tiny
+
+        i = 0
+        for size in range(4, 21):
+            if size == cfg.run_params['nodes_size']:
+                default_index = i
+            i += 1
+        self.nodes_size_combo.setCurrentIndex(default_index)
+
+        # Set the default nodes color
+        cfg.run_params['nodes_color'] = cfg.nodes_color
+        self.nodes_color = ColorArray(cfg.run_params['nodes_color'])
+        self.nodes_color_box.setStyleSheet("background-color: " + self.nodes_color.hex[0])
+
+        # Set the default nodes outline color
+        cfg.run_params['nodes_outline_color'] = cfg.nodes_outline_color
+        self.outline_color = ColorArray(cfg.run_params['nodes_outline_color'])
+        self.outline_color_box.setStyleSheet("background-color: " + self.outline_color.hex[0])
+
+        # Set the default nodes outline width
+        cfg.run_params['nodes_outline_width'] = cfg.nodes_outline_width
+        i = 0
+        width_options = np.arange(0, 3.5, 0.5)
+        for size in width_options:
+            if size == cfg.run_params['nodes_outline_width']:
+                default_index = i
+            i += 1
+        self.outline_width_combo.setCurrentIndex(default_index)
 
     def get_parameters(self):
 

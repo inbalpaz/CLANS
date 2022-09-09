@@ -1572,6 +1572,17 @@ class MainWindow(QMainWindow):
                 cfg.groups_by_categories[0]['nodes_outline_color'] = outline_color
                 cfg.groups_by_categories[0]['nodes_outline_width'] = outline_width
 
+                # Update the other grouping categories (if any) with all parameters except nodes color
+                for category_index in range(1, len(cfg.groups_by_categories)):
+                    cfg.groups_by_categories[category_index]['nodes_size'] = size
+                    cfg.groups_by_categories[category_index]['nodes_outline_color'] = outline_color
+                    cfg.groups_by_categories[category_index]['nodes_outline_width'] = outline_width
+
+                    # Update also the groups definitions of nodes-size and outline nodes color
+                    for group_ID in cfg.groups_by_categories[category_index]['groups']:
+                        cfg.groups_by_categories[category_index]['groups'][group_ID]['size'] = size
+                        cfg.groups_by_categories[category_index]['groups'][group_ID]['outline_color'] = outline_color
+
                 try:
                     self.network_plot.set_defaults(self.dim_num, self.color_by, self.group_by, self.z_indexing_mode)
                 except Exception as err:

@@ -19,24 +19,26 @@ similarity_cutoff = 1e-4
 num_of_dimensions = 3
 
 # Colors
+nodes_color = [0.0, 0.0, 0.0, 1.0]
+nodes_outline_color = [0.0, 0.0, 0.0, 1.0]
+hide_color = [1.0, 1.0, 1.0, 0.0]
 min_param_color = ColorArray([1.0, 1.0, 0.0, 1.0])
 max_param_color = ColorArray([1.0, 0.0, 0.0, 1.0])
 short_color = ColorArray([1.0, 1.0, 0.0, 1.0])
 long_color = ColorArray([1.0, 0.0, 0.0, 1.0])
+inactive_color = "#A0A0A0"
+title_color = "maroon"
 
 # Sizes
 nodes_size_large = 10
 nodes_size_medium = 8
 nodes_size_small = 6
 nodes_size_tiny = 4
+nodes_outline_width = 0.5
 text_size = 10
 text_size_small = 8
 
 max_groups_num = 300
-
-inactive_color = "#A0A0A0"
-title_color = "maroon"
-hide_color = [1.0, 1.0, 1.0, 0.0]
 
 # Layout-related default parameters
 layouts = {'FR':

@@ -283,15 +283,18 @@ class Network3D:
         self.nodes_outline_width = cfg.run_params['nodes_outline_width']
 
         for seq_index in range(cfg.run_params['total_sequences_num']):
-            if cfg.groups_by_categories[0]['sequences'][seq_index] == -1:
-                self.nodes_colors_array[seq_index] = self.nodes_default_color
+            if seq_index not in self.selected_points:
+                self.nodes_outline_color_array[seq_index] = self.nodes_outline_default_color
                 self.nodes_size_array[seq_index] = self.nodes_size
+            else:
+                self.nodes_size_array[seq_index] = self.nodes_size + 5
 
-                if seq_index not in self.selected_points:
-                    self.nodes_outline_color_array[seq_index] = self.nodes_outline_default_color
+            # If the sequence in the currently displayed category doesn't belong to any group -
+            # use the new default color
+            if cfg.groups_by_categories[group_by]['sequences'][seq_index] == -1:
+                self.nodes_colors_array[seq_index] = self.nodes_default_color
 
-        if group_by == 0:
-            self.update_view(dim_num, color_by, group_by, z_index_mode)
+        self.update_view(dim_num, color_by, group_by, z_index_mode)
 
     # Update the nodes positions after calculation update or initialization
     def update_data(self, dim_num_view, fr_object, set_range, color_by):
