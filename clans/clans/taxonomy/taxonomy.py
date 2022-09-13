@@ -26,7 +26,7 @@ def init_taxonomy_dict():
     error = ""
 
     for seq_index in range(cfg.run_params['total_sequences_num']):
-        seq_title = cfg.sequences_array['seq_title'][seq_index]
+        seq_title = cfg.sequences_array['seq_ID'][seq_index]
 
         if seq_title != "":
             organism = find_organism_in_title(seq_title)
