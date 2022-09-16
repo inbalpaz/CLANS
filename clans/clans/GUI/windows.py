@@ -1179,10 +1179,11 @@ class StereoImageWindow(QWidget):
         self.main_window_object = main_window
 
         self.is_visible = 0
-        self.offset_angle = 4
+        self.offset_angle = 10
         self.is_show_connections = 0
         self.dim_num = self.main_window_object.dim_num
-        self.z_indexing_mode = self.main_window_object.z_indexing_mode
+        #self.z_indexing_mode = self.main_window_object.z_indexing_mode
+        self.z_indexing_mode = 'groups'
         self.group_by = self.main_window_object.group_by
         self.color_by = self.main_window_object.color_by
 
@@ -1252,13 +1253,8 @@ class StereoImageWindow(QWidget):
 
     def init_plot(self):
 
-        self.dim_num = self.main_window_object.dim_num
-        self.z_indexing_mode = self.main_window_object.z_indexing_mode
-        self.group_by = self.main_window_object.group_by
-        self.color_by = self.main_window_object.color_by
-
-        self.left_plot.init_data(self.main_window_object.fr_object, self.group_by)
-        self.right_plot.init_data(self.main_window_object.fr_object, self.group_by)
+        self.left_plot.init_data(self.main_window_object.fr_object, self.main_window_object.group_by)
+        self.right_plot.init_data(self.main_window_object.fr_object, self.main_window_object.group_by)
 
         self.is_show_connections = self.main_window_object.is_show_connections
         if self.is_show_connections:
@@ -1266,6 +1262,10 @@ class StereoImageWindow(QWidget):
         else:
             self.connections_button.setChecked(False)
         self.manage_connections()
+
+    def reset_plot(self):
+        self.left_plot.reset_data()
+        self.right_plot.reset_data()
 
     def update_plot_with_rotation(self, plot_obj):
 
@@ -1319,8 +1319,11 @@ class StereoImageWindow(QWidget):
 
     def update_image(self):
 
+        self.reset_plot()
+        self.init_plot()
+
         self.dim_num = self.main_window_object.dim_num
-        self.z_indexing_mode = self.main_window_object.z_indexing_mode
+        #self.z_indexing_mode = self.main_window_object.z_indexing_mode
 
         # Update the color-by parameter
         if self.color_by != self.main_window_object.color_by:

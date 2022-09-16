@@ -807,15 +807,26 @@ class Network3D:
 
         # Full data mode
         if self.is_subset_mode == 0:
-            self.affine_mtx = util.transforms.affine_map(self.pos_array[:4, :], self.rotated_pos_array[:4, :])
-            self.inverse_affine_mtx = util.transforms.affine_map(self.rotated_pos_array[:4, :], self.pos_array[:4, :])
+            pos_array_4 = self.pos_array[:4, :]
+            rotated_pos_array_4 = self.rotated_pos_array[:4, :]
+
+            # If the Z coordinate is 0 (can happen if the input file was originally in 2d)
+            # - generate a random coordinate, just for the matrix (otherwise - errors)
+            if pos_array_4[0, 2] == 0:
+                for i in range(4):
+                    pos_array_4[i, 2] = seq.generate_rand_pos()
+                    rotated_pos_array_4[i, 2] = seq.generate_rand_pos()
+
+            self.affine_mtx = util.transforms.affine_map(pos_array_4, rotated_pos_array_4)
+            self.inverse_affine_mtx = util.transforms.affine_map(rotated_pos_array_4, pos_array_4)
 
         # Subset mode
         else:
-            self.selected_affine_mtx = util.transforms.affine_map(self.selected_pos_array[:4, :],
-                                                                  self.selected_rotated_pos_array[:4, :])
-            self.selected_inverse_affine_mtx = util.transforms.affine_map(self.selected_rotated_pos_array[:4, :],
-                                                                          self.selected_pos_array[:4, :])
+            pos_array_4 = self.selected_pos_array[:4, :]
+            rotated_pos_array_4 = self.selected_rotated_pos_array[:4, :]
+
+            self.selected_affine_mtx = util.transforms.affine_map(pos_array_4, rotated_pos_array_4)
+            self.selected_inverse_affine_mtx = util.transforms.affine_map(rotated_pos_array_4, pos_array_4)
 
     def show_connections(self):
 
@@ -1708,6 +1719,55 @@ class Network3D:
             self.update_2d_view(z_index_mode, color_by, group_by)
 
         self.update_sequences_names(dim_num)
+
+    def inverse_selection(self, dim_num_view, z_index_mode, color_by, group_by, is_show_group_names,
+                          group_names_display):
+
+        for seq_index in range(cfg.run_params['total_sequences_num']):
+
+            # Select the non-selected
+            if seq_index not in self.selected_points:
+                self.selected_points[seq_index] = 1
+                cfg.sequences_array[seq_index]['in_subset'] = True
+                self.nodes_outline_color_array[seq_index] = self.selected_outline_color
+                self.nodes_size_array[seq_index] += 5
+
+            # Deselect the selected
+            else:
+                del self.selected_points[seq_index]
+                cfg.sequences_array[seq_index]['in_subset'] = False
+
+                if color_by == 'groups':
+
+                    # The sequence belongs to a group -> Use the group definitions
+                    if cfg.groups_by_categories[group_by]['sequences'][seq_index] > -1:
+                        group_ID = cfg.groups_by_categories[group_by]['sequences'][seq_index]
+                        self.nodes_outline_color_array[seq_index] = \
+                            cfg.groups_by_categories[group_by]['groups'][group_ID]['outline_color']
+                        self.nodes_size_array[seq_index] = cfg.groups_by_categories[group_by]['groups'][group_ID]['size']
+
+                    # Use the grouping-category definitons
+                    else:
+                        self.nodes_outline_color_array[seq_index] = cfg.groups_by_categories[group_by][
+                            'nodes_outline_color']
+                        self.nodes_size_array[seq_index] = cfg.groups_by_categories[group_by]['nodes_size']
+
+                # Color-by parameter -> use the default definitions
+                else:
+                    self.nodes_outline_color_array[seq_index] = self.nodes_outline_default_color
+                    self.nodes_size_array[seq_index] = self.nodes_size
+
+            # Hide the selected group names and initialize the selected group names visual
+            if is_show_group_names and group_names_display == 'selected':
+                self.hide_group_names()
+            self.selected_groups_text_visual = {}
+
+            # Empty the selected_groups dictionaries
+            self.selected_groups = {}
+
+            self.update_sequences_names(dim_num_view)
+
+            self.update_view(dim_num_view, color_by, group_by, z_index_mode)
 
     def select_subset(self, selected_dict, dim_num, z_index_mode, color_by, group_by):
 

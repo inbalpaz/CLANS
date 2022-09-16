@@ -405,6 +405,26 @@ class ClansFormat:
         seq.create_sequences_array(self.sequences_list)
         seq.init_groups_by_categories()
 
+        # Update the default nodes_size
+        if 'nodes_size' in self.params:
+            cfg.run_params['nodes_size'] = int(self.params['nodes_size'])
+
+        # The nodes size is not defined in the parameters -> define according to the data size
+        else:
+            if cfg.run_params['total_sequences_num'] <= 1000:
+                cfg.run_params['nodes_size'] = cfg.nodes_size_large
+            elif 1000 < cfg.run_params['total_sequences_num'] <= 4000:
+                cfg.run_params['nodes_size'] = cfg.nodes_size_medium
+            elif 4000 < cfg.run_params['total_sequences_num'] <= 10000:
+                cfg.run_params['nodes_size'] = cfg.nodes_size_small
+            else:
+                cfg.run_params['nodes_size'] = cfg.nodes_size_tiny
+
+        # Update default / compatible categories
+        cfg.groups_by_categories[0]['nodes_size'] = cfg.run_params['nodes_size']
+        if len(cfg.groups_by_categories) > 1 and cfg.groups_by_categories[1]['name'] == 'Input CLANS file':
+            cfg.groups_by_categories[1]['nodes_size'] = cfg.run_params['nodes_size']
+
         # If there sre groups - add the information to the sequences array
         if self.is_groups:
             for category_index in range(len(cfg.groups_by_categories)):
@@ -467,25 +487,6 @@ class ClansFormat:
             cfg.run_params['maxmove'] = float(self.params['maxmove'])
         if 'minattract' in self.params:
             cfg.run_params['gravity'] = float(self.params['minattract'])
-
-        if 'nodes_size' in self.params:
-            cfg.run_params['nodes_size'] = int(self.params['nodes_size'])
-
-            # Update default / compatible categories
-            cfg.groups_by_categories[0]['nodes_size'] = cfg.run_params['nodes_size']
-            if len(cfg.groups_by_categories) > 1 and cfg.groups_by_categories[1]['name'] == 'Input CLANS file':
-                cfg.groups_by_categories[1]['nodes_size'] = cfg.run_params['nodes_size']
-
-        # The nodes size is not defined in the parameters -> define according to the data size
-        else:
-            if cfg.run_params['total_sequences_num'] <= 1000:
-                cfg.run_params['nodes_size'] = cfg.nodes_size_large
-            elif 1000 < cfg.run_params['total_sequences_num'] <= 4000:
-                cfg.run_params['nodes_size'] = cfg.nodes_size_medium
-            elif 4000 < cfg.run_params['total_sequences_num'] <= 10000:
-                cfg.run_params['nodes_size'] = cfg.nodes_size_small
-            else:
-                cfg.run_params['nodes_size'] = cfg.nodes_size_tiny
 
         if 'nodes_color' in self.params:
             cfg.run_params['nodes_color'] = [int(c) / 255 for c in self.params['nodes_color'].split(';')]

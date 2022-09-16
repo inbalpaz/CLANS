@@ -401,7 +401,7 @@ class ManageGroupsDialog(QDialog):
 
                 # Update the name and color of the list-item
                 name_str = cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'] + " (" + \
-                        str(len(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs'])) + ")"
+                           str(len(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['seqIDs'])) + ")"
                 item = self.groups_list.currentItem()
                 item.setText(name_str)
                 item.setForeground(QColor(edit_group_dlg.color.hex[0]))

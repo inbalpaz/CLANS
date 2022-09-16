@@ -13,7 +13,7 @@ class Colorbar:
         self.view.camera.set_range(x=(0, 10), y=(0, 40), z=None, margin=1)
 
         # Create a color-bar visual for color-by param
-        self.colorbar = scene.visuals.ColorBar(cmap='cool', orientation='right', size=(60, 4))
+        self.colorbar = scene.visuals.ColorBar(cmap='cool', orientation='right', size=(60, 2))
         self.colorbar.pos = (0, 20)
         self.colorbar.label = 'Sequences length'
         # self.colorbar.set_gl_state('translucent', blend=True)

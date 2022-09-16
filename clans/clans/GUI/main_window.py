@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
         self.load_file_worker = None
 
         self.setWindowTitle("CLANS " + str(self.dim_num) + "D-View")
-        self.setGeometry(50, 50, 1300, 1000)
+        self.setGeometry(50, 50, 1400, 1000)
 
         # Define layouts within the main window
         self.main_layout = QVBoxLayout()
@@ -300,10 +300,13 @@ class MainWindow(QMainWindow):
         self.pval_widget.returnPressed.connect(self.update_cutoff)
 
         # Add a label for displaying the number of rounds done
-        self.rounds_label = QLabel("Round: " + str(self.rounds_done))
-        self.rounds_label.setStyleSheet("color: " + cfg.inactive_color + ";")
+        self.rounds_label = QLabel("Round: ")
+        self.rounds_label.setStyleSheet("color: " + cfg.title_color + ";")
+        self.round_num_label = QLabel(str(self.rounds_done))
+        self.round_num_label.setStyleSheet("color: " + cfg.inactive_color + ";")
 
         # Add the widgets to the calc_layout
+        self.calc_layout.addStretch()
         self.calc_layout.addWidget(self.calc_label)
         self.calc_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.calc_layout.addWidget(self.init_button)
@@ -317,6 +320,7 @@ class MainWindow(QMainWindow):
         self.calc_layout.addWidget(self.error_label)
         self.calc_layout.addSpacerItem(self.horizontal_spacer_long)
         self.calc_layout.addWidget(self.rounds_label)
+        self.calc_layout.addWidget(self.round_num_label)
         self.calc_layout.addStretch()
 
         # Add the calc_layout to the main layout
@@ -352,6 +356,11 @@ class MainWindow(QMainWindow):
         self.select_all_button.setEnabled(False)
         self.select_all_button.released.connect(self.select_all)
 
+        # Add a button to inverse the selection (select the non-selected)
+        self.inverse_selection_button = QPushButton("Inverse selection")
+        self.inverse_selection_button.setEnabled(False)
+        self.inverse_selection_button.released.connect(self.inverse_selection)
+
         # Add a button to clear the current selection
         self.clear_selection_button = QPushButton("Clear")
         self.clear_selection_button.setEnabled(False)
@@ -368,11 +377,12 @@ class MainWindow(QMainWindow):
         self.select_by_groups_button.released.connect(self.select_by_groups)
 
         # Add a button to open the Selected Sequences window
-        self.open_selected_button = QPushButton("Edit selected sequences")
+        self.open_selected_button = QPushButton("Edit selected")
         self.open_selected_button.setEnabled(False)
         self.open_selected_button.released.connect(self.open_selected_window)
 
         # Add the widgets to the mode layout
+        self.mode_layout.addStretch()
         self.mode_layout.addWidget(self.mode_label)
         self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.mode_layout.addWidget(self.mode_combo)
@@ -383,6 +393,8 @@ class MainWindow(QMainWindow):
         self.mode_layout.addWidget(self.selection_label)
         self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.mode_layout.addWidget(self.select_all_button)
+        self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
+        self.mode_layout.addWidget(self.inverse_selection_button)
         self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.mode_layout.addWidget(self.clear_selection_button)
         self.mode_layout.addSpacerItem(self.horizontal_spacer_tiny)
@@ -459,6 +471,7 @@ class MainWindow(QMainWindow):
         self.hide_singeltons_button.setEnabled(False)
         self.hide_singeltons_button.released.connect(self.hide_singeltons)
 
+        self.display_layout.addStretch()
         self.display_layout.addWidget(self.display_label)
         self.display_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.display_layout.addWidget(self.connections_button)
@@ -523,6 +536,7 @@ class MainWindow(QMainWindow):
         self.remove_selected_button.released.connect(self.remove_selected_from_group)
         self.remove_selected_button.setEnabled(False)
 
+        self.groups_layout.addStretch()
         self.groups_layout.addWidget(self.color_by_label)
         self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.groups_layout.addWidget(self.color_by_combo)
@@ -534,7 +548,9 @@ class MainWindow(QMainWindow):
         self.groups_layout.addWidget(self.groups_label)
         self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.groups_layout.addWidget(self.edit_groups_button)
+        self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.groups_layout.addWidget(self.add_to_group_button)
+        self.groups_layout.addSpacerItem(self.horizontal_spacer_tiny)
         self.groups_layout.addWidget(self.remove_selected_button)
         self.groups_layout.addStretch()
 
@@ -600,6 +616,8 @@ class MainWindow(QMainWindow):
         self.mode_combo.setCurrentIndex(0)
         self.selection_type_combo.setCurrentIndex(0)
         self.open_selected_button.setEnabled(False)
+        self.clear_selection_button.setEnabled(False)
+        self.inverse_selection_button.setEnabled(False)
 
         self.z_index_mode_combo.setEnabled(False)
         self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
@@ -799,7 +817,7 @@ class MainWindow(QMainWindow):
             self.dimensions_clustering_combo.setEnabled(True)
             self.pval_widget.setEnabled(True)
             self.pval_label.setStyleSheet("color: black;")
-            self.rounds_label.setStyleSheet("color: black;")
+            self.round_num_label.setStyleSheet("color: black;")
             self.mode_combo.setEnabled(True)
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
@@ -869,7 +887,7 @@ class MainWindow(QMainWindow):
 
             # Update the number of rounds label
             self.rounds_done = cfg.run_params['rounds_done']
-            self.rounds_label.setText("Round: " + str(self.rounds_done))
+            self.round_num_label.setText(str(self.rounds_done))
             if self.rounds_done > 0:
                 self.start_button.setText("Resume clustering")
 
@@ -922,11 +940,10 @@ class MainWindow(QMainWindow):
 
             # Clear the canvas of the stereo window
             try:
-                self.stereo_window.left_plot.reset_data()
-                self.stereo_window.right_plot.reset_data()
+                self.stereo_window.reset_plot()
             except Exception as err:
                 error_msg = "An error occurred: cannot reset the stereo canvas"
-                error_occurred(self.stereo_window.left_plot.reset_data, 'reset_data', err, error_msg)
+                error_occurred(self.stereo_window.reset_plot, 'reset_plot', err, error_msg)
                 return
 
             # Initialize all the global data-structures
@@ -1065,6 +1082,8 @@ class MainWindow(QMainWindow):
             self.hide_singeltons_button.setEnabled(False)
             self.show_selected_names_button.setEnabled(False)
             self.open_selected_button.setEnabled(False)
+            self.clear_selection_button.setEnabled(False)
+            self.inverse_selection_button.setEnabled(False)
             self.data_mode_combo.setEnabled(False)
             self.show_group_names_button.setEnabled(False)
             self.reset_group_names_button.setEnabled(False)
@@ -1099,7 +1118,7 @@ class MainWindow(QMainWindow):
         # Full data mode
         if self.is_subset_mode == 0:
             self.rounds_done += 1
-            self.rounds_label.setText("Round: " + str(self.rounds_done))
+            self.round_num_label.setText(str(self.rounds_done))
 
             if cfg.run_params['is_debug_mode']:
                 if self.rounds_done % 100 == 0:
@@ -1110,7 +1129,7 @@ class MainWindow(QMainWindow):
         # Subset mode
         else:
             self.rounds_done_subset += 1
-            self.rounds_label.setText("Round: " + str(self.rounds_done_subset))
+            self.round_num_label.setText(str(self.rounds_done_subset))
 
     def stop_calc(self):
         if self.is_running_calc == 1:
@@ -1164,6 +1183,8 @@ class MainWindow(QMainWindow):
         if self.network_plot.selected_points != {}:
             self.show_selected_names_button.setEnabled(True)
             self.open_selected_button.setEnabled(True)
+            self.clear_selection_button.setEnabled(True)
+            self.inverse_selection_button.setEnabled(True)
             self.add_to_group_button.setEnabled(True)
             self.remove_selected_button.setEnabled(True)
             self.data_mode_combo.setEnabled(True)
@@ -1231,7 +1252,7 @@ class MainWindow(QMainWindow):
             else:
                 self.rounds_done_subset = 0
 
-            self.rounds_label.setText("Round: 0")
+            self.round_num_label.setText("0")
 
             # Generate random positions to be saved in the main sequences array
             # Subset mode -> only for the sequences in the subset
@@ -1524,15 +1545,15 @@ class MainWindow(QMainWindow):
 
         # Move view to 2D in order to display the connections at the back
         self.dim_num = 2
-        #self.z_indexing_mode = 'groups'
         self.change_dimensions_view()
+        self.z_index_mode_combo.setCurrentIndex(1)
 
         self.save_image()
 
         # Move view back to 3D
         self.dim_num = 3
-        #self.z_indexing_mode = 'auto'
         self.change_dimensions_view()
+        #self.z_index_mode_combo.setCurrentIndex(0)
 
     def create_stereo_image(self):
 
@@ -2004,13 +2025,19 @@ class MainWindow(QMainWindow):
         if not self.is_init:
 
             if self.dim_num == 2:
-                self.z_index_mode_combo.setCurrentIndex(0)
                 if not self.is_subset_mode and len(cfg.groups_by_categories[self.group_by]['groups']) > 0:
                     self.z_index_mode_combo.setEnabled(True)
                     self.z_index_mode_label.setStyleSheet("color: black;")
                 else:
                     self.z_index_mode_combo.setEnabled(False)
                     self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
+
+                if self.z_indexing_mode == 'groups':
+                    try:
+                        self.network_plot.hide_scatter_by_groups()
+                    except Exception as err:
+                        error_msg = "An error occurred: cannot remove scatter by groups"
+                        error_occurred(self.network_plot.hide_scatter_by_groups, 'hide_scatter_by_groups', err, error_msg)
 
             try:
                 self.network_plot.hide_group_names()
@@ -2089,11 +2116,36 @@ class MainWindow(QMainWindow):
         # Enable the selection-related buttons
         self.show_selected_names_button.setEnabled(True)
         self.open_selected_button.setEnabled(True)
+        self.clear_selection_button.setEnabled(True)
+        self.inverse_selection_button.setEnabled(True)
         self.add_to_group_button.setEnabled(True)
         self.remove_selected_button.setEnabled(True)
 
         # Disable the 'Show selected only' option (make no sense if selecting all)
         self.data_mode_combo.setEnabled(False)
+
+    def inverse_selection(self):
+
+        try:
+            self.network_plot.inverse_selection(self.dim_num, self.z_indexing_mode, self.color_by, self.group_by,
+                                                self.is_show_group_names, self.group_names_display)
+        except Exception as err:
+            error_msg = "An error occurred: cannot perform the selection"
+            error_occurred(self.network_plot.inverse_selection, 'inverse_selection', err, error_msg)
+            return
+
+        # Update the selected sequences window
+        try:
+            self.selected_seq_window.update_sequences()
+        except Exception as err:
+            error_msg = "An error occurred: cannot update the selected sequences window"
+            error_occurred(self.selected_seq_window.update_sequences, 'update_sequences', err, error_msg)
+            return
+
+        # Disable the show all/selected group names combo
+        if self.is_show_group_names:
+            self.show_groups_combo.setCurrentIndex(0)
+            self.show_groups_combo.setEnabled(False)
 
     def clear_selection(self):
 
@@ -2117,6 +2169,8 @@ class MainWindow(QMainWindow):
         self.show_selected_names_button.setChecked(False)
         self.show_selected_names_button.setEnabled(False)
         self.open_selected_button.setEnabled(False)
+        self.clear_selection_button.setEnabled(False)
+        self.inverse_selection_button.setEnabled(False)
         self.data_mode_combo.setCurrentIndex(0)
         self.data_mode_combo.setEnabled(False)
         self.add_to_group_button.setEnabled(False)
@@ -2191,7 +2245,7 @@ class MainWindow(QMainWindow):
             print("Displaying selected subset")
 
             self.start_button.setText("Start clustering")
-            self.rounds_label.setText("Round: 0")
+            self.round_num_label.setText("0")
             self.rounds_done_subset = 0
 
             # Disable all selection-related buttons
@@ -2231,7 +2285,7 @@ class MainWindow(QMainWindow):
                 self.start_button.setText("Resume clustering")
             else:
                 self.start_button.setText("Start clustering")
-            self.rounds_label.setText("Round: " + str(self.rounds_done))
+            self.round_num_label.setText(str(self.rounds_done))
 
             # Enable all selection-related buttons
             self.mode_combo.setEnabled(True)
@@ -2897,6 +2951,8 @@ class MainWindow(QMainWindow):
             if self.network_plot.selected_points != {}:
                 self.show_selected_names_button.setEnabled(True)
                 self.open_selected_button.setEnabled(True)
+                self.clear_selection_button.setEnabled(True)
+                self.inverse_selection_button.setEnabled(True)
                 self.add_to_group_button.setEnabled(True)
                 self.remove_selected_button.setEnabled(True)
                 if len(self.network_plot.selected_points) >= 4:
