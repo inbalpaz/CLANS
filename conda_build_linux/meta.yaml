@@ -1,4 +1,4 @@
-{% set name = "clans" %}
+{% set name = "clans_linux" %}
 {% set version = "2.0.6" %}
 
 package:
@@ -14,7 +14,7 @@ build:
   noarch: python
   script: {{ PYTHON }} -m pip install . -vv
   number: 0
-  string: np_mkl_blast
+  string: np_mkl_blast_noPyQt_linux
 
 requirements:
   host:
@@ -25,7 +25,6 @@ requirements:
     - numpy =1.20.3
     - numba =0.53.1
     - vispy =0.8.1
-    - pyqt =5.9.2
     - biopython >=1.77
     - pillow =8.3.1
     - blast
