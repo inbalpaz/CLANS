@@ -16,7 +16,7 @@ In addition to clustering the sequences in space, the visualization tool enables
 
 • **Command-line tool** (executed using the ‘-nogui’ flag), which can be used to obtain a matrix of sequence similarities by running all-against-all BLAST search. In addition, it can run the Fruchterman-Reingold force-directed graph layout for a defined number of iterations and save the results in a clans-formatted file which can later be loaded and presented in the visualization tool. This is recommended for large datasets (>5000 sequences, depending on the computer resources), in which the clustering process is slow and there is no advantage in visualizing it.
 
-The BLAST search is only available in the command-line mode and requires an installation of Blast+ on the target computer.
+The BLAST search is only available in the command-line mode.
 
 ## Installation
 
@@ -30,7 +30,15 @@ The BLAST search is only available in the command-line mode and requires an inst
 
 3.	Install the clans package from Anaconda repository by using the following command:
 
-    `conda install -c inbalpaz clans -c defaults -c conda-forge`
+      **On MacOS / Windows:**
+
+      `conda install -c inbalpaz clans -c defaults -c conda-forge -c bioconda`
+
+      **On Linux:**
+
+      `conda install -c inbalpaz clans_linux -c defaults -c conda-forge -c bioconda`
+
+4. **On Linux only** run the following command: `pip install PyQt5`
 
 ### From source using conda:
 
@@ -40,7 +48,18 @@ The BLAST search is only available in the command-line mode and requires an inst
 
 3. Create a new conda environment using the ‘clans_2_0.yml’ file (located in the root directory of CLANS) using the following command:
 
-    `conda env create -f clans_2_0.yml`
+   **On MacOS / Windows:** `conda env create -f clans_2_0.yml`
+
+   **On Linux:** `conda env create -f clans_2_0_linux.yml`
+
+4. Activate the newly created environment: `conda activate clans_2_0`
+
+#### Set the display server on Linux
+In case the default display server on your Linux distribution is Wayland, you should switch to Xorg (x11) in order to enable CLANS to work properly.
+
+1. Check the currently used display server: `echo $XDG_SESSION_TYPE`
+
+2. If the result is ‘wayland’, you should switch to ‘x11’. In most popular linux distributions this can be done by uncommenting WaylandEnable=false in the /etc/gdm3/custom.conf file.
     
 ## Usage
 

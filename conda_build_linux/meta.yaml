@@ -8,13 +8,13 @@ package:
 source:
   git_tag: {{ version }}
   url: https://github.com/inbalpaz/CLANS/releases/download/{{ version }}/CLANS_{{ version }}.tar.gz
-  sha256: 47d46493b1b1a6f1523a2dc82bfe2cbf88148276eaa1383bac5a04ea2d766fde
+  sha256: eb0c089c35f726b6f92c6c2aa85418b23225e61a5ba5381efcc762040744c948
 
 build:
   noarch: python
   script: {{ PYTHON }} -m pip install . -vv
   number: 0
-  string: np_mkl_blast_noPyQt_linux
+  string: np_mkl_blast_noPyQt
 
 requirements:
   host:
