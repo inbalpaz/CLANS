@@ -16,7 +16,7 @@ In addition to clustering the sequences in space, the visualization tool enables
 
 • **Command-line tool** (executed using the ‘-nogui’ flag), which can be used to obtain a matrix of sequence similarities by running all-against-all BLAST search. In addition, it can run the Fruchterman-Reingold force-directed graph layout for a defined number of iterations and save the results in a clans-formatted file which can later be loaded and presented in the visualization tool. This is recommended for large datasets (>5000 sequences, depending on the computer resources), in which the clustering process is slow and there is no advantage in visualizing it.
 
-The BLAST search is only available in the command-line mode.
+The BLAST search is only available in the command-line mode and requires Blast+ installation on the target computer.
 
 ## Installation
 
@@ -32,11 +32,11 @@ The BLAST search is only available in the command-line mode.
 
       **On MacOS / Windows:**
 
-      `conda install -c inbalpaz clans -c defaults -c conda-forge -c bioconda`
+      `conda install -c inbalpaz clans -c defaults -c conda-forge`
 
       **On Linux:**
 
-      `conda install -c inbalpaz clans_linux -c defaults -c conda-forge -c bioconda`
+      `conda install -c inbalpaz clans_linux -c defaults -c conda-forge`
 
 4. **On Linux only** run the following command: `pip install PyQt5`
 

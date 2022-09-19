@@ -2,7 +2,6 @@ name: clans_2_0
 channels:
   - defaults
   - conda-forge
-  - bioconda
 dependencies:
   - python=3.9.6
   - numpy=1.20.3
@@ -10,7 +9,6 @@ dependencies:
   - vispy=0.8.1
   - biopython=1.77
   - pillow=8.3.1
-  - blast
   - pip
   - pip:
     - PyQt5

@@ -8,13 +8,13 @@ package:
 source:
   git_tag: {{ version }}
   url: https://github.com/inbalpaz/CLANS/releases/download/{{ version }}/CLANS_{{ version }}.tar.gz
-  sha256: eb0c089c35f726b6f92c6c2aa85418b23225e61a5ba5381efcc762040744c948
+  sha256: 0eab9c0af1a28f7efdcb4321c8a3f44b19f6ad6331d96f67e270e401e1b364ed
 
 build:
   noarch: python
   script: {{ PYTHON }} -m pip install . -vv
   number: 0
-  string: np_mkl_blast
+  string: np_mkl_noBlast
 
 requirements:
   host:
@@ -28,7 +28,6 @@ requirements:
     - pyqt =5.9.2
     - biopython >=1.77
     - pillow =8.3.1
-    - blast
 
 test:
   imports:
