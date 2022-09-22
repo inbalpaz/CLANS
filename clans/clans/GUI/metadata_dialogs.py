@@ -3,6 +3,7 @@ from PyQt5.QtGui import QMovie, QIcon
 from PyQt5.QtCore import QThreadPool
 from vispy.color import ColorArray
 import numpy as np
+import re
 import clans.config as cfg
 import clans.clans.io.io_gui as io
 import clans.clans.data.sequences as seq
@@ -534,28 +535,26 @@ class ColorByLengthDialog(QDialog):
         self.main_layout = QVBoxLayout()
         self.layout = QGridLayout()
 
-        self.title = QLabel("Define the color range:")
+        self.title = QLabel("Define the colors and values range:")
         self.layout.addWidget(self.title, 0, 0, 1, 3)
 
         self.row_space = QLabel(" ")
         self.row_space.setFixedSize(150, 15)
         self.layout.addWidget(self.row_space, 1, 0, 1, 2)
 
-        self.short_label = QLabel("Short")
-        self.long_label = QLabel("Long")
+        self.short_label = QLabel("Min. length")
+        self.long_label = QLabel("Max. length")
 
         self.layout.addWidget(self.short_label, 2, 0)
         self.layout.addWidget(self.long_label, 2, 2)
 
         self.short_color = cfg.short_color
         self.short_color_button = QPushButton("Change")
-        self.short_color_button.setFixedSize(65, 28)
         self.short_color_button.setStyleSheet("background-color: " + self.short_color.hex[0])
         self.short_color_button.pressed.connect(self.change_short_color)
 
         self.long_color = cfg.long_color
         self.long_color_button = QPushButton("Change")
-        self.long_color_button.setFixedSize(65, 28)
         self.long_color_button.setStyleSheet("background-color: " + self.long_color.hex[0])
         self.long_color_button.pressed.connect(self.change_long_color)
 
@@ -566,6 +565,23 @@ class ColorByLengthDialog(QDialog):
         self.layout.addWidget(self.short_color_button, 3, 0)
         self.layout.addWidget(self.switch_button, 3, 1)
         self.layout.addWidget(self.long_color_button, 3, 2)
+
+        self.min_length_widget = QLineEdit()
+        self.min_length_widget.setFixedSize(55, 20)
+        self.min_length = cfg.run_params['min_seq_length']
+        self.min_length_widget.setText(str(self.min_length))
+
+        self.max_length = cfg.run_params['max_seq_length']
+        self.max_length_widget = QLineEdit()
+        self.max_length_widget.setFixedSize(55, 20)
+        self.max_length_widget.setText(str(self.max_length))
+
+        self.layout.addWidget(self.min_length_widget, 4, 0)
+        self.layout.addWidget(self.max_length_widget, 4, 2)
+
+        self.row_space2 = QLabel(" ")
+        self.row_space2.setFixedSize(150, 15)
+        self.layout.addWidget(self.row_space, 5, 0, 1, 2)
 
         self.main_layout.addLayout(self.layout)
 
@@ -616,7 +632,14 @@ class ColorByLengthDialog(QDialog):
         self.long_color_button.setStyleSheet("background-color: " + self.long_color.hex[0])
 
     def get_colors(self):
-        return self.short_color, self.long_color
+
+        if re.search("^\d+$", self.min_length_widget.text()):
+            self.min_length = int(self.min_length_widget.text())
+
+        if re.search("^\d+$", self.max_length_widget.text()):
+            self.max_length = int(self.max_length_widget.text())
+
+        return self.short_color, self.long_color, self.min_length, self.max_length
 
 
 class ColorByParamDialog(QDialog):
@@ -663,7 +686,7 @@ class ColorByParamDialog(QDialog):
 
         self.layout.addWidget(self.row_space, 5, 0, 1, 3)
 
-        self.color_range_label = QLabel("Define the color range:")
+        self.color_range_label = QLabel("Define the colors and values range:")
         self.colors_layout.addWidget(self.color_range_label, 0, 0, 1, 2)
 
         self.min_label = QLabel("Min. value")
@@ -674,13 +697,13 @@ class ColorByParamDialog(QDialog):
 
         self.min_color = cfg.min_param_color
         self.min_color_button = QPushButton("Change")
-        self.min_color_button.setFixedSize(65, 28)
+        #self.min_color_button.setFixedSize(65, 28)
         self.min_color_button.setStyleSheet("background-color: " + self.min_color.hex[0])
         self.min_color_button.pressed.connect(self.change_min_color)
 
         self.max_color = cfg.max_param_color
         self.max_color_button = QPushButton("Change")
-        self.max_color_button.setFixedSize(65, 28)
+        #self.max_color_button.setFixedSize(65, 28)
         self.max_color_button.setStyleSheet("background-color: " + self.max_color.hex[0])
         self.max_color_button.pressed.connect(self.change_max_color)
 
@@ -692,11 +715,20 @@ class ColorByParamDialog(QDialog):
         self.colors_layout.addWidget(self.switch_button, 2, 1)
         self.colors_layout.addWidget(self.max_color_button, 2, 2)
 
-        #self.layout.addLayout(self.colors_layout, 6, 0, 1, 2)
+        self.min_val_widget = QLineEdit()
+        self.min_val_widget.setFixedSize(55, 20)
+        self.min_val = 0
+
+        self.max_val_widget = QLineEdit()
+        self.max_val_widget.setFixedSize(55, 20)
+        self.max_val = 0
+
+        self.colors_layout.addWidget(self.min_val_widget, 3, 0)
+        self.colors_layout.addWidget(self.max_val_widget, 3, 2)
+
         self.layout.addLayout(self.colors_layout, 6, 0)
 
         self.main_layout.addLayout(self.layout)
-        #self.main_layout.addLayout(self.colors_layout)
 
         # Add the OK/Cancel standard buttons
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -713,12 +745,17 @@ class ColorByParamDialog(QDialog):
             for param in cfg.sequences_numeric_params:
                 self.param_combo.addItem(param)
 
-                # Set the colors of the first parameter in the list
+                # Set the colors and values of the first parameter in the list
                 if param_index == 0:
                     self.min_color = cfg.sequences_numeric_params[param]['min_color']
                     self.min_color_button.setStyleSheet("background-color: " + self.min_color.hex[0])
                     self.max_color = cfg.sequences_numeric_params[param]['max_color']
                     self.max_color_button.setStyleSheet("background-color: " + self.max_color.hex[0])
+
+                    self.min_val = cfg.sequences_numeric_params[param]['min_val']
+                    self.max_val = cfg.sequences_numeric_params[param]['max_val']
+                    self.min_val_widget.setText(str(self.min_val))
+                    self.max_val_widget.setText(str(self.max_val))
 
                 param_index += 1
 
@@ -738,6 +775,8 @@ class ColorByParamDialog(QDialog):
             self.min_color_button.hide()
             self.switch_button.hide()
             self.max_color_button.hide()
+            self.min_val_widget.hide()
+            self.max_val_widget.hide()
 
     def upload_file(self):
         try:
@@ -785,6 +824,8 @@ class ColorByParamDialog(QDialog):
             self.min_color_button.show()
             self.switch_button.show()
             self.max_color_button.show()
+            self.min_val_widget.show()
+            self.max_val_widget.show()
 
         else:
             self.message_label.setText(error)
@@ -837,11 +878,22 @@ class ColorByParamDialog(QDialog):
             self.min_color_button.setStyleSheet("background-color: " + self.min_color.hex[0])
             self.max_color = cfg.sequences_numeric_params[selected_param]['max_color']
             self.max_color_button.setStyleSheet("background-color: " + self.max_color.hex[0])
+            self.min_val = cfg.sequences_numeric_params[selected_param]['min_val']
+            self.max_val = cfg.sequences_numeric_params[selected_param]['max_val']
+            self.min_val_widget.setText(str(self.min_val))
+            self.max_val_widget.setText(str(self.max_val))
 
     def get_param(self):
 
         selected_param_name = self.param_combo.currentText()
-        return selected_param_name, self.added_params, self.min_color, self.max_color
+
+        if re.search("^\d+\.?\d*(e-\d+)*$", self.min_val_widget.text()):
+            self.min_val = float(self.min_val_widget.text())
+
+        if re.search("^\d+\.?\d*(e-\d+)*$", self.max_val_widget.text()):
+            self.max_val = float(self.max_val_widget.text())
+
+        return selected_param_name, self.added_params, self.min_color, self.max_color, self.min_val, self.max_val
 
 
 

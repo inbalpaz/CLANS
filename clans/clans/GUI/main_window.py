@@ -820,7 +820,6 @@ class MainWindow(QMainWindow):
             self.round_num_label.setStyleSheet("color: black;")
             self.mode_combo.setEnabled(True)
             self.select_all_button.setEnabled(True)
-            self.clear_selection_button.setEnabled(True)
             self.select_by_text_button.setEnabled(True)
             self.connections_button.setEnabled(True)
             self.hide_singeltons_button.setEnabled(True)
@@ -1092,7 +1091,6 @@ class MainWindow(QMainWindow):
             self.mode_combo.setEnabled(False)
             self.selection_type_combo.setEnabled(False)
             self.select_all_button.setEnabled(False)
-            self.clear_selection_button.setEnabled(False)
             self.select_by_text_button.setEnabled(False)
             self.select_by_groups_button.setEnabled(False)
             self.edit_groups_button.setEnabled(False)
@@ -1172,7 +1170,6 @@ class MainWindow(QMainWindow):
         if self.is_subset_mode == 0:
             self.mode_combo.setEnabled(True)
             self.select_all_button.setEnabled(True)
-            self.clear_selection_button.setEnabled(True)
 
         self.select_by_text_button.setEnabled(True)
 
@@ -1861,28 +1858,45 @@ class MainWindow(QMainWindow):
             self.color_by_combo.setCurrentText('Seq. length')
             self.color_by_combo.setEnabled(True)
 
-        else:
-            try:
-                gradient_colormap = colors.generate_colormap_gradient_2_colors(cfg.short_color, cfg.long_color)
-            except Exception as err:
-                error_msg = "An error occurred: cannot generate colormap"
-                error_occurred(colors.generate_colormap_gradient_2_colors, 'generate_colormap_gradient_2_colors', err,
-                               error_msg)
-                return
+        # Produce the real colormap
+        try:
+            gradient_colormap = colors.generate_colormap_gradient_2_colors(cfg.short_color, cfg.long_color)
+        except Exception as err:
+            error_msg = "An error occurred: cannot generate colormap"
+            error_occurred(colors.generate_colormap_gradient_2_colors, 'generate_colormap_gradient_2_colors', err,
+                           error_msg)
+            return
 
-            try:
-                self.network_plot.color_by_param(gradient_colormap, cfg.sequences_array['norm_seq_length'],
-                                                 self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
-            except Exception as err:
-                error_msg = "An error occurred: cannot color the data by sequence-length"
-                error_occurred(self.network_plot.color_by_param, 'color_by_param', err, error_msg)
-                return
+        # Produce an opposite colormap just for the colorbar presentation (workaround a bug in the colorbar visual)
+        try:
+            opposite_gradient_colormap = colors.generate_colormap_gradient_2_colors(cfg.long_color, cfg.short_color)
+        except Exception as err:
+            error_msg = "An error occurred: cannot generate colormap"
+            error_occurred(colors.generate_colormap_gradient_2_colors, 'generate_colormap_gradient_2_colors', err,
+                           error_msg)
+            return
 
-            try:
-                self.colorbar_plot.show_colorbar(gradient_colormap, cfg.sequences_array['seq_length'], 'Sequences length')
-            except Exception as err:
-                error_msg = "An error occurred: cannot display the colorbar"
-                error_occurred(self.colorbar_plot.show_colorbar, 'show_colorbar', err, error_msg)
+        try:
+            seq.normalize_seq_length()
+        except Exception as err:
+            error_msg = "An error occurred: cannot normalize the new range of sequence length"
+            error_occurred(seq.normalize_seq_length, 'normalize_seq_length', err, error_msg)
+            return
+
+        try:
+            self.network_plot.color_by_param(gradient_colormap, cfg.sequences_array['norm_seq_length'],
+                                             self.dim_num, self.z_indexing_mode, self.color_by, self.group_by)
+        except Exception as err:
+            error_msg = "An error occurred: cannot color the data by sequence-length"
+            error_occurred(self.network_plot.color_by_param, 'color_by_param', err, error_msg)
+            return
+
+        try:
+            self.colorbar_plot.show_colorbar(opposite_gradient_colormap, 'Sequences length',
+                                             cfg.run_params['min_seq_length'], cfg.run_params['max_seq_length'])
+        except Exception as err:
+            error_msg = "An error occurred: cannot display the colorbar"
+            error_occurred(self.colorbar_plot.show_colorbar, 'show_colorbar', err, error_msg)
 
     def open_color_by_length_dialog(self):
 
@@ -1890,7 +1904,8 @@ class MainWindow(QMainWindow):
             dlg = md.ColorByLengthDialog()
 
             if dlg.exec_():
-                cfg.short_color, cfg.long_color = dlg.get_colors()
+                cfg.short_color, cfg.long_color, cfg.run_params['min_seq_length'], cfg.run_params['max_seq_length'] = \
+                    dlg.get_colors()
 
                 self.color_by_seq_length()
 
@@ -1967,12 +1982,29 @@ class MainWindow(QMainWindow):
         min_param_color = cfg.sequences_numeric_params[param]['min_color']
         max_param_color = cfg.sequences_numeric_params[param]['max_color']
 
+        # Produce the real colormap
         try:
             gradient_colormap = colors.generate_colormap_gradient_2_colors(min_param_color, max_param_color)
         except Exception as err:
             error_msg = "An error occurred: cannot generate colormap"
             error_occurred(colors.generate_colormap_gradient_2_colors, 'generate_colormap_gradient_2_colors', err,
                            error_msg)
+            return
+
+        # Produce an opposite colormap just for the colorbar presentation (workaround a bug in the colorbar visual)
+        try:
+            opposite_gradient_colormap = colors.generate_colormap_gradient_2_colors(max_param_color, min_param_color)
+        except Exception as err:
+            error_msg = "An error occurred: cannot generate colormap"
+            error_occurred(colors.generate_colormap_gradient_2_colors, 'generate_colormap_gradient_2_colors', err,
+                           error_msg)
+            return
+
+        try:
+            seq.normalize_numeric_param(param)
+        except Exception as err:
+            error_msg = "An error occurred: cannot normalize the new range of values"
+            error_occurred(seq.normalize_numeric_param, 'normalize_numeric_param', err, error_msg)
             return
 
         try:
@@ -1984,7 +2016,8 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            self.colorbar_plot.show_colorbar(gradient_colormap, cfg.sequences_numeric_params[param]['raw'], param)
+            self.colorbar_plot.show_colorbar(opposite_gradient_colormap, param, cfg.sequences_numeric_params[param]['min_val'],
+                                             cfg.sequences_numeric_params[param]['max_val'])
         except Exception as err:
             error_msg = "An error occurred: cannot display the colorbar"
             error_occurred(self.colorbar_plot.show_colorbar, 'show_colorbar', err, error_msg)
@@ -1995,7 +2028,7 @@ class MainWindow(QMainWindow):
             dlg = md.ColorByParamDialog()
 
             if dlg.exec_():
-                selected_param, added_params_list, min_param_color, max_param_color = dlg.get_param()
+                selected_param, added_params_list, min_param_color, max_param_color, min_val, max_val = dlg.get_param()
 
                 if selected_param:
 
@@ -2011,6 +2044,10 @@ class MainWindow(QMainWindow):
                     # Update the colors of the selected parameter
                     cfg.sequences_numeric_params[selected_param]['min_color'] = min_param_color
                     cfg.sequences_numeric_params[selected_param]['max_color'] = max_param_color
+
+                    # Update the values range of the selected parameter
+                    cfg.sequences_numeric_params[selected_param]['min_val'] = min_val
+                    cfg.sequences_numeric_params[selected_param]['max_val'] = max_val
 
                     self.color_by_user_param(selected_param)
 
@@ -2117,7 +2154,6 @@ class MainWindow(QMainWindow):
         self.show_selected_names_button.setEnabled(True)
         self.open_selected_button.setEnabled(True)
         self.clear_selection_button.setEnabled(True)
-        self.inverse_selection_button.setEnabled(True)
         self.add_to_group_button.setEnabled(True)
         self.remove_selected_button.setEnabled(True)
 
@@ -2253,6 +2289,7 @@ class MainWindow(QMainWindow):
             self.mode_combo.setCurrentIndex(0)
             self.select_all_button.setEnabled(False)
             self.clear_selection_button.setEnabled(False)
+            self.inverse_selection_button.setEnabled(False)
             self.z_index_mode_combo.setCurrentIndex(0)
             self.z_index_mode_combo.setEnabled(False)
             self.z_index_mode_label.setStyleSheet("color: " + cfg.inactive_color + ";")
@@ -2291,6 +2328,7 @@ class MainWindow(QMainWindow):
             self.mode_combo.setEnabled(True)
             self.select_all_button.setEnabled(True)
             self.clear_selection_button.setEnabled(True)
+            self.inverse_selection_button.setEnabled(True)
             self.select_by_text_button.setEnabled(True)
             self.select_by_groups_button.setEnabled(True)
 

@@ -1723,19 +1723,22 @@ class Network3D:
     def inverse_selection(self, dim_num_view, z_index_mode, color_by, group_by, is_show_group_names,
                           group_names_display):
 
+        new_selected_points = []
+        old_selected_points = []
+
         for seq_index in range(cfg.run_params['total_sequences_num']):
 
             # Select the non-selected
             if seq_index not in self.selected_points:
                 self.selected_points[seq_index] = 1
                 cfg.sequences_array[seq_index]['in_subset'] = True
-                self.nodes_outline_color_array[seq_index] = self.selected_outline_color
-                self.nodes_size_array[seq_index] += 5
+                new_selected_points.append(seq_index)
 
             # Deselect the selected
             else:
                 del self.selected_points[seq_index]
                 cfg.sequences_array[seq_index]['in_subset'] = False
+                old_selected_points.append(seq_index)
 
                 if color_by == 'groups':
 
@@ -1757,17 +1760,23 @@ class Network3D:
                     self.nodes_outline_color_array[seq_index] = self.nodes_outline_default_color
                     self.nodes_size_array[seq_index] = self.nodes_size
 
-            # Hide the selected group names and initialize the selected group names visual
-            if is_show_group_names and group_names_display == 'selected':
-                self.hide_group_names()
-            self.selected_groups_text_visual = {}
+        # Unmark the old selection
+        self.unmark_selected_points(old_selected_points, 2, z_index_mode, color_by, group_by)
 
-            # Empty the selected_groups dictionaries
-            self.selected_groups = {}
+        # Mark the new selection
+        self.mark_selected_points(new_selected_points, z_index_mode, color_by, group_by)
 
-            self.update_sequences_names(dim_num_view)
+        # Hide the selected group names and initialize the selected group names visual
+        if is_show_group_names and group_names_display == 'selected':
+            self.hide_group_names()
+        self.selected_groups_text_visual = {}
 
-            self.update_view(dim_num_view, color_by, group_by, z_index_mode)
+        # Empty the selected_groups dictionaries
+        self.selected_groups = {}
+
+        self.update_sequences_names(dim_num_view)
+
+        #self.update_view(dim_num_view, color_by, group_by, z_index_mode)
 
     def select_subset(self, selected_dict, dim_num, z_index_mode, color_by, group_by):
 

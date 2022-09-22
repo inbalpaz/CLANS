@@ -631,6 +631,8 @@ class SearchResultsWindow(QWidget):
 
                 # Enable all the controls that are related to selected items in the Main Window
                 self.main_window_object.open_selected_button.setEnabled(True)
+                self.main_window_object.clear_selection_button.setEnabled(True)
+                self.main_window_object.inverse_selection_button.setEnabled(True)
                 self.main_window_object.show_selected_names_button.setEnabled(True)
                 self.main_window_object.add_to_group_button.setEnabled(True)
                 self.main_window_object.remove_selected_button.setEnabled(True)
@@ -686,6 +688,8 @@ class SearchResultsWindow(QWidget):
 
                 # Enable all the controls that are related to selected items in the Main Window
                 self.main_window_object.open_selected_button.setEnabled(True)
+                self.main_window_object.clear_selection_button.setEnabled(True)
+                self.main_window_object.inverse_selection_button.setEnabled(True)
                 self.main_window_object.show_selected_names_button.setEnabled(True)
                 self.main_window_object.add_to_group_button.setEnabled(True)
                 self.main_window_object.remove_selected_button.setEnabled(True)
@@ -859,6 +863,8 @@ class GroupsIntersectionResults(QWidget):
 
                 # Enable all the controls that are related to selected items in the Main Window
                 self.main_window_object.open_selected_button.setEnabled(True)
+                self.main_window_object.clear_selection_button.setEnabled(True)
+                self.main_window_object.inverse_selection_button.setEnabled(True)
                 self.main_window_object.show_selected_names_button.setEnabled(True)
                 self.main_window_object.add_to_group_button.setEnabled(True)
                 self.main_window_object.remove_selected_button.setEnabled(True)
@@ -914,6 +920,8 @@ class GroupsIntersectionResults(QWidget):
 
                 # Enable all the controls that are related to selected items in the Main Window
                 self.main_window_object.open_selected_button.setEnabled(True)
+                self.main_window_object.clear_selection_button.setEnabled(True)
+                self.main_window_object.inverse_selection_button.setEnabled(True)
                 self.main_window_object.show_selected_names_button.setEnabled(True)
                 self.main_window_object.add_to_group_button.setEnabled(True)
                 self.main_window_object.remove_selected_button.setEnabled(True)

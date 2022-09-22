@@ -281,7 +281,7 @@ class DelimitedFormat:
                 for i in range(1, col_num):
                     value = row[i]
 
-                    if not re.search("\d+\.?\d?", value):
+                    if not re.search("\d+\.?\d*(e-\d+)*", value):
                         error = "Invalid values: the values must be int/float numbers.\n" \
                                 "Please correct the file and reload."
                         return sequences_params_dict, error

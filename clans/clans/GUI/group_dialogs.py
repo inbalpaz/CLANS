@@ -915,11 +915,11 @@ class EditCategoriesDialog(QDialog):
         self.delete_category_button = QPushButton("Delete")
         self.delete_category_button.released.connect(self.delete_category)
 
-        self.buttons_layout.addWidget(self.add_button)
         self.buttons_layout.addWidget(self.edit_button)
         self.buttons_layout.addWidget(self.move_up_button)
         self.buttons_layout.addWidget(self.move_down_button)
         self.buttons_layout.addWidget(self.delete_category_button)
+        self.buttons_layout.addWidget(self.add_button)
         self.buttons_layout.addStretch()
 
         self.main_layout.addLayout(self.buttons_layout)
@@ -974,34 +974,24 @@ class EditCategoriesDialog(QDialog):
             item = QListWidgetItem(cfg.groups_by_categories[category_index]['name'])
             self.categories_list.insertItem(category_index+1, item)
 
-            is_changed_points_size = 0
-            is_changed_names_size = 0
-            is_changed_outline_color = 0
-            is_changed_bold = 0
-            is_changed_italic = 0
-
             if points_size != cfg.groups_by_categories[category_index]['nodes_size']:
-                is_changed_points_size = 1
-            cfg.groups_by_categories[category_index]['nodes_size'] = points_size
+                cfg.groups_by_categories[category_index]['nodes_size'] = points_size
 
             if names_size != cfg.groups_by_categories[category_index]['text_size']:
-                is_changed_names_size = 1
-            cfg.groups_by_categories[category_index]['text_size'] = names_size
+                cfg.groups_by_categories[category_index]['text_size'] = names_size
 
             if ColorArray(outline_color).hex != \
                     ColorArray(cfg.groups_by_categories[category_index]['nodes_outline_color']).hex:
-                is_changed_outline_color = 1
-            cfg.groups_by_categories[category_index]['nodes_outline_color'] = outline_color
+                cfg.groups_by_categories[category_index]['nodes_outline_color'] = outline_color
 
             if is_bold != cfg.groups_by_categories[category_index]['is_bold']:
-                is_changed_bold = 1
-            cfg.groups_by_categories[category_index]['is_bold'] = is_bold
+                cfg.groups_by_categories[category_index]['is_bold'] = is_bold
 
             if is_italic != cfg.groups_by_categories[category_index]['is_italic']:
-                is_changed_italic = 1
-            cfg.groups_by_categories[category_index]['is_italic'] = is_italic
+                cfg.groups_by_categories[category_index]['is_italic'] = is_italic
 
-            cfg.groups_by_categories[category_index]['nodes_outline_width'] = outline_width
+            if outline_width != cfg.groups_by_categories[category_index]['nodes_outline_width']:
+                cfg.groups_by_categories[category_index]['nodes_outline_width'] = outline_width
 
             # Mark the new category's line
             self.categories_list.setCurrentRow(category_index-1)
@@ -1091,6 +1081,14 @@ class EditCategoriesDialog(QDialog):
                     error_msg = "An error occurred: cannot hide the group names"
                     error_occurred(self.net_plot_object.hide_group_names, 'hide_group_names', err, error_msg)
                     return
+
+                if self.z_index_mode == 'groups':
+                    try:
+                        self.net_plot_object.hide_scatter_by_groups()
+                    except Exception as err:
+                        error_msg = "An error occurred: cannot remove scatter by groups"
+                        error_occurred(self.net_plot_object.hide_scatter_by_groups, 'hide_scatter_by_groups', err,
+                                       error_msg)
 
                 try:
                     self.net_plot_object.update_group_by(self.dim_num, self.z_index_mode, self.color_by, self.group_by)

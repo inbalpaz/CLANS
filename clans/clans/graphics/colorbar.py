@@ -16,17 +16,16 @@ class Colorbar:
         self.colorbar = scene.visuals.ColorBar(cmap='cool', orientation='right', size=(60, 2))
         self.colorbar.pos = (0, 20)
         self.colorbar.label = 'Sequences length'
-        # self.colorbar.set_gl_state('translucent', blend=True)
 
-    def show_colorbar(self, colormap, param_array, param_name):
+    def show_colorbar(self, colormap, param_name, min_val, max_val):
         self.colorbar.parent = None
-
-        min_param = np.round(np.amin(param_array), 2)
-        max_param = np.round(np.amax(param_array), 2)
 
         # Generate and display a color-bar legend
         self.colorbar.cmap = colormap
-        self.colorbar.clim = (min_param, max_param)
+
+        # Because of a bug in the colorbar visual (it is displayed upside down) - switch the order of the min/max values
+        #self.colorbar.clim = (min_val, max_val)
+        self.colorbar.clim = (max_val, min_val)
 
         self.colorbar.label = param_name
 

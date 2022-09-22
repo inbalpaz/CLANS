@@ -1,5 +1,5 @@
 {% set name = "clans" %}
-{% set version = "2.0.6" %}
+{% set version = "2.0.7" %}
 
 package:
   name: {{ name|lower }}
@@ -8,7 +8,7 @@ package:
 source:
   git_tag: {{ version }}
   url: https://github.com/inbalpaz/CLANS/releases/download/{{ version }}/CLANS_{{ version }}.tar.gz
-  sha256: 0eab9c0af1a28f7efdcb4321c8a3f44b19f6ad6331d96f67e270e401e1b364ed
+  sha256: 084298dd001cb8c5759590b47b7da903f1ae098963fd9c640a8a7db31797c3d5
 
 build:
   noarch: python

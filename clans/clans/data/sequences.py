@@ -5,7 +5,7 @@ import clans.config as cfg
 import random
 
 
-#@profile
+# @profile
 def create_sequences_array(sequences_list):
     # Resize the sequences array according to the input number of sequences
     np.resize(cfg.sequences_array, cfg.run_params['total_sequences_num'])
@@ -14,7 +14,7 @@ def create_sequences_array(sequences_list):
     # seq_title, sequence, x_coordinate, y_coordinate, z_cordinate, in_group(initialized with -1)
     cfg.sequences_array = np.array(sequences_list, dtype=cfg.seq_dt)
 
-    #print("create_sequences_array: Sequences_array=\n" + str(cfg.sequences_array))
+    # print("create_sequences_array: Sequences_array=\n" + str(cfg.sequences_array))
 
 
 def init_groups_by_categories():
@@ -22,14 +22,29 @@ def init_groups_by_categories():
 
 
 def add_seq_length_param():
-
     cfg.sequences_array['seq_length'] = np.char.str_len(cfg.sequences_array['sequence'])
 
-    min_seq_length = np.amin(cfg.sequences_array['seq_length'])
-    max_seq_length = np.amax(cfg.sequences_array['seq_length'])
+    cfg.run_params['min_seq_length'] = np.amin(cfg.sequences_array['seq_length'])
+    cfg.run_params['max_seq_length'] = np.amax(cfg.sequences_array['seq_length'])
+
+    normalize_seq_length()
+
+
+def normalize_seq_length():
+    min_seq_length = cfg.run_params['min_seq_length']
+    max_seq_length = cfg.run_params['max_seq_length']
 
     if min_seq_length != max_seq_length:
-        cfg.sequences_array['norm_seq_length'] = (cfg.sequences_array['seq_length'] - min_seq_length) / \
+
+        # Set the sequences below the defined minimum to the minimal value
+        updated_seq_length = np.where(cfg.sequences_array['seq_length'] <= min_seq_length,
+                                      np.amin(cfg.sequences_array['seq_length']), cfg.sequences_array['seq_length'])
+
+        # Set the sequences above the defined maximum to the maximal value
+        updated_seq_length = np.where(cfg.sequences_array['seq_length'] >= max_seq_length,
+                                      np.amax(cfg.sequences_array['seq_length']), cfg.sequences_array['seq_length'])
+
+        cfg.sequences_array['norm_seq_length'] = (updated_seq_length - min_seq_length) / \
                                                  (max_seq_length - min_seq_length)
 
     else:
@@ -40,7 +55,6 @@ def add_seq_length_param():
 
 
 def add_numeric_params(params_dict):
-
     added_params = []
 
     for param_name in params_dict:
@@ -59,6 +73,11 @@ def add_numeric_params(params_dict):
         cfg.sequences_numeric_params[param_name] = dict()
 
         cfg.sequences_numeric_params[param_name]['raw'] = np.array(values_list, dtype=float)
+        cfg.sequences_numeric_params[param_name]['min_val'] = \
+            np.round(np.amin(cfg.sequences_numeric_params[param_name]['raw']), 2)
+        cfg.sequences_numeric_params[param_name]['max_val'] = \
+            np.round(np.amax(cfg.sequences_numeric_params[param_name]['raw']), 2)
+
         normalize_numeric_param(param_name)
 
         cfg.sequences_numeric_params[param_name]['min_color'] = cfg.min_param_color
@@ -71,11 +90,15 @@ def add_numeric_params(params_dict):
 
 # Add numeric parameters that were saved in a full CLANS file (including colors)
 def add_saved_numeric_params(params_dict):
-
     for param_name in params_dict:
         cfg.sequences_numeric_params[param_name] = dict()
 
         cfg.sequences_numeric_params[param_name]['raw'] = np.array(params_dict[param_name]['values'], dtype=float)
+        cfg.sequences_numeric_params[param_name]['min_val'] = \
+            np.round(np.amin(cfg.sequences_numeric_params[param_name]['raw']), 2)
+        cfg.sequences_numeric_params[param_name]['max_val'] = \
+            np.round(np.amax(cfg.sequences_numeric_params[param_name]['raw']), 2)
+
         normalize_numeric_param(param_name)
 
         min_color_arr = params_dict[param_name]['min_color'].split(';')
@@ -89,13 +112,22 @@ def add_saved_numeric_params(params_dict):
 
 
 def normalize_numeric_param(param_name):
-
-    min_val = np.amin(cfg.sequences_numeric_params[param_name]['raw'])
-    max_val = np.amax(cfg.sequences_numeric_params[param_name]['raw'])
+    min_val = cfg.sequences_numeric_params[param_name]['min_val']
+    max_val = cfg.sequences_numeric_params[param_name]['max_val']
 
     if min_val != max_val:
-        cfg.sequences_numeric_params[param_name]['norm'] = (cfg.sequences_numeric_params[param_name]['raw'] - min_val) / \
-                                                 (max_val - min_val)
+
+        # Set the sequences below the defined minimum to the minimal value
+        updated_values = np.where(cfg.sequences_numeric_params[param_name]['raw'] <= min_val,
+                                  np.amin(cfg.sequences_numeric_params[param_name]['raw']),
+                                  cfg.sequences_numeric_params[param_name]['raw'])
+
+        # Set the sequences above the defined maximum to the maximal value
+        updated_values = np.where(cfg.sequences_numeric_params[param_name]['raw'] >= max_val,
+                                  np.amax(cfg.sequences_numeric_params[param_name]['raw']),
+                                  cfg.sequences_numeric_params[param_name]['raw'])
+
+        cfg.sequences_numeric_params[param_name]['norm'] = (updated_values - min_val) / (max_val - min_val)
 
     else:
         if min_val == 0:
@@ -106,7 +138,6 @@ def normalize_numeric_param(param_name):
 
 # Mode: full / subset
 def update_positions(xyz_coor, mode):
-
     # Full data mode -> update 'normal' coordinates
     if mode == "full":
         cfg.sequences_array['x_coor'] = xyz_coor[0]
@@ -155,6 +186,3 @@ def rollback_subset_positions():
         cfg.sequences_array['x_coor_subset'][i] = cfg.sequences_array['x_coor'][i]
         cfg.sequences_array['y_coor_subset'][i] = cfg.sequences_array['y_coor'][i]
         cfg.sequences_array['z_coor_subset'][i] = cfg.sequences_array['z_coor'][i]
-
-
-
