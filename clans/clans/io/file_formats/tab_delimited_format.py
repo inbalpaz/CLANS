@@ -246,16 +246,18 @@ class DelimitedFormat:
             header = next(reader)
             if header is None:
                 error = "The file is invalid.\nPlease upload a tab-delimited file containing at least two columns: " \
-                        "sequenceID, parameter_1.\nThe file should contain a header line with the parameter names\n" \
-                        "and may contain more than one parameter column."
+                        "SequenceID, Feature_1.\n" \
+                        "The file should contain a header line with the feature name\n" \
+                        "and may contain more than one feature column."
                 return sequences_params_dict, error
 
             fields_num = len(header)
 
             if fields_num < 2:
                 error = "The file is invalid.\nPlease upload a tab-delimited file containing at least two columns: " \
-                        "sequenceID, parameter_1.\nThe file should contain a header line with the parameter names\n" \
-                        "and may contain more than one parameter column."
+                        "SequenceID, Feature_1.\n" \
+                        "The file should contain a header line with the feature name\n" \
+                        "and may contain more than one feature column."
                 return sequences_params_dict, error
 
             col_num = len(header)
@@ -266,9 +268,9 @@ class DelimitedFormat:
                 if re.search("^\d+\.?\d?$", param_name):
                     error = "It seems that the file contains no header line.\n" \
                             "Please upload a tab-delimited file containing at least two columns: " \
-                            "sequenceID, parameter_1.\n" \
-                            "The file should contain a header line with the parameter names\n" \
-                            "and may contain more than one parameter column."
+                            "SequenceID, Feature_1.\n" \
+                            "The file should contain a header line with the feature name\n" \
+                            "and may contain more than one feature column."
                     return sequences_params_dict, error
 
                 params.append(param_name)

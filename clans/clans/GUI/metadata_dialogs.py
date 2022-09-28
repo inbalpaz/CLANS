@@ -21,6 +21,26 @@ def error_occurred(method, method_name, exception_err, error_msg):
         return
 
 
+class DeleteVerification(QDialog):
+
+    def __init__(self, msg):
+        super().__init__()
+
+        self.layout = QVBoxLayout()
+
+        self.title = QLabel(msg)
+
+        # Add the OK/Cancel standard buttons
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+        self.layout.addWidget(self.title)
+        self.layout.addWidget(self.button_box)
+
+        self.setLayout(self.layout)
+
+
 class GroupByTaxDialog(QDialog):
 
     def __init__(self):
@@ -651,59 +671,45 @@ class ColorByParamDialog(QDialog):
 
         self.threadpool = QThreadPool()
 
-        self.setWindowTitle("Color-by custom parameter")
+        self.setWindowTitle("Add custom numerical metadata")
 
         self.main_layout = QVBoxLayout()
         self.layout = QGridLayout()
         self.colors_layout = QGridLayout()
 
-        self.title = QLabel("Define a parameter by which to color the data")
-        self.title.setStyleSheet("font-size: 14px")
-        self.layout.addWidget(self.title, 0, 0, 1, 3)
+        self.message_lable = QLabel()
+        self.layout.addWidget(self.message_lable, 0, 0, 1, 3)
 
-        self.row_space = QLabel(" ")
-        self.row_space.setFixedSize(150, 10)
-        self.layout.addWidget(self.row_space, 1, 0, 1, 3)
-
-        self.message_label = QLabel("No user-defined parameters")
-        self.message_label.setStyleSheet("color: maroon;font-size: 14px")
-
-        self.layout.addWidget(self.message_label, 2, 0, 1, 3)
-
-        self.param_label = QLabel("Select a parameter from the list:")
-        self.param_combo = QComboBox()
-        self.param_combo.currentIndexChanged.connect(self.change_param)
-        self.file_label = QLabel()
-
+        self.file_label = QLabel("Upload a metadata file (tab-delimited)\nwith at least one user-defined numerical "
+                                 "feature")
         self.upload_file_button = QPushButton("Upload file")
         self.upload_file_button.pressed.connect(self.upload_file)
+        self.layout.addWidget(self.file_label, 1, 0, 1, 2)
+        self.layout.addWidget(self.upload_file_button, 1, 2)
 
-        self.layout.addWidget(self.param_label, 3, 0)
-        self.layout.addWidget(self.param_combo, 3, 1)
+        self.param_label = QLabel("Configure uploaded feature(s):")
+        self.param_combo = QComboBox()
+        self.param_combo.currentIndexChanged.connect(self.change_param)
 
-        self.layout.addWidget(self.file_label, 4, 0, 1, 2)
-        self.layout.addWidget(self.upload_file_button, 4, 2)
-
-        self.layout.addWidget(self.row_space, 5, 0, 1, 3)
+        self.layout.addWidget(self.param_label, 2, 0)
+        self.layout.addWidget(self.param_combo, 2, 1)
 
         self.color_range_label = QLabel("Define the colors and values range:")
-        self.colors_layout.addWidget(self.color_range_label, 0, 0, 1, 2)
+        self.layout.addWidget(self.color_range_label, 3, 0, 1, 2)
 
         self.min_label = QLabel("Min. value")
         self.max_label = QLabel("Max. value")
 
-        self.colors_layout.addWidget(self.min_label, 1, 0)
-        self.colors_layout.addWidget(self.max_label, 1, 2)
+        self.colors_layout.addWidget(self.min_label, 0, 0)
+        self.colors_layout.addWidget(self.max_label, 0, 2)
 
         self.min_color = cfg.min_param_color
         self.min_color_button = QPushButton("Change")
-        #self.min_color_button.setFixedSize(65, 28)
         self.min_color_button.setStyleSheet("background-color: " + self.min_color.hex[0])
         self.min_color_button.pressed.connect(self.change_min_color)
 
         self.max_color = cfg.max_param_color
         self.max_color_button = QPushButton("Change")
-        #self.max_color_button.setFixedSize(65, 28)
         self.max_color_button.setStyleSheet("background-color: " + self.max_color.hex[0])
         self.max_color_button.pressed.connect(self.change_max_color)
 
@@ -711,22 +717,22 @@ class ColorByParamDialog(QDialog):
         self.switch_button.setIcon(QIcon(cfg.icons_dir + "switch_icon_trans.png"))
         self.switch_button.pressed.connect(self.switch_colors)
 
-        self.colors_layout.addWidget(self.min_color_button, 2, 0)
-        self.colors_layout.addWidget(self.switch_button, 2, 1)
-        self.colors_layout.addWidget(self.max_color_button, 2, 2)
+        self.colors_layout.addWidget(self.min_color_button, 1, 0)
+        self.colors_layout.addWidget(self.switch_button, 1, 1)
+        self.colors_layout.addWidget(self.max_color_button, 1, 2)
 
         self.min_val_widget = QLineEdit()
-        self.min_val_widget.setFixedSize(55, 20)
+        self.min_val_widget.setFixedSize(60, 20)
         self.min_val = 0
 
         self.max_val_widget = QLineEdit()
-        self.max_val_widget.setFixedSize(55, 20)
+        self.max_val_widget.setFixedSize(60, 20)
         self.max_val = 0
 
-        self.colors_layout.addWidget(self.min_val_widget, 3, 0)
-        self.colors_layout.addWidget(self.max_val_widget, 3, 2)
+        self.colors_layout.addWidget(self.min_val_widget, 2, 0)
+        self.colors_layout.addWidget(self.max_val_widget, 2, 2)
 
-        self.layout.addLayout(self.colors_layout, 6, 0)
+        self.layout.addLayout(self.colors_layout, 4, 0, 1, 2)
 
         self.main_layout.addLayout(self.layout)
 
@@ -738,45 +744,17 @@ class ColorByParamDialog(QDialog):
 
         self.setLayout(self.main_layout)
 
-        # There is at least one user-defined parameter
-        if len(cfg.sequences_numeric_params) > 0:
-
-            param_index = 0
-            for param in cfg.sequences_numeric_params:
-                self.param_combo.addItem(param)
-
-                # Set the colors and values of the first parameter in the list
-                if param_index == 0:
-                    self.min_color = cfg.sequences_numeric_params[param]['min_color']
-                    self.min_color_button.setStyleSheet("background-color: " + self.min_color.hex[0])
-                    self.max_color = cfg.sequences_numeric_params[param]['max_color']
-                    self.max_color_button.setStyleSheet("background-color: " + self.max_color.hex[0])
-
-                    self.min_val = cfg.sequences_numeric_params[param]['min_val']
-                    self.max_val = cfg.sequences_numeric_params[param]['max_val']
-                    self.min_val_widget.setText(str(self.min_val))
-                    self.max_val_widget.setText(str(self.max_val))
-
-                param_index += 1
-
-            self.message_label.hide()
-            self.param_label.setText("Select a parameter from the list:")
-            self.file_label.setText("Or upload a metadata file with additional(s) parameter(s)")
-
-        else:
-            self.param_label.hide()
-            self.param_combo.hide()
-
-            self.file_label.setText("Upload a metadata file with user-defined numeric parameter(s)")
-
-            self.color_range_label.hide()
-            self.min_label.hide()
-            self.max_label.hide()
-            self.min_color_button.hide()
-            self.switch_button.hide()
-            self.max_color_button.hide()
-            self.min_val_widget.hide()
-            self.max_val_widget.hide()
+        self.message_lable.hide()
+        self.param_label.hide()
+        self.param_combo.hide()
+        self.color_range_label.hide()
+        self.min_label.hide()
+        self.max_label.hide()
+        self.min_color_button.hide()
+        self.switch_button.hide()
+        self.max_color_button.hide()
+        self.min_val_widget.hide()
+        self.max_val_widget.hide()
 
     def upload_file(self):
         try:
@@ -798,6 +776,10 @@ class ColorByParamDialog(QDialog):
         # The parameter's values was added correctly - add the parameter to the list
         if error == "":
 
+            self.message_lable.hide()
+            self.file_label.hide()
+            self.upload_file_button.hide()
+
             try:
                 self.added_params = seq.add_numeric_params(sequences_params_dict)
             except Exception as err:
@@ -806,18 +788,12 @@ class ColorByParamDialog(QDialog):
                 error_occurred(seq.add_numeric_params, 'add_numeric_params', err, error_msg)
                 return
 
-            self.param_label.setText("Select a parameter from the list:")
-            self.param_label.setStyleSheet("color: black;font-size: 12px")
-
             self.param_combo.clear()
-            for param_name in cfg.sequences_numeric_params:
+            for param_name in self.added_params:
                 self.param_combo.addItem(param_name)
 
-            self.message_label.hide()
             self.param_label.show()
             self.param_combo.show()
-            self.file_label.setText("Or upload a metadata file with additional(s) parameter(s)")
-
             self.color_range_label.show()
             self.min_label.show()
             self.max_label.show()
@@ -828,9 +804,10 @@ class ColorByParamDialog(QDialog):
             self.max_val_widget.show()
 
         else:
-            self.message_label.setText(error)
-            self.message_label.setStyleSheet("color: red;font-size: 14px")
-            self.message_label.show()
+            self.message_lable.setText(error)
+            self.message_lable.setStyleSheet("color: red;")
+            self.upload_file_button.setText("Upload new file")
+            self.message_lable.show()
 
     def change_min_color(self):
         try:
@@ -894,6 +871,303 @@ class ColorByParamDialog(QDialog):
             self.max_val = float(self.max_val_widget.text())
 
         return selected_param_name, self.added_params, self.min_color, self.max_color, self.min_val, self.max_val
+
+
+class EditParamsDialog(QDialog):
+    def __init__(self, main_window_object, net_plot_object):
+        super().__init__()
+
+        self.main_window_object = main_window_object
+        self.net_plot_object = net_plot_object
+        self.dim_num = self.main_window_object.dim_num
+        self.z_index_mode = self.main_window_object.z_indexing_mode
+        self.color_by = self.main_window_object.color_by
+        self.group_by = self.main_window_object.group_by
+
+        self.setWindowTitle("Manage numerical features")
+
+        self.main_layout = QVBoxLayout()
+
+        # Add a list widget of all the added features
+        self.features_list = QListWidget()
+
+        index = 0
+        if self.main_window_object.done_color_by_length:
+            item = QListWidgetItem('Seq. length')
+            self.features_list.insertItem(index, item)
+            index += 1
+
+        for param in cfg.sequences_numeric_params:
+            item = QListWidgetItem(param)
+            self.features_list.insertItem(index, item)
+            index += 1
+
+        self.main_layout.addWidget(self.features_list)
+
+        # Add a layout for buttons
+        self.buttons_layout = QHBoxLayout()
+
+        self.edit_button = QPushButton("Configure feature")
+        self.edit_button.released.connect(self.edit_feature)
+
+        self.delete_button = QPushButton("Delete feature")
+        self.delete_button.released.connect(self.delete_feature)
+
+        self.buttons_layout.addWidget(self.edit_button)
+        self.buttons_layout.addWidget(self.delete_button)
+        self.buttons_layout.addStretch()
+
+        self.main_layout.addLayout(self.buttons_layout)
+
+        # Add the OK/Cancel standard buttons
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+        self.main_layout.addWidget(self.button_box)
+
+        self.setLayout(self.main_layout)
+
+    def edit_feature(self):
+        selected_feature = self.features_list.currentItem().text()
+
+        try:
+            edit_feature_dlg = ConfFeatureDialog(selected_feature)
+        except Exception as err:
+            error_msg = "An error occurred: cannot create ConfFeatureDialog object"
+            error_occurred(self.edit_feature, 'edit_feature', err, error_msg)
+            return
+
+        if edit_feature_dlg.exec_():
+            try:
+                new_feature_name, min_color, max_color, min_val, max_val = edit_feature_dlg.get_values()
+            except Exception as err:
+                error_msg = "An error occurred: cannot get category parameters"
+                error_occurred(edit_feature_dlg.get_values, 'get_values', err, error_msg)
+                return
+
+            # Sequence length feature
+            if selected_feature == 'Seq. length':
+                cfg.short_color = min_color
+                cfg.long_color = max_color
+                cfg.run_params['min_seq_length'] = min_val
+                cfg.run_params['max_seq_length'] = max_val
+
+            # Other numerical feature
+            else:
+                cfg.sequences_numeric_params[selected_feature]['min_color'] = min_color
+                cfg.sequences_numeric_params[selected_feature]['max_color'] = max_color
+                cfg.sequences_numeric_params[selected_feature]['min_val'] = min_val
+                cfg.sequences_numeric_params[selected_feature]['max_val'] = max_val
+
+            # The feature's name was changed
+            if new_feature_name != selected_feature and new_feature_name != "":
+
+                # Update it in the list-item
+                item = self.features_list.currentItem()
+                item.setText(new_feature_name)
+
+                # Update the main parameters dict
+                cfg.sequences_numeric_params[new_feature_name] = cfg.sequences_numeric_params[selected_feature].copy()
+                del(cfg.sequences_numeric_params[selected_feature])
+
+    def delete_feature(self):
+        selected_feature = self.features_list.currentItem().text()
+
+        msg = "You are about to delete the \'" + selected_feature + "\' feature"
+        delete_dlg = DeleteVerification(msg)
+
+        if delete_dlg.exec_():
+            try:
+                # Delete the feature entry in the numeric parameters main dict
+                del(cfg.sequences_numeric_params[selected_feature])
+
+                # Remove the feature from the presented list
+                self.features_list.takeItem(self.features_list.currentRow())
+
+            except Exception as err:
+                error_msg = "An error occurred: cannot delete the feature"
+                error_occurred(self.delete_feature, 'delete_feature', err, error_msg)
+                return
+
+    def get_current_feature(self):
+
+        # No features left - return None
+        if self.features_list.currentItem() is None:
+            return None
+
+        # Return the edited feature
+        else:
+            return self.features_list.currentItem().text()
+
+
+class ConfFeatureDialog(QDialog):
+    def __init__(self, selected_feature):
+        super().__init__()
+
+        self.selected_feature= selected_feature
+
+        self.setWindowTitle("Configure the \'" + selected_feature + "\' feature")
+
+        self.main_layout = QVBoxLayout()
+        self.layout = QGridLayout()
+        self.colors_layout = QGridLayout()
+
+        self.param_label = QLabel("Feature name:")
+        self.param_widget = QLineEdit()
+        self.param_widget.setText(selected_feature)
+
+        if self.selected_feature == 'Seq. length':
+            self.param_widget.setEnabled(False)
+            self.min_color = cfg.short_color
+            self.max_color = cfg.long_color
+            self.min_val = cfg.run_params['min_seq_length']
+            self.max_val = cfg.run_params['max_seq_length']
+        else:
+            self.min_color = cfg.sequences_numeric_params[selected_feature]['min_color']
+            self.max_color = cfg.sequences_numeric_params[selected_feature]['max_color']
+            self.min_val = cfg.sequences_numeric_params[selected_feature]['min_val']
+            self.max_val = cfg.sequences_numeric_params[selected_feature]['max_val']
+
+        self.layout.addWidget(self.param_label, 0, 0)
+        self.layout.addWidget(self.param_widget, 0, 1)
+
+        self.space_label = QLabel("  ")
+        self.layout.addWidget(self.space_label, 1, 0, 1, 2)
+
+        self.color_range_label = QLabel("Define the colors and values range:")
+        self.layout.addWidget(self.color_range_label, 2, 0, 1, 2)
+
+        self.min_label = QLabel("Min. value")
+        self.max_label = QLabel("Max. value")
+
+        self.colors_layout.addWidget(self.min_label, 0, 0)
+        self.colors_layout.addWidget(self.max_label, 0, 2)
+
+        self.min_color_button = QPushButton("Change")
+        self.min_color_button.setStyleSheet("background-color: " + self.min_color.hex[0])
+        self.min_color_button.pressed.connect(self.change_min_color)
+
+        self.max_color_button = QPushButton("Change")
+        self.max_color_button.setStyleSheet("background-color: " + self.max_color.hex[0])
+        self.max_color_button.pressed.connect(self.change_max_color)
+
+        self.switch_button = QPushButton()
+        self.switch_button.setIcon(QIcon(cfg.icons_dir + "switch_icon_trans.png"))
+        self.switch_button.pressed.connect(self.switch_colors)
+
+        self.colors_layout.addWidget(self.min_color_button, 1, 0)
+        self.colors_layout.addWidget(self.switch_button, 1, 1)
+        self.colors_layout.addWidget(self.max_color_button, 1, 2)
+
+        self.min_val_widget = QLineEdit()
+        self.min_val_widget.setFixedSize(60, 20)
+        self.min_val_widget.setText(str(self.min_val))
+
+        self.max_val_widget = QLineEdit()
+        self.max_val_widget.setFixedSize(60, 20)
+        self.max_val_widget.setText(str(self.max_val))
+
+        self.colors_layout.addWidget(self.min_val_widget, 2, 0)
+        self.colors_layout.addWidget(self.max_val_widget, 2, 2)
+
+        self.layout.addLayout(self.colors_layout, 3, 0, 1, 2)
+
+        self.reset_button = QPushButton("Reset to defaults")
+        self.reset_button.pressed.connect(self.reset_to_defaults)
+        self.layout.addWidget(self.reset_button)
+
+        self.main_layout.addLayout(self.layout)
+
+        # Add the OK/Cancel standard buttons
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        self.main_layout.addWidget(self.button_box)
+
+        self.setLayout(self.main_layout)
+
+    def change_min_color(self):
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
+
+                self.min_color = ColorArray(hex_color)
+                self.min_color_button.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_min_color, 'change_min_color', err, error_msg)
+
+    def change_max_color(self):
+        try:
+            dialog = QColorDialog()
+            if dialog.exec_():
+                color = dialog.currentColor()
+                hex_color = color.name()
+
+                self.max_color = ColorArray(hex_color)
+                self.max_color_button.setStyleSheet("background-color: " + hex_color)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot change color"
+            error_occurred(self.change_max_color, 'change_max_color', err, error_msg)
+
+    def switch_colors(self):
+        min_color = self.min_color
+        max_color = self.max_color
+
+        self.min_color = max_color
+        self.max_color = min_color
+
+        self.min_color_button.setStyleSheet("background-color: " + self.min_color.hex[0])
+        self.max_color_button.setStyleSheet("background-color: " + self.max_color.hex[0])
+
+    def reset_to_defaults(self):
+
+        self.min_color = cfg.min_param_color
+        self.max_color = cfg.max_param_color
+
+        self.min_color_button.setStyleSheet("background-color: " + self.min_color.hex[0])
+        self.max_color_button.setStyleSheet("background-color: " + self.max_color.hex[0])
+
+        if self.selected_feature == 'Seq. length':
+            self.min_val = np.amin(cfg.sequences_array['seq_length'])
+            self.max_val = np.amax(cfg.sequences_array['seq_length'])
+
+        else:
+            self.min_val = np.round(np.amin(cfg.sequences_numeric_params[self.selected_feature]['raw']), 2)
+            self.max_val = np.round(np.amax(cfg.sequences_numeric_params[self.selected_feature]['raw']), 2)
+
+        self.min_val_widget.setText(str(self.min_val))
+        self.max_val_widget.setText(str(self.max_val))
+
+    def get_values(self):
+
+        if self.selected_feature == 'Seq. length':
+            new_feature_name = 'Seq. length'
+
+            if re.search("^\d+$", self.min_val_widget.text()):
+                self.min_val = int(self.min_val_widget.text())
+
+            if re.search("^\d+$", self.max_val_widget.text()):
+                self.max_val = int(self.max_val_widget.text())
+
+        else:
+            new_feature_name = self.param_widget.text()
+
+            if re.search("^\d+\.?\d*(e-\d+)*$", self.min_val_widget.text()):
+                self.min_val = float(self.min_val_widget.text())
+
+            if re.search("^\d+\.?\d*(e-\d+)*$", self.max_val_widget.text()):
+                self.max_val = float(self.max_val_widget.text())
+
+        return new_feature_name, self.min_color, self.max_color, self.min_val, self.max_val
+
+
+
 
 
 

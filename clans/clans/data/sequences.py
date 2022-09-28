@@ -94,10 +94,17 @@ def add_saved_numeric_params(params_dict):
         cfg.sequences_numeric_params[param_name] = dict()
 
         cfg.sequences_numeric_params[param_name]['raw'] = np.array(params_dict[param_name]['values'], dtype=float)
-        cfg.sequences_numeric_params[param_name]['min_val'] = \
-            np.round(np.amin(cfg.sequences_numeric_params[param_name]['raw']), 2)
-        cfg.sequences_numeric_params[param_name]['max_val'] = \
-            np.round(np.amax(cfg.sequences_numeric_params[param_name]['raw']), 2)
+
+        if 'min_val' in params_dict[param_name]:
+            cfg.sequences_numeric_params[param_name]['min_val'] = float(params_dict[param_name]['min_val'])
+        else:
+            cfg.sequences_numeric_params[param_name]['min_val'] = \
+                np.round(np.amin(cfg.sequences_numeric_params[param_name]['raw']), 2)
+        if 'max_val' in params_dict[param_name]:
+            cfg.sequences_numeric_params[param_name]['max_val'] = float(params_dict[param_name]['max_val'])
+        else:
+            cfg.sequences_numeric_params[param_name]['max_val'] = \
+                np.round(np.amax(cfg.sequences_numeric_params[param_name]['raw']), 2)
 
         normalize_numeric_param(param_name)
 

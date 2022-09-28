@@ -131,7 +131,7 @@ class CreateGroupDialog(QDialog):
             else:
                 group_num = max(cfg.groups_by_categories[group_by]['groups'].keys()) + 1
             self.default_group_name = "Group_" + str(group_num)
-            self.name_widget.setPlaceholderText(self.default_group_name)
+            self.name_widget.setText(self.default_group_name)
 
             self.layout.addWidget(self.name_label, 0, 0)
             self.layout.addWidget(self.name_widget, 0, 1, 1, 2)
@@ -583,7 +583,7 @@ class EditGroupDialog(QDialog):
         # Edit the group name
         self.name_label = QLabel("Group name:")
         self.name_widget = QLineEdit()
-        self.name_widget.setPlaceholderText(cfg.groups_by_categories[group_by]['groups'][group_ID]['name'])
+        self.name_widget.setText(cfg.groups_by_categories[group_by]['groups'][group_ID]['name'])
 
         self.grid_layout.addWidget(self.name_label, 0, 0)
         self.grid_layout.addWidget(self.name_widget, 0, 1, 1, 2)
@@ -771,7 +771,7 @@ class EditGroupNameDialog(QDialog):
         # Edit the group name
         self.name_label = QLabel("Group name:")
         self.name_widget = QLineEdit()
-        self.name_widget.setPlaceholderText(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'])
+        self.name_widget.setText(cfg.groups_by_categories[self.group_by]['groups'][group_ID]['name'])
 
         self.grid_layout.addWidget(self.name_label, 0, 0)
         self.grid_layout.addWidget(self.name_widget, 0, 1, 1, 2)
@@ -1180,7 +1180,7 @@ class EditCategoryDialog(QDialog):
         # Edit the group name
         self.name_label = QLabel("Grouping category name:")
         self.name_widget = QLineEdit()
-        self.name_widget.setPlaceholderText(cfg.groups_by_categories[category_index]['name'])
+        self.name_widget.setText(cfg.groups_by_categories[category_index]['name'])
 
         self.grid_layout.addWidget(self.name_label, 0, 0)
         self.grid_layout.addWidget(self.name_widget, 0, 1)

@@ -195,6 +195,12 @@ class MainWindow(QMainWindow):
         self.manage_categories_action.triggered.connect(self.edit_categories)
         self.conf_menu.addAction(self.manage_categories_action)
 
+        # Configure numerical parameters
+        self.manage_params_action = QAction("Manage numerical features", self)
+        self.manage_params_action.setEnabled(False)
+        self.manage_params_action.triggered.connect(self.edit_params)
+        self.conf_menu.addAction(self.manage_params_action)
+
         # Create the Tools menu
         self.tools_menu = self.main_menu.addMenu("Tools")
         self.group_by_submenu = self.tools_menu.addMenu("Group data by:")
@@ -234,7 +240,7 @@ class MainWindow(QMainWindow):
         self.color_by_submenu.addAction(self.color_by_length_action)
 
         # Color-by user-defined param action
-        self.color_by_param_action = QAction("Add/Configure custom parameter", self)
+        self.color_by_param_action = QAction("Upload numerical metadata", self)
         self.color_by_param_action.setEnabled(False)
         self.color_by_param_action.triggered.connect(self.open_color_by_param_dialog)
 
@@ -645,6 +651,7 @@ class MainWindow(QMainWindow):
         self.color_by_combo.addItem("Groups/Default")
         self.color_by_combo.setEnabled(False)
         self.colorbar_plot.hide_colorbar()
+        self.manage_params_action.setEnabled(False)
 
         # Remove all the group-by options except 'Manual' (the default)
         self.group_by_combo.clear()
@@ -869,6 +876,7 @@ class MainWindow(QMainWindow):
             # If there are uploaded numeric parameters - enable the color-by combo-box
             if len(cfg.sequences_numeric_params) > 0:
                 self.color_by_combo.setEnabled(True)
+                self.manage_params_action.setEnabled(True)
                 for param in cfg.sequences_numeric_params:
                     self.color_by_combo.addItem(param)
 
@@ -1189,6 +1197,7 @@ class MainWindow(QMainWindow):
         # Enable the 'color by' combo box if the color-by-param was already done once
         if self.done_color_by_length or len(cfg.sequences_numeric_params) > 0:
             self.color_by_combo.setEnabled(True)
+            self.manage_params_action.setEnabled(True)
 
         # Enable the 'group-by' combo box if is more than one grouping option
         if self.group_by_combo.count() > 1 and self.color_by == 'groups':
@@ -1857,6 +1866,7 @@ class MainWindow(QMainWindow):
             self.color_by_combo.addItem('Seq. length')
             self.color_by_combo.setCurrentText('Seq. length')
             self.color_by_combo.setEnabled(True)
+            self.manage_params_action.setEnabled(True)
 
         # Produce the real colormap
         try:
@@ -1946,7 +1956,7 @@ class MainWindow(QMainWindow):
                 self.color_by_groups()
 
         # Color the data by some numeric parameter
-        else:
+        elif self.color_by_combo.currentIndex() > 0:
             self.color_by = "param"
 
             # Disable all the group-related controls and hide the group names
@@ -2040,6 +2050,7 @@ class MainWindow(QMainWindow):
 
                     self.color_by_combo.setCurrentText(selected_param)
                     self.color_by_combo.setEnabled(True)
+                    self.manage_params_action.setEnabled(True)
 
                     # Update the colors of the selected parameter
                     cfg.sequences_numeric_params[selected_param]['min_color'] = min_param_color
@@ -2410,8 +2421,6 @@ class MainWindow(QMainWindow):
 
             self.change_group_names_display()
 
-            #self.network_plot.reset_group_names_positions(self.group_by)
-
         # The 'show group names' button is not checked
         else:
             self.is_show_group_names = 0
@@ -2433,6 +2442,45 @@ class MainWindow(QMainWindow):
         #if dlg.exec_():
             ## Get all the text definitions entered by the user
             #text, size, color_array = dlg.get_text_info()
+
+    def edit_params(self):
+
+        try:
+            dlg = md.EditParamsDialog(self, self.network_plot)
+
+            if dlg.exec_():
+
+                selected_feature = dlg.get_current_feature()
+
+                self.color_by_combo.clear()
+
+                self.color_by_combo.addItem("Groups/Default")
+
+                # No selected feature -> all features were removed
+                if selected_feature is None:
+                    self.color_by_combo.setCurrentIndex(0)
+                    self.color_by_combo.setEnabled(False)
+                    self.manage_params_action.setEnabled(False)
+
+                else:
+                    index = 1
+                    current_index = 0
+
+                    for feature in cfg.sequences_numeric_params:
+                        self.color_by_combo.addItem(str(feature))
+
+                        # Find the selected feature's index
+                        if str(feature) == selected_feature:
+                            current_index = index
+
+                        index += 1
+
+                    # Change the view to the edited feature
+                    self.color_by_combo.setCurrentIndex(current_index)
+
+        except Exception as err:
+            error_msg = "An error occurred: cannot edit the numerical feature"
+            error_occurred(self.edit_params, 'edit_params', err, error_msg)
 
     def edit_categories(self):
 
@@ -2826,7 +2874,15 @@ class MainWindow(QMainWindow):
                     self.group_by_combo.setEnabled(True)
                     self.manage_categories_action.setEnabled(True)
 
-                self.group_by = category_index
+                #self.group_by = category_index
+                # If the coloring is by groups - move to the newly added category
+                if self.color_by == 'groups':
+                    self.change_grouping()
+
+                # If the coloring was by parameter - move to coloring by groups and present the new category
+                else:
+                    self.group_by = category_index
+                    self.color_by_combo.setCurrentIndex(0)
 
     def add_empty_category(self):
 

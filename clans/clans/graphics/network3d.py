@@ -494,10 +494,6 @@ class Network3D:
             self.save_rotated_coordinates(2, fr_object, color_by, group_by, z_index_mode)
 
         self.update_2d_view(z_index_mode, color_by, group_by)
-        self.reset_group_names_positions(group_by)
-
-        #print("Camera parameters:")
-        #print(view.camera.get_state())
 
     def update_2d_view(self, z_index_mode, color_by, group_by):
 
@@ -686,8 +682,6 @@ class Network3D:
         self.calculate_rotation()
         self.reset_rotation()
         self.set_rotated_center()
-
-        #self.reset_group_names_positions(group_by)
 
         self.update_2d_view(z_index_mode, color_by, group_by)
 
@@ -1431,9 +1425,6 @@ class Network3D:
 
         # Re-sort the groups array according to the updated order
         self.ordered_groups_to_show = sorted(self.groups_to_show, key=self.groups_to_show.get)
-
-        # Update the positions of the group names
-        self.reset_group_names_positions(group_by)
 
         # Update the order in the scatter-by-groups visual
         for i in range(len(self.ordered_groups_to_show)):

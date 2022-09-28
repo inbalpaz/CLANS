@@ -1190,7 +1190,6 @@ class StereoImageWindow(QWidget):
         self.offset_angle = 10
         self.is_show_connections = 0
         self.dim_num = self.main_window_object.dim_num
-        #self.z_indexing_mode = self.main_window_object.z_indexing_mode
         self.z_indexing_mode = 'groups'
         self.group_by = self.main_window_object.group_by
         self.color_by = self.main_window_object.color_by

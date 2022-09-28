@@ -733,6 +733,8 @@ class ClansFormat:
 
                 param_str += "min_color=" + min_color + "\n"
                 param_str += "max_color=" + max_color + "\n"
+                param_str += "min_val=" + str(cfg.sequences_numeric_params[param]['min_val']) + "\n"
+                param_str += "max_val=" + str(cfg.sequences_numeric_params[param]['max_val']) + "\n"
                 param_str += "values=" + values + "\n"
 
                 output.write(param_str)
