@@ -2451,29 +2451,46 @@ class MainWindow(QMainWindow):
             if dlg.exec_():
 
                 selected_feature = dlg.get_current_feature()
+                deleted_features = dlg.get_deleted_features()
 
                 self.color_by_combo.clear()
 
                 self.color_by_combo.addItem("Groups/Default")
 
+                index = 0
+                current_index = 0
+
                 # No selected feature -> all features were removed
                 if selected_feature is None:
+                    self.done_color_by_length = 0
                     self.color_by_combo.setCurrentIndex(0)
                     self.color_by_combo.setEnabled(False)
                     self.manage_params_action.setEnabled(False)
 
+                # There is still at least one numeric feature
                 else:
-                    index = 1
-                    current_index = 0
+                    if self.done_color_by_length:
 
+                        # Seq. length feature was deleted
+                        if 'Seq. length' in deleted_features:
+                            self.done_color_by_length = 0
+
+                        # Add Seq. length to the list
+                        else:
+                            self.color_by_combo.addItem('Seq. length')
+                            index = 1
+
+                            if selected_feature == 'Seq. length':
+                                current_index = 1
+
+                    # Add the other numerical features
                     for feature in cfg.sequences_numeric_params:
                         self.color_by_combo.addItem(str(feature))
+                        index += 1
 
                         # Find the selected feature's index
                         if str(feature) == selected_feature:
                             current_index = index
-
-                        index += 1
 
                     # Change the view to the edited feature
                     self.color_by_combo.setCurrentIndex(current_index)

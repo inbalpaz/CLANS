@@ -1,5 +1,6 @@
 recursive-include clans *.dmp
 recursive-include clans *.gif
+recursive-include clans *.png
 recursive-include clans *.clans
 recursive-include clans *.fasta
 recursive-include clans *.pdf

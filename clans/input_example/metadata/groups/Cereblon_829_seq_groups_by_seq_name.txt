@@ -1,4 +1,4 @@
-Sequence_ID	Category_1
+Sequence_ID	Category_2
 XP_047304210.1| protein cereblon isoform X4 [Homo sapiens] ((#0))	group6
 gi|198436292|ref|XP_002127932.1|(382-524:541) PREDICTED: similar to cereblon [Ciona intestinalis] ((#2 <= #0))   E=4e-46 s/c=1.31 id=27% cov=89%	group2
 gi|224088992|ref|XP_002308593.1|(424-536:549) predicted protein [Populus trichocarpa]   gi|222854569|gb|EEE92116.1| predicted protein [Populus trichocarpa] ((#0	group2

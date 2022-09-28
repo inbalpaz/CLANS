@@ -884,6 +884,8 @@ class EditParamsDialog(QDialog):
         self.color_by = self.main_window_object.color_by
         self.group_by = self.main_window_object.group_by
 
+        self.deleted_features = dict()
+
         self.setWindowTitle("Manage numerical features")
 
         self.main_layout = QVBoxLayout()
@@ -978,17 +980,20 @@ class EditParamsDialog(QDialog):
         delete_dlg = DeleteVerification(msg)
 
         if delete_dlg.exec_():
-            try:
-                # Delete the feature entry in the numeric parameters main dict
-                del(cfg.sequences_numeric_params[selected_feature])
 
-                # Remove the feature from the presented list
-                self.features_list.takeItem(self.features_list.currentRow())
+            if selected_feature != 'Seq. length':
+                try:
+                    # Delete the feature entry in the numeric parameters main dict
+                    del(cfg.sequences_numeric_params[selected_feature])
 
-            except Exception as err:
-                error_msg = "An error occurred: cannot delete the feature"
-                error_occurred(self.delete_feature, 'delete_feature', err, error_msg)
-                return
+                except Exception as err:
+                    error_msg = "An error occurred: cannot delete the feature"
+                    error_occurred(self.delete_feature, 'delete_feature', err, error_msg)
+                    return
+
+            # Remove the feature from the presented list
+            self.features_list.takeItem(self.features_list.currentRow())
+            self.deleted_features[selected_feature] = 1
 
     def get_current_feature(self):
 
@@ -999,6 +1004,9 @@ class EditParamsDialog(QDialog):
         # Return the edited feature
         else:
             return self.features_list.currentItem().text()
+
+    def get_deleted_features(self):
+        return self.deleted_features
 
 
 class ConfFeatureDialog(QDialog):
