@@ -309,6 +309,7 @@ class MainWindow(QMainWindow):
         self.rounds_label = QLabel("Round: ")
         self.rounds_label.setStyleSheet("color: " + cfg.title_color + ";")
         self.round_num_label = QLabel(str(self.rounds_done))
+        self.round_num_label.setFixedSize(90, 20)
         self.round_num_label.setStyleSheet("color: " + cfg.inactive_color + ";")
 
         # Add the widgets to the calc_layout

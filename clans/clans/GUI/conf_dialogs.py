@@ -153,7 +153,7 @@ class NodesConfig(QDialog):
         self.nodes_size_combo = QComboBox()
 
         i = 0
-        for size in range(4, 21):
+        for size in range(1, 21):
             self.nodes_size_combo.addItem(str(size))
             if size == cfg.run_params['nodes_size']:
                 default_index = i
