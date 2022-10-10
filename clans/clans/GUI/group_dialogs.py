@@ -468,7 +468,7 @@ class ManageGroupsDialog(QDialog):
 
         # 1. Remove the sequences assigned to this group (they get '-1' assignment)
         try:
-            gr.remove_from_group(seq_dict)
+            gr.remove_from_group(self.group_by, seq_dict)
         except Exception as err:
             error_msg = "An error occurred: cannot remove sequences from group"
             error_occurred(gr.remove_from_group, 'remove_from_group', err, error_msg)
