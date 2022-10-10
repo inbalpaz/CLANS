@@ -1435,6 +1435,8 @@ class Network3D:
         if dim_num == 2 and z_index_mode == 'groups':
             self.update_2d_view(z_index_mode, color_by, group_by)
 
+        self.reset_group_names_positions(group_by)
+
     def add_to_group(self, points_dict, group_ID, dim_num, z_index_mode, color_by, group_by):
 
         if group_ID in self.groups_to_show:
