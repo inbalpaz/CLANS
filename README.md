@@ -87,7 +87,7 @@ or
 
 ## Tutorial
 
-A detailed tutorial is found here: https://github.com/inbalpaz/CLANS/tree/master/manual/Manual.pdf
+A detailed tutorial is found here: https://github.com/inbalpaz/CLANS/tree/master/clans/manual/Manual.pdf
 
 
 or can be opened from CLANS visualisation tool (Help -> CLANS manual).
