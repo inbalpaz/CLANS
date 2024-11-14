@@ -1,5 +1,5 @@
 {% set name = "clans" %}
-{% set version = "2.0.7" %}
+{ % set version = "2.1.0" % }
 
 package:
   name: {{ name|lower }}
@@ -22,12 +22,12 @@ requirements:
     - pip
   run:
     - python >=3.6
-    - numpy =1.20.3
-    - numba =0.53.1
-    - vispy =0.8.1
-    - pyqt =5.9.2
+    - numpy
+    - numba
+    - vispy
+    - pyqt
     - biopython >=1.77
-    - pillow =8.3.1
+    - pillow
 
 test:
   imports:

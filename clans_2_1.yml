@@ -1,0 +1,11 @@
+name: clans_2_1
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - numpy
+  - numba
+  - vispy
+  - pyqt
+  - biopython
+  - pillow
