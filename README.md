@@ -1,6 +1,6 @@
 # CLANS
 
-CLANS 2.1 is a Python-based program for clustering sequences in the 2D or 3D space, based on their sequence
+CLANS_2 is a Python-based program for clustering sequences in the 2D or 3D space, based on their sequence
 similarities. CLANS visualizes the dynamic clustering process and enables the user to interactively control it and
 explore the cluster map in various ways.
 
