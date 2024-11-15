@@ -653,10 +653,10 @@ class ColorByLengthDialog(QDialog):
 
     def get_colors(self):
 
-        if re.search("^\d+$", self.min_length_widget.text()):
+        if re.search(r"^\d+$", self.min_length_widget.text()):
             self.min_length = int(self.min_length_widget.text())
 
-        if re.search("^\d+$", self.max_length_widget.text()):
+        if re.search(r"^\d+$", self.max_length_widget.text()):
             self.max_length = int(self.max_length_widget.text())
 
         return self.short_color, self.long_color, self.min_length, self.max_length
@@ -864,10 +864,10 @@ class ColorByParamDialog(QDialog):
 
         selected_param_name = self.param_combo.currentText()
 
-        if re.search("^\d+\.?\d*(e-\d+)*$", self.min_val_widget.text()):
+        if re.search(r"^\d+\.?\d*(e-\d+)*$", self.min_val_widget.text()):
             self.min_val = float(self.min_val_widget.text())
 
-        if re.search("^\d+\.?\d*(e-\d+)*$", self.max_val_widget.text()):
+        if re.search(r"^\d+\.?\d*(e-\d+)*$", self.max_val_widget.text()):
             self.max_val = float(self.max_val_widget.text())
 
         return selected_param_name, self.added_params, self.min_color, self.max_color, self.min_val, self.max_val
@@ -1157,19 +1157,19 @@ class ConfFeatureDialog(QDialog):
         if self.selected_feature == 'Seq. length':
             new_feature_name = 'Seq. length'
 
-            if re.search("^\d+$", self.min_val_widget.text()):
+            if re.search(r"^\d+$", self.min_val_widget.text()):
                 self.min_val = int(self.min_val_widget.text())
 
-            if re.search("^\d+$", self.max_val_widget.text()):
+            if re.search(r"^\d+$", self.max_val_widget.text()):
                 self.max_val = int(self.max_val_widget.text())
 
         else:
             new_feature_name = self.param_widget.text()
 
-            if re.search("^\d+\.?\d*(e-\d+)*$", self.min_val_widget.text()):
+            if re.search(r"^\d+\.?\d*(e-\d+)*$", self.min_val_widget.text()):
                 self.min_val = float(self.min_val_widget.text())
 
-            if re.search("^\d+\.?\d*(e-\d+)*$", self.max_val_widget.text()):
+            if re.search(r"^\d+\.?\d*(e-\d+)*$", self.max_val_widget.text()):
                 self.max_val = float(self.max_val_widget.text())
 
         return new_feature_name, self.min_color, self.max_color, self.min_val, self.max_val

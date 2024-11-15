@@ -1454,7 +1454,7 @@ class StereoImageWindow(QWidget):
             angle = dlg.get_angle()
 
             # The value is a number
-            if re.search("^\d+$", angle):
+            if re.search(r"^\d+$", angle):
                 if 0 <= int(angle) <= 360:
                     self.offset_angle = int(angle)
 

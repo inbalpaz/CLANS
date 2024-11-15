@@ -87,32 +87,32 @@ class FruchtermanReingoldConfig(QDialog):
 
     def get_parameters(self):
 
-        if re.search("^\d+(\.\d+)?$", self.att_val.text()):
+        if re.search(r"^\d+(\.\d+)?$", self.att_val.text()):
             att_val = float(self.att_val.text())
         else:
             att_val = cfg.run_params['att_val']
 
-        if re.search("^\d$", self.att_exp.text()):
+        if re.search(r"^\d$", self.att_exp.text()):
             att_exp = int(self.att_exp.text())
         else:
             att_exp = cfg.run_params['att_exp']
 
-        if re.search("^\d+(\.\d+)?$", self.rep_val.text()):
+        if re.search(r"^\d+(\.\d+)?$", self.rep_val.text()):
             rep_val = float(self.rep_val.text())
         else:
             rep_val = cfg.run_params['rep_val']
 
-        if re.search("^\d$", self.rep_exp.text()):
+        if re.search(r"^\d$", self.rep_exp.text()):
             rep_exp = int(self.rep_exp.text())
         else:
             rep_exp = cfg.run_params['rep_exp']
 
-        if re.search("^\d+(\.\d+)?$", self.gravity.text()):
+        if re.search(r"^\d+(\.\d+)?$", self.gravity.text()):
             gravity = float(self.gravity.text())
         else:
             gravity = cfg.run_params['gravity']
 
-        if re.search("^\d+(\.\d+)?$", self.dampening.text()):
+        if re.search(r"^\d+(\.\d+)?$", self.dampening.text()):
             if 0 <= float(self.dampening.text()) <= 1:
                 dampening = float(self.dampening.text())
             else:
@@ -120,7 +120,7 @@ class FruchtermanReingoldConfig(QDialog):
         else:
             dampening = cfg.run_params['dampening']
 
-        if re.search("^\d+(\.\d+)?$", self.maxmove.text()):
+        if re.search(r"^\d+(\.\d+)?$", self.maxmove.text()):
             if float(self.maxmove.text()) > 0:
                 maxmove = float(self.maxmove.text())
             else:
@@ -128,7 +128,7 @@ class FruchtermanReingoldConfig(QDialog):
         else:
             maxmove = cfg.run_params['maxmove']
 
-        if re.search("^\d+(\.\d+)?$", self.cooling.text()):
+        if re.search(r"^\d+(\.\d+)?$", self.cooling.text()):
             if 0 < float(self.cooling.text()) <= 1:
                 cooling = float(self.cooling.text())
             else:

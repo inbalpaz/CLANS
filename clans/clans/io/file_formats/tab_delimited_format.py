@@ -48,7 +48,7 @@ class DelimitedFormat:
                     return
 
                 # Stop if there are empty lines
-                if re.search("^\s*$", row[0]):
+                if re.search(r"^\s*$", row[0]):
                     break
 
                 # The file has at least 3 columns
@@ -57,15 +57,15 @@ class DelimitedFormat:
                 score = row[2]
 
                 # Ignore the first header row (if any)
-                if seq_index == 0 and re.search("^\w+$", score):
+                if seq_index == 0 and re.search(r"^\w+$", score):
                     continue
 
                 # The score field is not a valid number
-                if not re.search("^\d+\.?\d*[Ee]?[-+]?\d*$", score):
+                if not re.search(r"^\d+\.?\d*[Ee]?[-+]?\d*$", score):
                     self.file_is_valid = 0
                     self.error = "The file " + self.file_name + " has an invalid format:\n"
                     self.error += "The third column must contain a float or exponential number for the " \
-                                 "similarity-score or P_value"
+                                  "similarity-score or P_value"
                     return
 
                 if fields_num > 3:
@@ -212,14 +212,14 @@ class DelimitedFormat:
             score = cfg.similarity_values_list[i][2]
 
             # Create the sequence names for the file (seq_ID up to 15 characters without spaces + seq index)
-            m = re.search("^(\S+)", cfg.sequences_array[int(index1)]['seq_ID'])
+            m = re.search(r"^(\S+)", cfg.sequences_array[int(index1)]['seq_ID'])
             if m:
                 seq1_name = m.group(1)
             if len(seq1_name) > 15:
                 seq1_name = seq1_name[:15]
             seq1_name += "_" + str(index1)
 
-            m = re.search("^(\S+)", cfg.sequences_array[int(index2)]['seq_ID'])
+            m = re.search(r"^(\S+)", cfg.sequences_array[int(index2)]['seq_ID'])
             if m:
                 seq2_name = m.group(1)
             if len(seq2_name) > 15:
@@ -265,7 +265,7 @@ class DelimitedFormat:
                 param_name = header[i]
 
                 # Verify that there is indeed a header
-                if re.search("^\d+\.?\d?$", param_name):
+                if re.search(r"^\d+\.?\d?$", param_name):
                     error = "It seems that the file contains no header line.\n" \
                             "Please upload a tab-delimited file containing at least two columns: " \
                             "SequenceID, Feature_1.\n" \
@@ -283,7 +283,7 @@ class DelimitedFormat:
                 for i in range(1, col_num):
                     value = row[i]
 
-                    if not re.search("\d+\.?\d*(e-\d+)*", value):
+                    if not re.search(r"\d+\.?\d*(e-\d+)*", value):
                         error = "Invalid values: the values must be int/float numbers.\n" \
                                 "Please correct the file and reload."
                         return sequences_params_dict, error

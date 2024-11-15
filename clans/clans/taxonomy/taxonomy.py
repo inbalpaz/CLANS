@@ -7,13 +7,13 @@ def find_organism_in_title(seq_title):
     # Search the organism name inside the sequence header in two formats:
 
     # 1. UniProt format ('OS=')
-    m = re.search("OS=(\w+.*)\s+OX=", seq_title)
+    m = re.search(r"OS=(\w+.*)\s+OX=", seq_title)
     if m:
         organism = m.group(1)
         return organism
 
     # 2. NCBI format (square brackets):
-    m = re.search("\[\s*([a-zA-Z]+[^\[\]]*)\s*\]", seq_title)
+    m = re.search(r"\[\s*([a-zA-Z]+[^\[\]]*)\s*\]", seq_title)
     if m:
         organism = m.group(1)
         return organism
@@ -88,7 +88,7 @@ def get_taxonomy_hierarchy():
 
             # As long as not all the organisms in the dict were found in the dump file -> keep searching
             if found_org < total_org_num:
-                row = re.split("\s*\|\s*", line.strip())
+                row = re.split(r"\s*\|\s*", line.strip())
                 tax_ID = row[0]
                 org_name = row[1]
 
@@ -127,7 +127,7 @@ def get_taxonomy_hierarchy():
 
             # As long as not all the tax_IDs in the dict were found in the dump file -> keep searching
             if found_tax < cfg.run_params['found_taxa_num']:
-                row = re.split("\s*\|\s*", line.strip())
+                row = re.split(r"\s*\|\s*", line.strip())
                 tax_ID = row[0]
 
                 # Found the tax_name in the dict - get all the lineage

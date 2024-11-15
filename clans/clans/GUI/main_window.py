@@ -1385,7 +1385,7 @@ class MainWindow(QMainWindow):
         entered_pval = self.pval_widget.text()
 
         # The user entered a float number
-        if re.search("^\d+\.?\d*(e-\d+)*$", entered_pval):
+        if re.search(r"^\d+\.?\d*(e-\d+)*$", entered_pval):
 
             # The number is not between 0 and 1 => print error
             if float(entered_pval) < 0 or float(entered_pval) > 1:

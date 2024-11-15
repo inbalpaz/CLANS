@@ -2,9 +2,8 @@ name: clans_2_1
 channels:
   - conda-forge
 dependencies:
-  - python
-  - numpy
-  - numba
+  - numba=0.50
+  - mkl
   - vispy
   - pyqt
   - biopython

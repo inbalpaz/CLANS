@@ -47,7 +47,7 @@ class ClansFormat:
         with open(file_path) as infile:
             # Read the first line (number of sequences)
             line = infile.readline()
-            m = re.search("^sequences=(\d+)", line)
+            m = re.search(r"^sequences=(\d+)", line)
             if m:
                 cfg.run_params['total_sequences_num'] = int(m.group(1))
                 print("Total number of sequences: " + str(cfg.run_params['total_sequences_num']))
@@ -72,7 +72,7 @@ class ClansFormat:
                     if line.strip() == "</param>":
                         in_param_block = 0
                     else:
-                        m = re.search("^(\w+)\=(.+)\n", line)
+                        m = re.search(r"^(\w+)\=(.+)\n", line)
                         if m:
                             k = m.group(1)
                             v = m.group(2)
@@ -85,7 +85,7 @@ class ClansFormat:
                     if line.strip() == "</seq>":
                         in_seq_block = 0
                     else:
-                        m = re.search("^>(.+)", line)
+                        m = re.search(r"^>(.+)", line)
                         if m:
                             title = m.group(1)
                             title.strip()
@@ -94,8 +94,8 @@ class ClansFormat:
                             seq_id = title
 
                             # Extract the sequence_ID from the title (trim it at space character)
-                            #n = re.search("^(\S+)", title)
-                            #seq_id = n.group(1)
+                            # n = re.search(r"^(\S+)", title)
+                            # seq_id = n.group(1)
                         else:
                             sequence = line.strip()
                             seq_length = 0
@@ -119,7 +119,7 @@ class ClansFormat:
                         in_seqgroups_block = 0
 
                     else:
-                        m = re.search("^(\w+)\=(.+)\n", line)
+                        m = re.search(r"^(\w+)\=(.+)\n", line)
                         if m:
                             k = m.group(1)
                             v = m.group(2)
@@ -232,7 +232,7 @@ class ClansFormat:
                     if line.strip() == "</seqparams>":
                         in_seqparams_block = 0
                     else:
-                        m = re.search("^(\w+)\=(.+)\n", line)
+                        m = re.search(r"^(\w+)\=(.+)\n", line)
                         if m:
                             k = m.group(1)
                             v = m.group(2)
@@ -254,7 +254,7 @@ class ClansFormat:
                     if line.strip() == "</taxonomy>":
                         in_tax_block = 0
                     else:
-                        m = re.search("^(\w+)\=(.+)\n", line)
+                        m = re.search(r"^(\w+)\=(.+)\n", line)
                         if m:
                             k = m.group(1)
                             v = m.group(2)
@@ -289,7 +289,7 @@ class ClansFormat:
                                           "Alternatively, load a file in 'minimal-clans' format"
                             break
 
-                        m = re.search("^(\d+)\s+(\S+)\s+(\S+)\s+(\S+)", line.strip())
+                        m = re.search(r"^(\d+)\s+(\S+)\s+(\S+)\s+(\S+)", line.strip())
                         if m:
                             index = int(m.group(1))
                             x_coor = m.group(2)
@@ -313,7 +313,7 @@ class ClansFormat:
                     if line.strip() == "</hsp>":
                         in_hsp_block = 0
                     else:
-                        m = re.search("^(\d+)\s+(\d+):(\S+)", line.strip())
+                        m = re.search(r"^(\d+)\s+(\d+):(\S+)", line.strip())
                         if m:
                             index1 = int(m.group(1))
                             index2 = int(m.group(2))
@@ -345,7 +345,7 @@ class ClansFormat:
                     if line.strip() == "</att>":
                         in_att_block = 0
                     else:
-                        m = re.search("^(\d+)\s+(\d+)\s+(\S+)", line.strip())
+                        m = re.search(r"^(\d+)\s+(\d+)\s+(\S+)", line.strip())
                         if m:
                             index1 = int(m.group(1))
                             index2 = int(m.group(2))

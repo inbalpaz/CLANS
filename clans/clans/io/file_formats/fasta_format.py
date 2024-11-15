@@ -23,8 +23,8 @@ class FastaFormat:
                 seq_id = seq_title
 
                 # Extract the sequence_ID from the title (trim it at space character)
-                #m = re.search("^(\S+)", seq_title)
-                #seq_id = m.group(1)
+                # m = re.search(r"^(\S+)", seq_title)
+                # seq_id = m.group(1)
 
                 sequence = str(record.seq)
                 seq_length = 0

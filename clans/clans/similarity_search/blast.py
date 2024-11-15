@@ -117,7 +117,7 @@ def read_blast_HSPs(blast_out):
 
     with open(blast_out) as infile:
         for line in infile:
-            m = re.search("^(\d+)\s+(\d+)\s+(\S+)", line.strip())
+            m = re.search(r"^(\d+)\s+(\d+)\s+(\S+)", line.strip())
             if m:
                 index1 = int(m.group(1))
                 index2 = int(m.group(2))
