@@ -8,6 +8,7 @@ from PIL import Image
 import time
 import re
 import os
+import sys
 import clans.config as cfg
 import clans.clans.io.io_gui as io
 import clans.clans.io.file_formats.clans_format as clans_format
@@ -161,8 +162,7 @@ class MainWindow(QMainWindow):
         self.save_image_submenu.addAction(self.save_stereo_image_action)
 
         self.quit_action = QAction("Quit", self)
-        self.quit_action.triggered.connect(qApp.quit)
-
+        self.quit_action.triggered.connect(QApplication.quit)
         self.file_menu.addAction(self.quit_action)
 
         # Create the Configuration menu
