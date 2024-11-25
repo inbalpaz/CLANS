@@ -24,10 +24,8 @@ def run_cmd():
 
     except Exception as err:
         print("An error has occurred while reading the input file")
-        if cfg.run_params['is_debug_mode']:
-            print("Error in run_clans_cmd.py:")
-            print(err)
-            exit()
+        print(err)
+        exit()
 
     # Perform BLAST search and fill the HSP's E-values in the similarity matrix
     try:
@@ -46,10 +44,8 @@ def run_cmd():
 
     except Exception as err:
         print("An error has occurred while running the BLAST search")
-        if cfg.run_params['is_debug_mode']:
-            print("Error in run_clans_cmd.py:")
-            print(err)
-            exit()
+        print(err)
+        exit()
 
     # Run the Fruchterman-Reingold layout calculation for the defined number of rounds
     try:
@@ -65,10 +61,8 @@ def run_cmd():
 
     except Exception as err:
         print("An error has occurred while running the Fruchterman-Reingold layout calculation")
-        if cfg.run_params['is_debug_mode']:
-            print("Error in run_clans_cmd.py:")
-            print(err)
-            exit()
+        print(err)
+        exit()
 
     ## Write the output file
     try:
@@ -83,7 +77,5 @@ def run_cmd():
 
     except Exception as err:
         print("An error has occurred while saving the output file")
-        if cfg.run_params['is_debug_mode']:
-            print("Error in run_clans_cmd.py:")
-            print(err)
-            exit()
+        print(err)
+        exit()

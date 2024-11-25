@@ -3,7 +3,7 @@ from vispy.color import ColorArray
 import clans
 
 ## Defaults
-version = "2.1.1"
+version = "2.2.0"
 
 # i/o related parameters
 type_of_values = 'hsp'
@@ -11,8 +11,10 @@ input_format = 'clans'
 output_format = 'clans'
 
 # Blast-related default parameters
-BLAST_Evalue_cutoff = 1.0
+BLAST_Evalue_cutoff = 0.01
 BLAST_scoring_matrix = 'BLOSUM62'
+BLAST_threads_num = 2
+blast_batch_size = 500
 
 # Clustering parameters defaults
 similarity_cutoff = 1e-4
@@ -147,6 +149,7 @@ groups_by_categories.append({
     'is_italic': False
 })
 
+fasta_seq_list = []  # a list of the original fasta sequences (in case the user runs blast)
 similarity_values_list = []  # a list of the non-redundant significant HSPs ('seq1_index', 'seq2_index', 'Evalue')
 similarity_values_mtx = []  # a 2D matrix filled with Evalues for all pairs (redundant). The diagonal and non-significant pairs = 1
 attraction_values_mtx = []  # a 2D matrix filled with attraction values for all pairs (redundant). The diagonal and non-significant pairs = 0
