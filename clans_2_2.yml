@@ -3,8 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - numba=0.53
-  - mkl
   - vispy
-  - pyqt
+  - pyqt=5.9
   - biopython
   - pillow

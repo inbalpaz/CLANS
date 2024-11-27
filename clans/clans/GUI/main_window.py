@@ -162,7 +162,8 @@ class MainWindow(QMainWindow):
         self.save_image_submenu.addAction(self.save_stereo_image_action)
 
         self.quit_action = QAction("Quit", self)
-        self.quit_action.triggered.connect(QApplication.quit)
+        # self.quit_action.triggered.connect(QApplication.quit)
+        self.quit_action.triggered.connect(self.close_main_window)
         self.file_menu.addAction(self.quit_action)
 
         # Create the Configuration menu
@@ -602,6 +603,10 @@ class MainWindow(QMainWindow):
             # Define a runner for loading the file that will be executed in a different thread
             self.load_file_worker = io.ReadInputWorker(cfg.run_params['input_format'])
             self.load_input_file()
+
+    def close_main_window(self):
+        qApp.closeAllWindows()
+        QApplication.quit()
 
     # Bring all the buttons to their default state
     def reset_window(self):

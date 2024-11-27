@@ -11,7 +11,7 @@ input_format = 'clans'
 output_format = 'clans'
 
 # Blast-related default parameters
-BLAST_Evalue_cutoff = 0.01
+BLAST_Evalue_cutoff = 1.0
 BLAST_scoring_matrix = 'BLOSUM62'
 BLAST_threads_num = 2
 blast_batch_size = 500

@@ -66,7 +66,8 @@ def main():
         try:
             app = QApplication([])
             window = MainWindow()
-            window.app.run()
+            window.show()
+            sys.exit(app.exec_())
 
         except Exception as error:
             print(error)
