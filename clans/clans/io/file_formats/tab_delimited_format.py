@@ -226,7 +226,7 @@ class DelimitedFormat:
                 seq2_name = seq2_name[:15]
             seq2_name += "_" + str(index2)
 
-            pair_str = seq1_name + "\t" + seq2_name + "\t" + score + "\t" + cfg.run_params['type_of_values'] + "\n"
+            pair_str = seq1_name + "\t" + seq2_name + "\t" + str(score) + "\t" + cfg.run_params['type_of_values'] + "\n"
             output.write(pair_str)
 
         output.close()
